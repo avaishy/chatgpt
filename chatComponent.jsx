@@ -25,9 +25,11 @@ const ChatComponent = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
+  const [feedback, setFeedback] = useState({});
 
   useEffect(() => {
     setMessages(userMessages);
+    setFeedback(messages.feedback);
   }, [userMessages]);
 
   const handleSendMessage = async () => {
@@ -77,6 +79,24 @@ const ChatComponent = () => {
     }
   };
 
+  const handleMessageFeedback = (feedback, messageId) => {
+    const newMessages = [];
+    messages.forEach((item) => {
+      if (item.id === messageId) {
+        item.feedback = feedback;
+        newMessages.push(item);
+      } else {
+        newMessages.push(item);
+      }
+    });
+    setMessages(newMessages);
+  console.log("Message Id in chat component", messageId);
+
+  };
+
+  console.log("Feeedback in chat component", feedback);
+  console.log("Message in chat component", messages);
+
   const cleanText = (text) => {
     const unwrapJSON = (str) => {
       try {
@@ -107,6 +127,38 @@ const ChatComponent = () => {
     return result.trim();
   };
 
+  const handleUserFeedback = async () => {
+    let userRating = 0;
+    if (feedback.thumbsup === true) {
+      userRating = 1;
+    }
+    if (feedback.thumbsdown === true) {
+      userRating = 0;
+    }
+    try {
+      const data = {
+        msg_id: message.id,
+        user_rating: userRating,
+        user_comments: feedback.comment,
+      };
+      const res = await fetch(
+        'https://lumosusersessionmgmt-dev.aexp.com/insertUserFeedback', { 
+         method: 'POST',
+         body: JSON.stringify(data),
+         headers: { 'Content-Type': 'application/json' } 
+        });
+      if (res.ok) {
+        const newFeedback = { ...feedback, submitted: true };
+        setFeedback(newFeedback);
+        console.log("Message in api",messages);
+        handleMessageFeedback(newFeedback, messages.id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log("Message in api",messages);
+
   return (
     <div className={`${styles.chatContainer}`}>
       <div className={`${styles.chatAndInputBoxContainer}`}>
@@ -135,13 +187,37 @@ const ChatComponent = () => {
               </div>
               <div className={styles.messageContent}>
                 {message.role === 'llm' ? (
-                  <ReactMarkdown>
-                    {cleanText(message.msg.response)}
-                    <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.id} feedback={message.feedback} />
-                  </ReactMarkdown>
+                  <div ><ReactMarkdown>
+                  {cleanText(message.msg.response)}
+                </ReactMarkdown>
+                 <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.msg_id} feedback={messages.feedback} /> 
+                 </div>
                 )
                   : message.msg.user_query}
               </div>
+              {feedback.thumbsup === true || feedback.thumbsdown === true
+        ? (
+          <div className={styles.feedbackContainer}>
+            <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
+            <div className={styles.feedbackInputContainer}>
+              <textarea
+                className={styles.feedbackInput}
+                disabled={feedback.submitted}
+                onChange={(event) => setFeedback({ ...feedback, comment: event.target.value })}
+              >
+                {feedback.comment}
+              </textarea>
+              <button
+                type="button"
+                className={styles.feedbackSubmit}
+                onClick={handleUserFeedback}
+                disabled={feedback.submitted}
+              >{feedback.submitted === true ? 'Submitted' : 'submit'}
+              </button>
+            </div>
+          </div>
+        ) : null}
+             
             </div>
           ))}
         </div>
