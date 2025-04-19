@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 
 function LLMFeedback({ handleMessageFeedback, messageId, feedback }) {
-  const [locFeedback, setLocFeedback] = useState({});
+    const [locFeedback, setLocFeedback] = useState({});
 
   useEffect(() => {
     setLocFeedback(feedback);
   }, [feedback]);
+  console.log(">>>>>>",locFeedback);
 
   const handleThumbsUp = (data) => {
     setLocFeedback(data);
@@ -15,26 +16,26 @@ function LLMFeedback({ handleMessageFeedback, messageId, feedback }) {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px' }}>
+    <div style={{ display: 'flex', gap: '20px', marginTop: '10px'}}>
       <FaThumbsUp
         onClick={() => handleThumbsUp({
-          thumbsup: !locFeedback.thumbsup,
-          thumbsdown: false,
-          comment: locFeedback.comment,
-          submitted: locFeedback.submitted,
-        })}
+            thumbsup: !locFeedback.thumbsup,
+            thumbsdown: false,
+            comment: locFeedback.comment,
+            submitted: locFeedback.submitted,
+          })}
         size={22}
-        color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
+       // color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
       />
       <FaThumbsDown
         onClick={() => handleThumbsUp({
-          thumbsup: false,
-          thumbsdown: !locFeedback.thumbsdown,
-          comment: locFeedback.comment,
-          submitted: locFeedback.submitted,
-        })}
+        thumbsup: false,
+        thumbsdown: !locFeedback.thumbsdown,
+        comment: locFeedback.comment,
+        submitted: locFeedback.submitted,
+      })}
         size={22}
-        color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
+       // color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
       />
     </div>
   );
