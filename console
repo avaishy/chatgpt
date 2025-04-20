@@ -1,0 +1,113 @@
+(3) [{…}, {…}, {…}]
+0
+: 
+msg
+: 
+{response: '"## Visa Inc. Earnings Call Summary\\n\\n- **Revenue…mance while navigating macroeconomic challenges."', sources: Array(1)}
+msg_id
+: 
+"1c6359dd-a508-412a-ab6d-ff89049748ca"
+role
+: 
+"llm"
+user_comments
+: 
+null
+user_rating
+: 
+null
+[[Prototype]]
+: 
+Object
+1
+: 
+{msg_id: '7a34bbe7-a3bb-47a9-87e8-61e0cb7e2522', msg: {…}, role: 'user', user_rating: null, user_comments: null}
+2
+: 
+{msg_id: 'fa304d63-6f4c-40d8-aa8c-2eedbb8eaa8f', msg: {…}, role: 'llm', user_rating: null, user_comments: null}
+length
+: 
+3
+[[Prototype]]
+: 
+Array(0)
+ChatComponent.jsx:158 Message in api 
+(3) [{…}, {…}, {…}]
+0
+: 
+msg
+: 
+{response: '"## Visa Inc. Earnings Call Summary\\n\\n- **Revenue…mance while navigating macroeconomic challenges."', sources: Array(1)}
+msg_id
+: 
+"1c6359dd-a508-412a-ab6d-ff89049748ca"
+role
+: 
+"llm"
+user_comments
+: 
+null
+user_rating
+: 
+null
+[[Prototype]]
+: 
+Object
+1
+: 
+{msg_id: '7a34bbe7-a3bb-47a9-87e8-61e0cb7e2522', msg: {…}, role: 'user', user_rating: null, user_comments: null}
+2
+: 
+{msg_id: 'fa304d63-6f4c-40d8-aa8c-2eedbb8eaa8f', msg: {…}, role: 'llm', user_rating: null, user_comments: null}
+length
+: 
+3
+[[Prototype]]
+: 
+Array(0)
+LLMFeedback.jsx:11 >>>>>> 
+{}
+LLMFeedback.jsx:11 >>>>>> 
+{}
+Sources.jsx:35 Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `Sources`. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30190:63)
+    at div
+    at div
+    at ChatComponentWrapper
+    at div
+    at div
+    at SessionsNav (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30417:59)
+    at AuthBlueProvider (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31365:7)
+    at AuthBlueSso (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31991:62)
+    at IntlProvider3 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:12819:47)
+    at Lumos (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31997:18)
+    at ConnectAsync2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3028:15)
+    at ReduxConsumerWrapper(connectAsync(Lumos))
+    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
+    at ReactlyticsProvider2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3669:30)
+    at ExtendReactlytics2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3831:30)
+    at y (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:8376:7)
+    at p3 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:8400:61)
+    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
+    at HolocronModuleWrapper (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:15370:89)
+    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
+    at RouterContext (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:5294:5)
+    at Router (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:5093:5)
+    at Provider (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27611:20)
+    at App
+2
+LLMFeedback.jsx:11 >>>>>> undefined
+2
+content_script.js:2 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+    at v (content_script.js:2:16558)
+LLMFeedback.jsx:33 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
+    at onClick (LLMFeedback.jsx:33:34)
+react-dom.development.js:4091 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
+    at onClick (LLMFeedback.jsx:33:34)
+LLMFeedback.jsx:33 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
+    at onClick (LLMFeedback.jsx:33:34)
+react-dom.development.js:4091 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
+    at onClick (LLMFeedback.jsx:33:34)
