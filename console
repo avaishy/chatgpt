@@ -1,4 +1,14 @@
+
 one-app-for-amex image name and image_id ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539
+PS C:\WINDOWS\system32> docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539 npm ls @americanexpress/one-app
+docker : Unable to find image 'artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff
+6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539' locally
+At line:1 char:1
++ docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-fo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to find ...fa2539' locally:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
 Container Image Vulnerabilities
 The Enterprise Cloud Platform (ECP) team regularly scans the Docker images deployed in Hydra for security vulnerabilities. Reports in Excel format are then emailed to the owning application director.
 
@@ -39,3 +49,11 @@ Click on "Pods" under the Inventory heading. This will show both your blue and g
 Click on a pod, then scroll down to Containers.
 Click on the container name that matches your service name to see the Image details.
 You can repeat this for all zones and all pods to verify the correct image was deployed.
+PS C:\WINDOWS\system32> docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539 npm ls @americanexpress/one-app
+docker : Unable to find image 'artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff
+6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539' locally
+At line:1 char:1
++ docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-fo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to find ...fa2539' locally:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
