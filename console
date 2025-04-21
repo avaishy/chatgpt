@@ -1,10 +1,40 @@
- "@grpc/grpc-js": "^1.10.9",
-    "braces": "^3.0.3",
-    "cross-spawn": "^7.0.5",
-    "elliptic": "^6.5.6",
-    "find-my-way": "^9.0.1",
-"micromatch": "^4.0.8",
- "ssri": "^8.0.1",
-    "tar": "^6.2.1",
-    "use-authblue-sso": "^2.1.0",
-    "webpack": "^5.94.0"
+one-app-for-amex image name and image_id ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539
+Container Image Vulnerabilities
+The Enterprise Cloud Platform (ECP) team regularly scans the Docker images deployed in Hydra for security vulnerabilities. Reports in Excel format are then emailed to the owning application director.
+
+The vulnerabilities contained in these reports are not in your module's code or dependencies, but in One App itself. The recommended fix is to deploy the latest release of One App to your production environment.
+
+Determining your current One App version
+The "Digests" column in the Excel report contains the identifier of the Docker image.
+
+You can use this to look up your current One App version using Docker on your laptop:
+
+docker run -it <image> npm ls @americanexpress/one-app
+
+Example output:
+
+$ docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:00df2488ce80f5e2023296ed70471f2c728bf013532b3ffc96be784ec1cbc486 npm ls @americanexpress/one-app
+@americanexpress/one-app@6.12.1 /opt/one-app
+
+
+In this example, the One App version is 6.12.1.
+
+Deploying an updated One App version
+The One App Release Notes page lists all available versions of One App. You should use the latest release for your One App major version, either One App v5 or One App v6.
+
+You should deploy the new version to your E1, E2, and E3 environments using the One App Server Deploy workflow.
+
+tip
+E2 and E3 environments use blue/green deployments and both blue and green pods are scanned for vulnerabilities. You should deploy One App one additional time after running the blue-green switch workflow to update the version in all pods.
+
+Re-scanning
+The ECP team will automatically scan your updated images.
+
+You can also verify the correct image was deployed in the Hydra console:
+
+Switch to the desired zone in the header.
+Click on "Project Details" in the left navigation bar, then select the desired Project.
+Click on "Pods" under the Inventory heading. This will show both your blue and green pods.
+Click on a pod, then scroll down to Containers.
+Click on the container name that matches your service name to see the Image details.
+You can repeat this for all zones and all pods to verify the correct image was deployed.
