@@ -1,4 +1,4 @@
-
+Digest : artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:e1f343006b3b4762a9473d7f5030f19521c3db70d4ed56fc3243c63b796e0736
 one-app-for-amex image name and image_id ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539
 PS C:\WINDOWS\system32> docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539 npm ls @americanexpress/one-app
 docker : Unable to find image 'artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff
