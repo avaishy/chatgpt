@@ -1,49 +1,9 @@
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\chatScreen\ChatComponent.jsx
-   63:11  warning  Unexpected console statement
-
-                             no-console
-   85:34  error    'feedback' is already declared in the upper scope on line 28 column 10
-
-                             no-shadow
-   89:9   error    Assignment to property of function parameter 'item'
-
-                             no-param-reassign
-  156:7   warning  Unexpected console statement
-
-                             no-console
-  163:6   warning  React Hook useEffect has a missing dependency: 'messages.feedback'. Either include it or remove
-dependency array. You can also replace multiple useState variables with useReducer if 'setFeedback' needs the curralue of 'messages.feedback'  react-hooks/exhaustive-deps
-  208:1   error    This line has a length of 111. Maximum allowed is 100
-
-                             max-len
-  216:1   error    This line has a length of 103. Maximum allowed is 100
-
-                             max-len
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\chatScreen\ManageContext.jsx
-  41:6  warning  React Hook useEffect has missing dependencies: 'selectedDocuments', 'seletedCompanyKnowldge', 'seIndustryKnowldge', and 'seletedPersonalKnowldge'. Either include them or remove the dependency array  react-hooks/stive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\AdditionalKnowledd.jsx
-  47:6  warning  React Hook useEffect has missing dependencies: 'companyKnowledgeFromStore', 'industryKnowledgeFroe', 'isEditKnowledge', 'knowledgeType', and 'personalKnowledgeFromStore'. Either include them or remove the depend
-array  react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\Knowledge.jsx
-   95:11  warning  Unexpected console statement
-
-                                                            no-console
-  166:7   warning  Unexpected console statement
-
-                                                            no-console
-  215:41  warning  The ref value 'pollingIntervalsRef.current' will likely have changed by the time this effect cl function runs. If this ref points to a node rendered by React, copy 'pollingIntervalsRef.current' to a variable i the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-  217:6   warning  React Hook useEffect has missing dependencies: 'getAllUserDocuments', 'getUserAdditionalKnowled
- the dependency array  react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\utility\CurrrentSessions.jsx
-  71:6  warning  React Hook useEffect has a missing dependency: 'selectChat'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
-  18:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'user?.attributes?.adsId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-
-✖ 16 problems (4 errors, 12 warnings)
-
-PS C:\Users\avaishy\research-assistant-root>
+ {filteredDocuments.length > 0 ? filteredDocuments.map((doc, index) => (
+              <div key={doc.file_id} className={`${styles.documentItem}`}>
+                {isUsedByManageContext === true ? <input type="radio" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} checked={selectedDocuments.some((selectedDoc) => selectedDoc.file_id === doc.file_id)} />
+                  : <input type="radio" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} />}
+                <label htmlFor={`doc-${index}`} className={styles.singleFileContainer} title={doc.additional_info ? `${doc.additional_info.company_name}, ${doc.additional_info.date}` : null}>
+                  {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
+                </label>
+              </div>
+            )) : null}
