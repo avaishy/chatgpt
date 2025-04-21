@@ -26,6 +26,8 @@ const ChatComponent = () => {
   const [isTyping, setIsTyping] = useState(false);
   const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
   const [feedback, setFeedback] = useState({});
+  const lastestMessageLLMMessageId = [...messages].reverse().find(m => m.role === 'llm')?.msg_id;
+
 
   const handleSendMessage = async () => {
     const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random() }];
@@ -64,10 +66,25 @@ const ChatComponent = () => {
         }
         if (res.ok) {
           const result = await res.json();
-          const botMessage = { role: 'llm', msg: { response: result.llm_response.response, sources: result.llm_response.sources }, msg_id: result.llm_response_id };
+          const botMessage = { 
+            role: 'llm',
+            msg: { response: result.llm_response.response, sources: result.llm_response.sources },
+            msg_id: result.llm_response_id,
+            feedback: {
+            thumbsup: false, thumbsdown: false, comment: '', submitted: false,
+            }, };
           const updatedMessages = [...newMessages, botMessage];
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
+          // setMessages((prev) => [...prev, {
+          //   role: 'llm',
+          //   msg:{ response: result.llm_response.response, sources: result.llm_response.sources },
+          //   msg_id: result.llm_response_id,
+          //   feedback: {
+          //     thumbsup: false, thumbsdown: false, comment: '', submitted: false,
+          //   },
+          // }]);
+          // dispatch(setChatMessages(messages));
         }
       } catch (error) { toast.error(`unable to fetch llm response : ${error}`); }
       setIsTyping(false);
@@ -76,23 +93,18 @@ const ChatComponent = () => {
 
   const handleMessageFeedback = (feedback, messageId) => {
     const newMessages = [];
+    console.log("Feedback inside handleMessageFeedback", feedback);
     messages.forEach((item) => {
+      console.log("Item", item);
       if (item.id === messageId) {
         item.feedback = feedback;
         newMessages.push(item);
-        console.log("Feeedback if in chat component", feedback);
       } else {
         newMessages.push(item);
-        console.log("Feeedback else in chat component", feedback);
       }
     });
     setMessages(newMessages);
-  console.log("Message Id in chat component", messageId);
-
   };
-
-  console.log("Feeedback in chat component", feedback);
-  console.log("Message in chat component", messages);
 
   const cleanText = (text) => {
     const unwrapJSON = (str) => {
@@ -126,7 +138,7 @@ const ChatComponent = () => {
 
   const handleUserFeedback = async () => {
     let userRating = 0;
-    console.log("Feeedback handleUserFeedback in chat component", feedback);
+    console.log("message", messages[messages.length-1]?.msg_id);
     if (feedback.thumbsup === true) {
       userRating = 1;
     }
@@ -135,7 +147,7 @@ const ChatComponent = () => {
     }
     try {
       const data = {
-        msg_id: messages.msg_id,
+        msg_id: messages[messages.length-1]?.msg_id,
         user_rating: userRating,
         user_comments: feedback.comment,
       };
@@ -148,19 +160,20 @@ const ChatComponent = () => {
       if (res.ok) {
         const newFeedback = { ...feedback, submitted: true };
         setFeedback(newFeedback);
-        console.log("Message in api",messages);
         handleMessageFeedback(newFeedback, messages.msg_id);
       }
     } catch (error) {
       console.log(error);
     }
   };
-  console.log("Message in api",messages);
 
   useEffect(() => {
     setMessages(userMessages);
-    setFeedback(feedback);
-  }, [userMessages,feedback]);
+    setFeedback(messages.feedback);
+  }, [userMessages]);
+  console.log(lastestMessageLLMMessageId);
+  console.log(messages);
+
 
   return (
     <div className={`${styles.chatContainer}`}>
@@ -190,10 +203,11 @@ const ChatComponent = () => {
               </div>
               <div className={styles.messageContent}>
                 {message.role === 'llm' ? (
-                  <div ><ReactMarkdown>
-                  {cleanText(message.msg.response)}
-                </ReactMarkdown>
-                 <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.msg_id} feedback={message.feedback} /> 
+                  <div >
+                    <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                 { message.msg_id === lastestMessageLLMMessageId ? (
+                 <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.msg_id} feedback={message.feedback} />
+                 ): null }
                  </div>
                 )
                   : message.msg.user_query}
@@ -215,7 +229,9 @@ const ChatComponent = () => {
                 className={styles.feedbackSubmit}
                 onClick={handleUserFeedback}
                 disabled={feedback.submitted}
-              >{feedback.submitted === true ? 'Submitted' : 'submit'}
+              >
+                
+                {feedback.submitted === true ? 'Submitted' : 'submit'}
               </button>
             </div>
           </div>
