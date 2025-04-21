@@ -27,8 +27,7 @@ const ChatComponent = () => {
   const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
   const [feedback, setFeedback] = useState({ thumbsup: false, thumbsdown: false, comment: '', submitted: false,});
   const lastestMessageLLMMessageId = [...messages].reverse().find(m => m.role === 'llm')?.msg_id;
-
-
+  const [disableInput,setDisableInput] = useState(false);
   const handleSendMessage = async () => {
     const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random() }];
     setMessages(newMessages);
@@ -76,15 +75,6 @@ const ChatComponent = () => {
           const updatedMessages = [...newMessages, botMessage];
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
-          // setMessages((prev) => [...prev, {
-          //   role: 'llm',
-          //   msg:{ response: result.llm_response.response, sources: result.llm_response.sources },
-          //   msg_id: result.llm_response_id,
-          //   feedback: {
-          //     thumbsup: false, thumbsdown: false, comment: '', submitted: false,
-          //   },
-          // }]);
-          // dispatch(setChatMessages(messages));
         }
       } catch (error) { toast.error(`unable to fetch llm response : ${error}`); }
       setIsTyping(false);
@@ -93,9 +83,8 @@ const ChatComponent = () => {
 
   const handleMessageFeedback = (feedback, messageId) => {
     const newMessages = [];
-    console.log("Feedback inside handleMessageFeedback", feedback);
     messages.forEach((item) => {
-      console.log("Item", item);
+    
       if (item.msg_id === messageId) {
         item.feedback = feedback;
         newMessages.push(item);
@@ -137,8 +126,9 @@ const ChatComponent = () => {
   };
 
   const handleUserFeedback = async () => {
+    setDisableInput(false);
+
     let userRating = 0;
-    console.log("message", messages[messages.length-1]?.msg_id);
     if (feedback.thumbsup === true) {
       userRating = 1;
     }
@@ -171,22 +161,19 @@ const ChatComponent = () => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
   }, [userMessages]);
-  console.log(lastestMessageLLMMessageId);
-  console.log(messages);
-
 
   return (
     <div className={`${styles.chatContainer}`}>
       <div className={`${styles.chatAndInputBoxContainer}`}>
         <div className={`${styles.chatMessages}`}>
-          {isTyping && <TypingIndicator /> }
+          {isTyping && <TypingIndicator />}
           {[...messages].reverse().map((message) => (
             <div
               key={message.msg_id}
               className={`${styles.chatMessage} ${message.role === 'llm'
                 ? styles.botMessage
                 : styles.userMessage
-              }`}
+                }`}
             >
               <div className={styles.iconContainer}>
                 {message.role === 'llm' ? (
@@ -205,40 +192,45 @@ const ChatComponent = () => {
                 {message.role === 'llm' ? (
                   <div >
                     <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
-                 { message.msg_id === lastestMessageLLMMessageId ? (
-                 <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.msg_id} feedback={message.feedback} />
-                 ): null }
-                 </div>
+                    {message.msg_id === lastestMessageLLMMessageId ? (
+                      <LLMFeedback
+                      handleMessageFeedback={handleMessageFeedback}
+                      messageId={message.msg_id}
+                      feedback={message.feedback}
+                      disableInput={disableInput}
+                      setDisableInput={setDisableInput} />
+                    ) : null}
+                  </div>
                 )
                   : message.msg.user_query}
               </div>
-              {feedback && (feedback.thumbsup === true || feedback.thumbsdown === true )
-        ? (
-          <div className={styles.feedbackContainer}>
-            <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
-            <div className={styles.feedbackInputContainer}>
-              <textarea
-                className={styles.feedbackInput}
-                disabled={feedback.submitted}
-                onChange={(event) => setFeedback({ ...feedback, comment: event.target.value })}
-              >
-                {feedback.comment}
-              </textarea>
-              <button
-                type="button"
-                className={styles.feedbackSubmit}
-                onClick={handleUserFeedback}
-                disabled={feedback.submitted}
-              >
-                
-                {feedback.submitted === true ? 'Submitted' : 'submit'}
-              </button>
-            </div>
-          </div>
-        ) : null}
-             
-            </div>
-          ))}
+              
+              {message.feedback && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
+                ? (
+                  <div className={styles.feedbackContainer}>
+                    <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
+                    <div className={styles.feedbackInputContainer}>
+                      <textarea
+                        className={styles.feedbackInput}
+                        disabled={message.feedback.submitted}
+                        onChange={(event) => setFeedback({ ...feedback, comment: event.target.value })}
+                      >
+                        {message.feedback.comment}
+                      </textarea>
+                      <button
+                        type="button"
+                        className={styles.feedbackSubmit}
+                        onClick={handleUserFeedback}
+                        disabled={message.feedback.submitted}
+                      >
+
+                        {message.feedback.submitted === true ? 'Submitted' : 'submit'}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                </div>   
+))}
         </div>
         {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
           <div className={`${styles.inputContainer}`}>
@@ -251,7 +243,7 @@ const ChatComponent = () => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isTyping) handleSendMessage();
               }}
-              disabled={isTyping}
+              disabled={(isTyping || disableInput)}
             />
             <button
               type="button"
@@ -266,13 +258,15 @@ const ChatComponent = () => {
                 className={`${input.trim() !== ''
                   ? styles.icon
                   : styles.disabledIcon
-                }`}
+                  }`}
               >
                 <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" />
               </svg>
             </button>
           </div>
         )}
+        <div>
+      </div>
       </div>
     </div>
   );
