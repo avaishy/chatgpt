@@ -1,88 +1,10 @@
- function addSelectedDocuments(document) {
-    const exists = selectedDocuments.some((doc) => doc.file_id === document.file_id);
-    if (!exists) {
-      setSelectedDocuments((prev) => [...prev, document]);
-    } else {
-      setSelectedDocuments((prev) => prev.filter((doc) => doc.file_id !== document.file_id));
-    }
-  }<div className={`${styles.container}`}>
-      <div className={`${styles.header}`}>
-        <h2>{isUsedByManageContext === false ? 'New Session' : 'Edit Session'}</h2>
-        <button type="button" className={`${styles.closeButton}`} onClick={closeNewSession}>close</button>
-      </div>
-      <div className={`${styles.contentWrapper}`}>
-        {/* Left: Documents */}
-        <div className={`${styles.section}`}>
-          <h3 className={`${styles.SectionTitle}`}>Add documents</h3>
-          <div>
-            <input type="text" placeholder="Search document" className={`${styles.input}`} onChange={handleDocumentSearch} />
-          </div>
-          <div className={`${styles.documentList}`}>
-            {filteredDocuments.length > 0 ? filteredDocuments.map((doc, index) => (
-              <div key={doc.file_id} className={`${styles.documentItem}`}>
-                {isUsedByManageContext === true ? <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} checked={selectedDocuments.some((selectedDoc) => selectedDoc.file_id === doc.file_id)} />
-                  : <input type="radio" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} />}
-                <label htmlFor={`doc-${index}`} className={styles.singleFileContainer} title={doc.additional_info ? `${doc.additional_info.company_name}, ${doc.additional_info.date}` : null}>
-                  {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
-                </label>
-              </div>
-            )) : null}
-          </div>
-          <div className={`${styles.fileUploadContainer}`}>
-            <button type="button" aria-label="Open File Upload" onClick={() => toggleFileUploadComponent(true)}>
-              <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
-                <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
-              </svg>
-            </button>
-            {ShowFileUploadComponent === true
-              ? (
-                <div className={styles.overlay}>
-                  <div className={styles.popup}>
-                    <FileUpload
-                      toggleFileUploadComponent={toggleFileUploadComponent}
-                      handleFileUpload={handleFileUpload}
-                    />
-                  </div>
-                </div>
-              ) : null}
-          </div>
-        </div>
-
-        {/* Right: Filters */}
-        <div className={`${styles.section}`}>
-          <div className={styles.additionalKnowledgeHeader}>
-            <h3 className={`${styles.SectionTitle}`}>Add additional knowledge</h3>
-            <Link to="/earnings-call-tanscripts/edit-knowledge" className={styles.overrideLink}>
-              <button type="button" className={`${styles.editKnowledgeButton}`}>
-                Edit Knowledge
-              </button>
-            </Link>
-
-          </div>
-          <AdditionalKnowledgeCard knowledgeType="company knowledge" knowledgeArray={companyKnowledge} />
-          <AdditionalKnowledgeCard knowledgeType="industry knowledge" knowledgeArray={industryKnowledge} />
-          <AdditionalKnowledgeCard knowledgeType="personal knowledge" knowledgeArray={personalKnowledge} />
-        </div>
-      </div>
-      <div className={`${styles.footerSection}`}>
-        <div>
-          <label htmlFor="industry-select" className={styles.dropdownTitle}>Select Industry</label>
-          <select value={industryType} onChange={changeIndustryType} className={styles.dropdown}>
-            <option value="Payments">Payments</option>
-            <option value="Airlines">Airlines</option>
-          </select>
-        </div>
-        <button
-          type="button"
-          className={`${styles.answerButton}`}
-          onClick={openChatCompoent}
-        >
-          {isUsedByManageContext === false ? 'Generate Answers' : 'Submit'}
-        </button>
-      </div>
-      {isPopupOpen && (
-      <PopupMessage message={`These files are still indexing: ${notIndexFilesName}. Please wait until indexing is completed.`} />
-      )}
-    </div>
-  );
-}
+ "@grpc/grpc-js": "^1.10.9",
+    "braces": "^3.0.3",
+    "cross-spawn": "^7.0.5",
+    "elliptic": "^6.5.6",
+    "find-my-way": "^9.0.1",
+"micromatch": "^4.0.8",
+ "ssri": "^8.0.1",
+    "tar": "^6.2.1",
+    "use-authblue-sso": "^2.1.0",
+    "webpack": "^5.94.0"
