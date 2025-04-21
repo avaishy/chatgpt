@@ -1,89 +1,22 @@
-(3) [{…}, {…}, {…}]
-0
-: 
-msg
-: 
-{response: '"## Visa Inc. Earnings Call Summary\\n\\n- **Revenue…mance while navigating macroeconomic challenges."', sources: Array(1)}
-msg_id
-: 
-"1c6359dd-a508-412a-ab6d-ff89049748ca"
-role
-: 
-"llm"
-user_comments
-: 
-null
-user_rating
-: 
-null
-[[Prototype]]
-: 
-Object
-1
-: 
-{msg_id: '7a34bbe7-a3bb-47a9-87e8-61e0cb7e2522', msg: {…}, role: 'user', user_rating: null, user_comments: null}
-2
-: 
-{msg_id: 'fa304d63-6f4c-40d8-aa8c-2eedbb8eaa8f', msg: {…}, role: 'llm', user_rating: null, user_comments: null}
-length
-: 
-3
-[[Prototype]]
-: 
-Array(0)
-ChatComponent.jsx:158 Message in api 
-(3) [{…}, {…}, {…}]
-0
-: 
-msg
-: 
-{response: '"## Visa Inc. Earnings Call Summary\\n\\n- **Revenue…mance while navigating macroeconomic challenges."', sources: Array(1)}
-msg_id
-: 
-"1c6359dd-a508-412a-ab6d-ff89049748ca"
-role
-: 
-"llm"
-user_comments
-: 
-null
-user_rating
-: 
-null
-[[Prototype]]
-: 
-Object
-1
-: 
-{msg_id: '7a34bbe7-a3bb-47a9-87e8-61e0cb7e2522', msg: {…}, role: 'user', user_rating: null, user_comments: null}
-2
-: 
-{msg_id: 'fa304d63-6f4c-40d8-aa8c-2eedbb8eaa8f', msg: {…}, role: 'llm', user_rating: null, user_comments: null}
-length
-: 
-3
-[[Prototype]]
-: 
-Array(0)
-LLMFeedback.jsx:11 >>>>>> 
-{}
-LLMFeedback.jsx:11 >>>>>> 
-{}
+de79ae43-5042-46da-8297-e85d319a4419
+ChatComponent.jsx:175 (6) [{…}, {…}, {…}, {…}, {…}, {…}]
+LLMFeedback.jsx:11 feedback >>>>>> undefined
+LLMFeedback.jsx:17 locFeedback>>>>>> {thumbsup: false, thumbsdown: false, comment: '', submitted: false}comment: ""submitted: falsethumbsdown: falsethumbsup: false[[Prototype]]: Object
 Sources.jsx:35 Warning: Each child in a list should have a unique "key" prop.
 
 Check the render method of `Sources`. See https://reactjs.org/link/warning-keys for more information.
     at div
-    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30190:63)
+    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30203:63)
     at div
     at div
     at ChatComponentWrapper
     at div
     at div
-    at SessionsNav (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30417:59)
-    at AuthBlueProvider (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31365:7)
-    at AuthBlueSso (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31991:62)
+    at SessionsNav (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30430:59)
+    at AuthBlueProvider (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31378:7)
+    at AuthBlueSso (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:32004:62)
     at IntlProvider3 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:12819:47)
-    at Lumos (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31997:18)
+    at Lumos (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:32010:18)
     at ConnectAsync2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3028:15)
     at ReduxConsumerWrapper(connectAsync(Lumos))
     at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
@@ -98,16 +31,51 @@ Check the render method of `Sources`. See https://reactjs.org/link/warning-keys 
     at Router (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:5093:5)
     at Provider (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27611:20)
     at App
-2
-LLMFeedback.jsx:11 >>>>>> undefined
-2
-content_script.js:2 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
-    at v (content_script.js:2:16558)
-LLMFeedback.jsx:33 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
-    at onClick (LLMFeedback.jsx:33:34)
-react-dom.development.js:4091 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
-    at onClick (LLMFeedback.jsx:33:34)
-LLMFeedback.jsx:33 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
-    at onClick (LLMFeedback.jsx:33:34)
-react-dom.development.js:4091 Uncaught TypeError: Cannot read properties of undefined (reading 'thumbsdown')
-    at onClick (LLMFeedback.jsx:33:34)
+overrideMethod @ hook.js:608
+printWarning @ react.development.js:220
+error @ react.development.js:196
+validateExplicitKey @ react.development.js:2052
+validateChildKeys @ react.development.js:2078
+createElementWithValidation @ react.development.js:2233
+Sources @ Sources.jsx:35
+renderWithHooks @ react-dom.development.js:14985
+updateFunctionComponent @ react-dom.development.js:17356
+beginWork @ react-dom.development.js:19063
+beginWork$1 @ react-dom.development.js:23940
+performUnitOfWork @ react-dom.development.js:22776
+workLoopSync @ react-dom.development.js:22707
+renderRootSync @ react-dom.development.js:22670
+performSyncWorkOnRoot @ react-dom.development.js:22293
+(anonymous) @ react-dom.development.js:11327
+unstable_runWithPriority @ scheduler.development.js:468
+runWithPriority$1 @ react-dom.development.js:11276
+flushSyncCallbackQueueImpl @ react-dom.development.js:11322
+flushSyncCallbackQueue @ react-dom.development.js:11309
+batchedUpdates$1 @ react-dom.development.js:22387
+notify @ Subscription.js:15
+notifyNestedSubs @ Subscription.js:85
+handleChangeWrapper @ Subscription.js:90
+dispatch @ redux.js:297
+s @ page.bundle.js:3
+(anonymous) @ index.js:85
+dispatch @ page.bundle.js:6
+(anonymous) @ index.js:20
+selectChat @ CurrrentSessions.jsx:59
+await in selectChat
+(anonymous) @ CurrrentSessions.jsx:69
+invokePassiveEffectCreate @ react-dom.development.js:23487
+callCallback @ react-dom.development.js:3945
+invokeGuardedCallbackDev @ react-dom.development.js:3994
+invokeGuardedCallback @ react-dom.development.js:4056
+flushPassiveEffectsImpl @ react-dom.development.js:23574
+unstable_runWithPriority @ scheduler.development.js:468
+runWithPriority$1 @ react-dom.development.js:11276
+flushPassiveEffects @ react-dom.development.js:23447
+(anonymous) @ react-dom.development.js:23324
+workLoop @ scheduler.development.js:417
+flushWork @ scheduler.development.js:390
+performWorkUntilDeadline @ scheduler.development.js:157
+LLMFeedback.jsx:11 feedback >>>>>> undefined
+LLMFeedback.jsx:17 locFeedback>>>>>> undefined
+LLMFeedback.jsx:11 feedback >>>>>> undefined
+LLMFeedback.jsx:17 locFeedback>>>>>> undefined
