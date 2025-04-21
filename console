@@ -1,81 +1,49 @@
-de79ae43-5042-46da-8297-e85d319a4419
-ChatComponent.jsx:175 (6) [{…}, {…}, {…}, {…}, {…}, {…}]
-LLMFeedback.jsx:11 feedback >>>>>> undefined
-LLMFeedback.jsx:17 locFeedback>>>>>> {thumbsup: false, thumbsdown: false, comment: '', submitted: false}comment: ""submitted: falsethumbsdown: falsethumbsup: false[[Prototype]]: Object
-Sources.jsx:35 Warning: Each child in a list should have a unique "key" prop.
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\chatScreen\ChatComponent.jsx
+   63:11  warning  Unexpected console statement
 
-Check the render method of `Sources`. See https://reactjs.org/link/warning-keys for more information.
-    at div
-    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30203:63)
-    at div
-    at div
-    at ChatComponentWrapper
-    at div
-    at div
-    at SessionsNav (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30430:59)
-    at AuthBlueProvider (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:31378:7)
-    at AuthBlueSso (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:32004:62)
-    at IntlProvider3 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:12819:47)
-    at Lumos (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:32010:18)
-    at ConnectAsync2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3028:15)
-    at ReduxConsumerWrapper(connectAsync(Lumos))
-    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
-    at ReactlyticsProvider2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3669:30)
-    at ExtendReactlytics2 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:3831:30)
-    at y (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:8376:7)
-    at p3 (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:8400:61)
-    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
-    at HolocronModuleWrapper (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:15370:89)
-    at ConnectFunction (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27870:75)
-    at RouterContext (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:5294:5)
-    at Router (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:5093:5)
-    at Provider (http://localhost:3000/_/static/app/6.12.1-c7108874/app~vendors.js:27611:20)
-    at App
-overrideMethod @ hook.js:608
-printWarning @ react.development.js:220
-error @ react.development.js:196
-validateExplicitKey @ react.development.js:2052
-validateChildKeys @ react.development.js:2078
-createElementWithValidation @ react.development.js:2233
-Sources @ Sources.jsx:35
-renderWithHooks @ react-dom.development.js:14985
-updateFunctionComponent @ react-dom.development.js:17356
-beginWork @ react-dom.development.js:19063
-beginWork$1 @ react-dom.development.js:23940
-performUnitOfWork @ react-dom.development.js:22776
-workLoopSync @ react-dom.development.js:22707
-renderRootSync @ react-dom.development.js:22670
-performSyncWorkOnRoot @ react-dom.development.js:22293
-(anonymous) @ react-dom.development.js:11327
-unstable_runWithPriority @ scheduler.development.js:468
-runWithPriority$1 @ react-dom.development.js:11276
-flushSyncCallbackQueueImpl @ react-dom.development.js:11322
-flushSyncCallbackQueue @ react-dom.development.js:11309
-batchedUpdates$1 @ react-dom.development.js:22387
-notify @ Subscription.js:15
-notifyNestedSubs @ Subscription.js:85
-handleChangeWrapper @ Subscription.js:90
-dispatch @ redux.js:297
-s @ page.bundle.js:3
-(anonymous) @ index.js:85
-dispatch @ page.bundle.js:6
-(anonymous) @ index.js:20
-selectChat @ CurrrentSessions.jsx:59
-await in selectChat
-(anonymous) @ CurrrentSessions.jsx:69
-invokePassiveEffectCreate @ react-dom.development.js:23487
-callCallback @ react-dom.development.js:3945
-invokeGuardedCallbackDev @ react-dom.development.js:3994
-invokeGuardedCallback @ react-dom.development.js:4056
-flushPassiveEffectsImpl @ react-dom.development.js:23574
-unstable_runWithPriority @ scheduler.development.js:468
-runWithPriority$1 @ react-dom.development.js:11276
-flushPassiveEffects @ react-dom.development.js:23447
-(anonymous) @ react-dom.development.js:23324
-workLoop @ scheduler.development.js:417
-flushWork @ scheduler.development.js:390
-performWorkUntilDeadline @ scheduler.development.js:157
-LLMFeedback.jsx:11 feedback >>>>>> undefined
-LLMFeedback.jsx:17 locFeedback>>>>>> undefined
-LLMFeedback.jsx:11 feedback >>>>>> undefined
-LLMFeedback.jsx:17 locFeedback>>>>>> undefined
+                             no-console
+   85:34  error    'feedback' is already declared in the upper scope on line 28 column 10
+
+                             no-shadow
+   89:9   error    Assignment to property of function parameter 'item'
+
+                             no-param-reassign
+  156:7   warning  Unexpected console statement
+
+                             no-console
+  163:6   warning  React Hook useEffect has a missing dependency: 'messages.feedback'. Either include it or remove
+dependency array. You can also replace multiple useState variables with useReducer if 'setFeedback' needs the curralue of 'messages.feedback'  react-hooks/exhaustive-deps
+  208:1   error    This line has a length of 111. Maximum allowed is 100
+
+                             max-len
+  216:1   error    This line has a length of 103. Maximum allowed is 100
+
+                             max-len
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\chatScreen\ManageContext.jsx
+  41:6  warning  React Hook useEffect has missing dependencies: 'selectedDocuments', 'seletedCompanyKnowldge', 'seIndustryKnowldge', and 'seletedPersonalKnowldge'. Either include them or remove the dependency array  react-hooks/stive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\AdditionalKnowledd.jsx
+  47:6  warning  React Hook useEffect has missing dependencies: 'companyKnowledgeFromStore', 'industryKnowledgeFroe', 'isEditKnowledge', 'knowledgeType', and 'personalKnowledgeFromStore'. Either include them or remove the depend
+array  react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\Knowledge.jsx
+   95:11  warning  Unexpected console statement
+
+                                                            no-console
+  166:7   warning  Unexpected console statement
+
+                                                            no-console
+  215:41  warning  The ref value 'pollingIntervalsRef.current' will likely have changed by the time this effect cl function runs. If this ref points to a node rendered by React, copy 'pollingIntervalsRef.current' to a variable i the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  217:6   warning  React Hook useEffect has missing dependencies: 'getAllUserDocuments', 'getUserAdditionalKnowled
+ the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\utility\CurrrentSessions.jsx
+  71:6  warning  React Hook useEffect has a missing dependency: 'selectChat'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
+  18:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'user?.attributes?.adsId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 16 problems (4 errors, 12 warnings)
+
+PS C:\Users\avaishy\research-assistant-root>
