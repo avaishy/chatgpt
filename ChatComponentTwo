@@ -25,7 +25,7 @@ const ChatComponent = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
-  const [feedback, setFeedback] = useState({});
+  const [feedback, setFeedback] = useState({ thumbsup: false, thumbsdown: false, comment: '', submitted: false,});
   const lastestMessageLLMMessageId = [...messages].reverse().find(m => m.role === 'llm')?.msg_id;
 
 
@@ -96,7 +96,7 @@ const ChatComponent = () => {
     console.log("Feedback inside handleMessageFeedback", feedback);
     messages.forEach((item) => {
       console.log("Item", item);
-      if (item.id === messageId) {
+      if (item.msg_id === messageId) {
         item.feedback = feedback;
         newMessages.push(item);
       } else {
@@ -160,7 +160,7 @@ const ChatComponent = () => {
       if (res.ok) {
         const newFeedback = { ...feedback, submitted: true };
         setFeedback(newFeedback);
-        handleMessageFeedback(newFeedback, messages.msg_id);
+        handleMessageFeedback(newFeedback, messages[messages.length-1]?.msg_id);
       }
     } catch (error) {
       console.log(error);
@@ -212,7 +212,7 @@ const ChatComponent = () => {
                 )
                   : message.msg.user_query}
               </div>
-              {feedback.thumbsup === true || feedback.thumbsdown === true
+              {feedback && (feedback.thumbsup === true || feedback.thumbsdown === true )
         ? (
           <div className={styles.feedbackContainer}>
             <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
