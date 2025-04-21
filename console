@@ -10,6 +10,7 @@ The "Digests" column in the Excel report contains the identifier of the Docker i
 You can use this to look up your current One App version using Docker on your laptop:
 
 docker run -it <image> npm ls @americanexpress/one-app
+docker run -it artifactory.aexp.com/paas-registry/amex-eng/one-app-for-amex@sha256:ef550050ff6a3b2a62367e33af8c1b4cd6218bbaaa7600122e24661ad3fa2539 npm ls @americanexpress/one-app
 
 Example output:
 
