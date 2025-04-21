@@ -2,18 +2,22 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 
-function LLMFeedback({ handleMessageFeedback, messageId, feedback }) {
-    const [locFeedback, setLocFeedback] = useState({});
+function LLMFeedback({ handleMessageFeedback, messageId, feedback, disableInput, setDisableInput }) {
+    const [locFeedback, setLocFeedback] = useState({ thumbsup: false, thumbsdown: false, comment: '', submitted: false,});
 
   useEffect(() => {
-    setLocFeedback(feedback);
+    if(feedback){
+      setLocFeedback(feedback);
+    }
   }, [feedback]);
-  console.log(">>>>>>",locFeedback);
 
   const handleThumbsUp = (data) => {
     setLocFeedback(data);
     handleMessageFeedback(data, messageId);
+    setDisableInput(locFeedback.thumbsup || locFeedback.thumbsdown);
+   console.log(">>>>>", disableInput);
   };
+  console.log("<<<<<<<", disableInput);
 
   return (
     <div style={{ display: 'flex', gap: '20px', marginTop: '10px'}}>
@@ -25,7 +29,7 @@ function LLMFeedback({ handleMessageFeedback, messageId, feedback }) {
             submitted: locFeedback.submitted,
           })}
         size={22}
-       // color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
+        color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
       />
       <FaThumbsDown
         onClick={() => handleThumbsUp({
@@ -35,7 +39,7 @@ function LLMFeedback({ handleMessageFeedback, messageId, feedback }) {
         submitted: locFeedback.submitted,
       })}
         size={22}
-       // color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
+        color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
       />
     </div>
   );
