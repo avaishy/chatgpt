@@ -1,14 +1,16 @@
-(3) [{…}, {…}, {…}]0: {msg_id: 'b46e92f3-c733-4d0e-aeb7-765d6b9455a7', msg: {…}, role: 'llm', user_rating: null, user_comments: null}1: {msg_id: 'd466b1e1-52e4-4cad-9e8b-55e387b79a67', msg: {…}, role: 'user', user_rating: null, user_comments: null}2: feedback: {thumbsup: true, thumbsdown: false, comment: undefined, submitted: undefined}msg: {response: `"The industry trends of Visa's business include se…he evolving needs of its clients and the market."`, sources: Array(1)}msg_id: "f2c9faf9-2dbf-4f10-9f8d-da91420b3680"role: "llm"user_comments: nulluser_rating: null[[Prototype]]: Objectlength: 3[[Prototype]]: Array(0)
-2content_script.js:2 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
-    at v (content_script.js:2:16558
-
-useEffect(() => {
-  if (feedback) {
-    setLocFeedback({
-      thumbsup: feedback.thumbsup ?? false,
-      thumbsdown: feedback.thumbsdown ?? false,
-      comment: feedback.comment ?? '',
-      submitted: feedback.submitted ?? false,
-    });
-  }
-}, [feedback]);
+1>>>>> {thumbsup: false, thumbsdown: true, comment: undefined, submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: undefined, submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 't', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 't', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'te', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'te', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'tes', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'tes', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
+ContentScript.js:6 onChange started
+ContentScript.js:6 onChange completed
+LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: true}
+ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
+ChatComponent.jsx:155 >>>>> (3) [{…}, {…}, {…}]
+ChatComponent.jsx:156 7>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: true}
+ChatComponent.jsx:157 6>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
