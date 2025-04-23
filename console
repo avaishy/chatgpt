@@ -1,16 +1,14 @@
-1>>>>> {thumbsup: false, thumbsdown: true, comment: undefined, submitted: undefined}
-ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: undefined, submitted: undefined}
-LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 't', submitted: undefined}
-ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 't', submitted: undefined}
-LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'te', submitted: undefined}
-ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'te', submitted: undefined}
-LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'tes', submitted: undefined}
-ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'tes', submitted: undefined}
-LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
-ContentScript.js:6 onChange started
-ContentScript.js:6 onChange completed
-LLMFeedback.jsx:20 1>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: true}
-ChatComponent.jsx:94 5>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
-ChatComponent.jsx:155 >>>>> (3) [{…}, {…}, {…}]
-ChatComponent.jsx:156 7>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: true}
-ChatComponent.jsx:157 6>>>>> {thumbsup: false, thumbsdown: true, comment: 'test', submitted: undefined}
+useEffect(() => {
+  setMessages(userMessages);
+
+  // find the last LLM message in the new array
+  const latestLLM = [...userMessages].reverse().find(m => m.role === 'llm');
+  if (latestLLM) {
+    setFeedback({
+      thumbsup: latestLLM.feedback?.thumbsup ?? false,
+      thumbsdown: latestLLM.feedback?.thumbsdown ?? false,
+      comment:  latestLLM.feedback?.comment  ?? '',
+      submitted:latestLLM.feedback?.submitted?? false,
+    });
+  }
+}, [userMessages]);
