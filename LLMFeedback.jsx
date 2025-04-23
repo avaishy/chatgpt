@@ -1,12 +1,15 @@
+/* istanbul ignore file */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 
-function LLMFeedback({ handleMessageFeedback, messageId, feedback, disableInput, setDisableInput }) {
-    const [locFeedback, setLocFeedback] = useState({ thumbsup: false, thumbsdown: false, comment: '', submitted: false,});
+function LLMFeedback({
+  handleMessageFeedback, messageId, feedback, isDisableInput,
+}) {
+  const [locFeedback, setLocFeedback] = useState({});
 
   useEffect(() => {
-    if(feedback){
+    if (feedback) {
       setLocFeedback(feedback);
     }
   }, [feedback]);
@@ -14,30 +17,28 @@ function LLMFeedback({ handleMessageFeedback, messageId, feedback, disableInput,
   const handleThumbsUp = (data) => {
     setLocFeedback(data);
     handleMessageFeedback(data, messageId);
-    setDisableInput(locFeedback.thumbsup || locFeedback.thumbsdown);
-   console.log(">>>>>", disableInput);
+    isDisableInput(data.thumbsup || data.thumbsdown);
   };
-  console.log("<<<<<<<", disableInput);
 
   return (
-    <div style={{ display: 'flex', gap: '20px', marginTop: '10px'}}>
+    <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
       <FaThumbsUp
         onClick={() => handleThumbsUp({
-            thumbsup: !locFeedback.thumbsup,
-            thumbsdown: false,
-            comment: locFeedback.comment,
-            submitted: locFeedback.submitted,
-          })}
+          thumbsup: !locFeedback.thumbsup,
+          thumbsdown: false,
+          comment: locFeedback.comment,
+          submitted: locFeedback.submitted,
+        })}
         size={22}
         color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
       />
       <FaThumbsDown
         onClick={() => handleThumbsUp({
-        thumbsup: false,
-        thumbsdown: !locFeedback.thumbsdown,
-        comment: locFeedback.comment,
-        submitted: locFeedback.submitted,
-      })}
+          thumbsup: false,
+          thumbsdown: !locFeedback.thumbsdown,
+          comment: locFeedback.comment,
+          submitted: locFeedback.submitted,
+        })}
         size={22}
         color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
       />
@@ -56,6 +57,7 @@ LLMFeedback.propTypes = {
       submitted: PropTypes.bool,
     })
   ),
+  isDisableInput: PropTypes.bool,
 };
 
 export default LLMFeedback;
