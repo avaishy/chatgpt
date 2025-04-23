@@ -25,9 +25,9 @@ const ChatComponent = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
-  const [feedback, setFeedback] = useState({ thumbsup: false, thumbsdown: false, comment: '', submitted: false,});
-  const lastestMessageLLMMessageId = [...messages].reverse().find(m => m.role === 'llm')?.msg_id;
-  const [disableInput,setDisableInput] = useState(false);
+  const [feedback, setFeedback] = useState({});
+  const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
+  const [isDisableInput, setIsDisableInput] = useState(false);
   const handleSendMessage = async () => {
     const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random() }];
     setMessages(newMessages);
@@ -60,18 +60,18 @@ const ChatComponent = () => {
         );
         if (!res.ok) {
           const errorBody = await res.json();
-          console.log('>>>>', errorBody);
           throw new Error(errorBody?.message?.detail || 'Something went wrong while fetching response');
         }
         if (res.ok) {
           const result = await res.json();
-          const botMessage = { 
+          const botMessage = {
             role: 'llm',
             msg: { response: result.llm_response.response, sources: result.llm_response.sources },
             msg_id: result.llm_response_id,
             feedback: {
-            thumbsup: false, thumbsdown: false, comment: '', submitted: false,
-            }, };
+              thumbsup: false, thumbsdown: false, comment: '', submitted: false,
+            },
+          };
           const updatedMessages = [...newMessages, botMessage];
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
@@ -80,19 +80,15 @@ const ChatComponent = () => {
       setIsTyping(false);
     }
   };
-
-  const handleMessageFeedback = (feedback, messageId) => {
-    const newMessages = [];
-    messages.forEach((item) => {
-    
+  const handleMessageFeedback = (fb, messageId) => {
+    const newMessages = messages.map((item) => {
       if (item.msg_id === messageId) {
-        item.feedback = feedback;
-        newMessages.push(item);
-      } else {
-        newMessages.push(item);
+        return { ...item, feedback: fb };
       }
+      return item;
     });
     setMessages(newMessages);
+    setFeedback(fb);
   };
 
   const cleanText = (text) => {
@@ -126,9 +122,10 @@ const ChatComponent = () => {
   };
 
   const handleUserFeedback = async () => {
-    setDisableInput(false);
+    setIsDisableInput(true);
 
     let userRating = 0;
+
     if (feedback.thumbsup === true) {
       userRating = 1;
     }
@@ -137,20 +134,22 @@ const ChatComponent = () => {
     }
     try {
       const data = {
-        msg_id: messages[messages.length-1]?.msg_id,
+        msg_id: messages[messages.length - 1]?.msg_id,
         user_rating: userRating,
         user_comments: feedback.comment,
       };
       const res = await fetch(
-        'https://lumosusersessionmgmt-dev.aexp.com/insertUserFeedback', { 
-         method: 'POST',
-         body: JSON.stringify(data),
-         headers: { 'Content-Type': 'application/json' } 
+        'https://lumosusersessionmgmt-dev.aexp.com/insertUserFeedback', {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' },
         });
       if (res.ok) {
         const newFeedback = { ...feedback, submitted: true };
         setFeedback(newFeedback);
-        handleMessageFeedback(newFeedback, messages[messages.length-1]?.msg_id);
+        handleMessageFeedback(newFeedback, messages[messages.length - 1]?.msg_id);
+        console.log(">>>>>", messages);
+
       }
     } catch (error) {
       console.log(error);
@@ -173,7 +172,7 @@ const ChatComponent = () => {
               className={`${styles.chatMessage} ${message.role === 'llm'
                 ? styles.botMessage
                 : styles.userMessage
-                }`}
+              }`}
             >
               <div className={styles.iconContainer}>
                 {message.role === 'llm' ? (
@@ -190,22 +189,23 @@ const ChatComponent = () => {
               </div>
               <div className={styles.messageContent}>
                 {message.role === 'llm' ? (
-                  <div >
+                  <div>
                     <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
                     {message.msg_id === lastestMessageLLMMessageId ? (
                       <LLMFeedback
-                      handleMessageFeedback={handleMessageFeedback}
-                      messageId={message.msg_id}
-                      feedback={message.feedback}
-                      disableInput={disableInput}
-                      setDisableInput={setDisableInput} />
+                        handleMessageFeedback={handleMessageFeedback}
+                        messageId={message.msg_id}
+                        feedback={message.feedback}
+                        isDisableInput={setIsDisableInput}
+                      />
                     ) : null}
                   </div>
                 )
                   : message.msg.user_query}
               </div>
-              
-              {message.feedback && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
+
+              {message.feedback && message.role === 'llm'
+               && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
                 ? (
                   <div className={styles.feedbackContainer}>
                     <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
@@ -213,7 +213,10 @@ const ChatComponent = () => {
                       <textarea
                         className={styles.feedbackInput}
                         disabled={message.feedback.submitted}
-                        onChange={(event) => setFeedback({ ...feedback, comment: event.target.value })}
+                        onChange={(event) => setFeedback({
+                          ...feedback,
+                          comment: event.target.value,
+                        })}
                       >
                         {message.feedback.comment}
                       </textarea>
@@ -229,8 +232,8 @@ const ChatComponent = () => {
                     </div>
                   </div>
                 ) : null}
-                </div>   
-))}
+            </div>
+          ))}
         </div>
         {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
           <div className={`${styles.inputContainer}`}>
@@ -243,7 +246,7 @@ const ChatComponent = () => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isTyping) handleSendMessage();
               }}
-              disabled={(isTyping || disableInput)}
+              disabled={(isTyping || isDisableInput)}
             />
             <button
               type="button"
@@ -258,15 +261,14 @@ const ChatComponent = () => {
                 className={`${input.trim() !== ''
                   ? styles.icon
                   : styles.disabledIcon
-                  }`}
+                }`}
               >
                 <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" />
               </svg>
             </button>
           </div>
         )}
-        <div>
-      </div>
+        <div />
       </div>
     </div>
   );
