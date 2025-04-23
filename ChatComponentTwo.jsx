@@ -75,6 +75,8 @@ const ChatComponent = () => {
           const updatedMessages = [...newMessages, botMessage];
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
+        console.log('3>>>>>',feedback);
+
         }
       } catch (error) { toast.error(`unable to fetch llm response : ${error}`); }
       setIsTyping(false);
@@ -89,6 +91,8 @@ const ChatComponent = () => {
     });
     setMessages(newMessages);
     setFeedback(fb);
+    console.log('5>>>>>',feedback);
+
   };
 
   const cleanText = (text) => {
@@ -149,6 +153,9 @@ const ChatComponent = () => {
         setFeedback(newFeedback);
         handleMessageFeedback(newFeedback, messages[messages.length - 1]?.msg_id);
         console.log(">>>>>", messages);
+        console.log('7>>>>>',newFeedback);
+         console.log('6>>>>>',feedback);
+
 
       }
     } catch (error) {
@@ -213,10 +220,14 @@ const ChatComponent = () => {
                       <textarea
                         className={styles.feedbackInput}
                         disabled={message.feedback.submitted}
-                        onChange={(event) => setFeedback({
-                          ...feedback,
-                          comment: event.target.value,
-                        })}
+                        onChange={(event) => {
+                          const updatedFeedBack = {
+                            ...feedback,
+                            comment: event.target.value,
+                          };
+                          setFeedback(updatedFeedBack);
+                          handleMessageFeedback(updatedFeedBack, message.msg_id);
+                        }}
                       >
                         {message.feedback.comment}
                       </textarea>
