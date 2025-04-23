@@ -94,6 +94,8 @@ const ChatComponent = () => {
     console.log('5>>>>>',feedback);
 
   };
+  console.log('9>>>>>',feedback);
+
 
   const cleanText = (text) => {
     const unwrapJSON = (str) => {
@@ -166,7 +168,11 @@ const ChatComponent = () => {
   useEffect(() => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
-  }, [userMessages]);
+    console.log('8>>>>>',feedback);
+
+  }, [userMessages,messages.feedback]);
+  console.log('10>>>>>',feedback);
+
 
   return (
     <div className={`${styles.chatContainer}`}>
@@ -286,3 +292,33 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
+1>>>>> {thumbsup: true, thumbsdown: false, comment: undefined, submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: true, thumbsdown: false, comment: undefined, submitted: undefined}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 't', submitted: undefined}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 't', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: true, thumbsdown: false, comment: 't', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: true, thumbsdown: false, comment: 't', submitted: undefined}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'te', submitted: undefined}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'te', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: true, thumbsdown: false, comment: 'te', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: true, thumbsdown: false, comment: 'te', submitted: undefined}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'tes', submitted: undefined}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'tes', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: true, thumbsdown: false, comment: 'tes', submitted: undefined}
+ChatComponent.jsx:94 5>>>>> {thumbsup: true, thumbsdown: false, comment: 'tes', submitted: undefined}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: undefined}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: undefined}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: undefined}
+ContentScript.js:6 onChange started
+ContentScript.js:6 onChange completed
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+LLMFeedback.jsx:20 1>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:97 9>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:174 10>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:94 5>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: undefined}
+ChatComponent.jsx:157 >>>>> (3) [{…}, {…}, {…}]
+ChatComponent.jsx:158 7>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: true}
+ChatComponent.jsx:159 6>>>>> {thumbsup: true, thumbsdown: false, comment: 'test', submitted: undefined}
