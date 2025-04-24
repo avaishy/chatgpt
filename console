@@ -4,3 +4,5 @@
     return `https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
   };
 /earnings-call-tanscripts
+C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
+   5:1  error    'use-authblue-sso' should be listed in the project's dependencies. Run 'npm i -S use-authblue-sso' to add it                                 import/no-extraneous-dependencies
