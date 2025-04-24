@@ -1,3 +1,169 @@
+/* istanbul ignore file */
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+//import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import ProcessingAlert from '../utility/ProcessingAlert';
+import lumosIcon from '../../../assets/images/LUMOS.jpg';
+import {
+  getChatMessages,
+  getDocumentProcessingAlert,
+  getSelectedChatDetails,
+  getUserId,
+  getTogglePopup,
+} from '../../../store/selectors/earningsCallTranscriptSelectors';
+import { setChatMessages,setTogglePopup } from '../../../store/actions/earningsCallTranscriptActions';
+import styles from '../../../styles/chatComponent.scss';
+import TypingIndicator from '../utility/TypingIndicator';
+import LLMFeedback from '../utility/LLMFeedback';
+import PopUpMessage from '../utility/PopUpMessage';
+
+const ChatComponent = () => {
+  const dispatch = useDispatch();
+  const userId = useSelector((state) => getUserId(state));
+  const selectedChat = useSelector((state) => getSelectedChatDetails(state));
+  const userMessages = useSelector((state) => getChatMessages(state));
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const processingDocumentAlert = useSelector((state) => getDocumentProcessingAlert(state));
+  const [feedback, setFeedback] = useState({});
+  const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
+  const [isDisableInput, setIsDisableInput] = useState(false);
+  const isPopupOpen = useSelector((state) => getTogglePopup(state));
+  const handleSendMessage = async () => {
+    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random() }];
+    setMessages(newMessages);
+    dispatch(setChatMessages(newMessages));
+    if (input.trim()) {
+      const userQuery = input;
+      const fileIds = [];
+      const contextIds = [];
+      selectedChat.files_selected.forEach((ele) => {
+        fileIds.push(ele.file_id);
+      });
+      selectedChat.contexts_selected.forEach((ele) => {
+        contextIds.push(ele.context_id);
+      });
+      setInput('');
+      try {
+        const data = {
+          chat_id: selectedChat.chat_id,
+          files_selected: fileIds,
+          user_query: userQuery,
+          contexts_selected: contextIds,
+          user_id: userId,
+        };
+        setIsTyping(true);
+        const res = await fetch(
+          'https://lumosusersessionmgmt-dev.aexp.com/fetchLLMResponse',
+          {
+            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' },
+          }
+        );
+        if (!res.ok) {
+          const errorBody = await res.json();
+          throw new Error(errorBody?.message?.detail || 'Something went wrong while fetching response');
+        }
+        if (res.ok) {
+          const result = await res.json();
+          const botMessage = {
+            role: 'llm',
+            msg: { response: result.llm_response.response, sources: result.llm_response.sources },
+            msg_id: result.llm_response_id,
+            feedback: {
+              thumbsup: false, thumbsdown: false, comment: '', submitted: false,
+            },
+          };
+          const updatedMessages = [...newMessages, botMessage];
+          setMessages(updatedMessages);
+          dispatch(setChatMessages(updatedMessages));
+        }else{
+          dispatch(setTogglePopup(true));
+        }
+      } catch (error) {  dispatch(setTogglePopup(true)); }
+      setIsTyping(false);
+    }
+  };
+  const handleMessageFeedback = (fb, messageId) => {
+    const newMessages = messages.map((item) => {
+      if (item.msg_id === messageId) {
+        return { ...item, feedback: fb };
+      }
+      return item;
+    });
+    setMessages(newMessages);
+    setFeedback(fb);
+  };
+
+  const cleanText = (text) => {
+    const unwrapJSON = (str) => {
+      try {
+        const parsed = JSON.parse(str);
+        return typeof parsed === 'string' ? parsed : str;
+      } catch {
+        return str;
+      }
+    };
+
+    let result = unwrapJSON(text);
+    result = unwrapJSON(result);
+
+    result = result
+      .replace(/^```(?:markdown)?\s*/i, '')
+      .replace(/\s*```$/g, '')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t')
+      .replace(/\\u2019/g, '’')
+      .replace(/\\u201c/g, '“')
+      .replace(/\\u201d/g, '”')
+      .replace(/\\u2014/g, '—')
+      .replace(/\\u2026/g, '…')
+      .replace(/\\u00a0/g, ' ')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
+
+    return result.trim();
+  };
+
+  const handleUserFeedback = async () => {
+    setIsDisableInput(false);
+
+    let userRating = 0;
+
+    if (feedback.thumbsup === true) {
+      userRating = 1;
+    }
+    if (feedback.thumbsdown === true) {
+      userRating = 0;
+    }
+    try {
+      const data = {
+        msg_id: messages[messages.length - 1]?.msg_id,
+        user_rating: userRating,
+        user_comments: feedback.comment,
+      };
+      const res = await fetch(
+        'https://lumosusersessionmgmt-dev.aexp.com/insertUserFeedback', {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' },
+        });
+      if (res.ok) {
+        const newFeedback = { ...feedback, submitted: true };
+        setFeedback(newFeedback);
+        handleMessageFeedback(newFeedback, messages[messages.length - 1]?.msg_id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    setMessages(userMessages);
+    setFeedback(messages.feedback);
+  }, [userMessages]);
+
   return (
     <div className={`${styles.chatContainer}`}>
       <div className={`${styles.chatAndInputBoxContainer}`}>
@@ -9,7 +175,7 @@
               className={`${styles.chatMessage} ${message.role === 'llm'
                 ? styles.botMessage
                 : styles.userMessage
-                }`}
+              }`}
             >
               <div className={styles.iconContainer}>
                 {message.role === 'llm' ? (
@@ -26,56 +192,23 @@
               </div>
               <div className={styles.messageContent}>
                 {message.role === 'llm' ? (
-                  <div >
+                  <div>
                     <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
                     {message.msg_id === lastestMessageLLMMessageId ? (
-                      <LLMFeedback handleMessageFeedback={handleMessageFeedback} messageId={message.msg_id} feedback={message.feedback} />
+                      <LLMFeedback
+                        handleMessageFeedback={handleMessageFeedback}
+                        messageId={message.msg_id}
+                        feedback={message.feedback}
+                        isDisableInput={setIsDisableInput}
+                      />
                     ) : null}
                   </div>
                 )
                   : message.msg.user_query}
               </div>
-             
 
-            </div>
-          ))}
-        </div>
-        {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
-          <div className={`${styles.inputContainer}`}>
-            <input
-              type="text"
-              className={`${styles.inputBox}`}
-              placeholder="Ask follow up questions..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isTyping) handleSendMessage();
-              }}
-              disabled={isTyping}
-            />
-            <button
-              type="button"
-              className={`${styles.sendIcon}`}
-              onClick={handleSendMessage}
-              aria-label="Send message"
-              disabled={isTyping}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className={`${input.trim() !== ''
-                  ? styles.icon
-                  : styles.disabledIcon
-                  }`}
-              >
-                <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" />
-              </svg>
-            </button>
-          </div>
-        )}
-        <div>
-          {[...messages].reverse().map((message) => (
-           {message.feedback && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
+              {message.feedback
+               && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
                 ? (
                   <div className={styles.feedbackContainer}>
                     <span style={{ color: 'darkgray' }}>Please share your comments for us to improve</span>
@@ -83,7 +216,10 @@
                       <textarea
                         className={styles.feedbackInput}
                         disabled={message.feedback.submitted}
-                        onChange={(event) => setFeedback({ ...feedback, comment: event.target.value })}
+                        onChange={(event) => setFeedback({
+                          ...feedback,
+                          comment: event.target.value,
+                        })}
                       >
                         {message.feedback.comment}
                       </textarea>
@@ -99,9 +235,47 @@
                     </div>
                   </div>
                 ) : null}
-              ))}
+            </div>
+          ))}
         </div>
+        {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
+          <div className={`${styles.inputContainer}`}>
+            <input
+              type="text"
+              className={`${styles.inputBox}`}
+              placeholder="Ask follow up questions..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isTyping) handleSendMessage();
+              }}
+              disabled={(isTyping || isDisableInput)}
+            />
+            <button
+              type="button"
+              className={`${styles.sendIcon}`}
+              onClick={handleSendMessage}
+              aria-label="Send message"
+              disabled={isTyping}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className={`${input.trim() !== ''
+                  ? styles.icon
+                  : styles.disabledIcon
+                }`}
+              >
+                <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" />
+              </svg>
+            </button>
+          </div>
+        )}
+        <div />
       </div>
+       {isPopupOpen && (
+            <PopUpMessage message={'Unable to fetch llm response. Please try again later'} />
+            )}
     </div>
   );
 };
