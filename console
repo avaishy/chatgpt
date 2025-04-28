@@ -1,8 +1,66 @@
-  const getDynamicLogoutUrl = () => {
-    const target = encodeURIComponent(window.location.origin);
-    const authUrl = `https://ssoisvc-dev.aexp.com/ssoi/auth?channel=use-authblue-sso@2.1.0&target=${target}`;
-    return `https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
-  };
-/earnings-call-tanscripts
-C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
-   5:1  error    'use-authblue-sso' should be listed in the project's dependencies. Run 'npm i -S use-authblue-sso' to add it                                 import/no-extraneous-dependencies
+<div className={styles.toggleContainer}>
+  <label className={styles.switch}>
+    <input
+      type="checkbox"
+      checked={showReasoning}
+      onChange={() => setShowReasoning(!showReasoning)}
+    />
+    <span className={styles.slider} />
+  </label>
+  <span className={styles.toggleLabel}>{showReasoning ? 'On' : 'Off'}</span>
+</div>
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  margin-right: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.toggleLabel {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
