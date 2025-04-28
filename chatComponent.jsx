@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-//import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import ProcessingAlert from '../utility/ProcessingAlert';
 import lumosIcon from '../../../assets/images/LUMOS.jpg';
@@ -12,7 +12,7 @@ import {
   getUserId,
   getTogglePopup,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
-import { setChatMessages,setTogglePopup } from '../../../store/actions/earningsCallTranscriptActions';
+import { setChatMessages, setTogglePopup } from '../../../store/actions/earningsCallTranscriptActions';
 import styles from '../../../styles/chatComponent.scss';
 import TypingIndicator from '../utility/TypingIndicator';
 import LLMFeedback from '../utility/LLMFeedback';
@@ -78,10 +78,10 @@ const ChatComponent = () => {
           const updatedMessages = [...newMessages, botMessage];
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
-        }else{
+        } else {
           dispatch(setTogglePopup(true));
         }
-      } catch (error) {  dispatch(setTogglePopup(true)); }
+      } catch (error) { dispatch(setTogglePopup(true)); }
       setIsTyping(false);
     }
   };
@@ -169,6 +169,7 @@ const ChatComponent = () => {
       <div className={`${styles.chatAndInputBoxContainer}`}>
         <div className={`${styles.chatMessages}`}>
           {isTyping && <TypingIndicator />}
+          <div><button> show</button></div>
           {[...messages].reverse().map((message) => (
             <div
               key={message.msg_id}
@@ -177,37 +178,31 @@ const ChatComponent = () => {
                 : styles.userMessage
               }`}
             >
-              <div className={styles.iconContainer}>
-                {message.role === 'llm' ? (
-                  <div className={styles.botIcon} style={{ backgroundImage: `url(${lumosIcon})` }} />
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className={styles.userIcon}
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                )}
-              </div>
-              <div className={styles.messageContent}>
-                {message.role === 'llm' ? (
-                  <div>
-                    <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
-                    {message.msg_id === lastestMessageLLMMessageId ? (
-                      <LLMFeedback
-                        handleMessageFeedback={handleMessageFeedback}
-                        messageId={message.msg_id}
-                        feedback={message.feedback}
-                        isDisableInput={setIsDisableInput}
-                      />
-                    ) : null}
-                  </div>
-                )
-                  : message.msg.user_query}
+              <div className={styles.iconAndMessageContent}>
+                <div className={message.role === 'llm' ? styles.iconContainer : ''}>
+                  {message.role === 'llm' ? (
+                    <div className={styles.botIcon} style={{ backgroundImage: `url(${lumosIcon})` }} />
+                  ) : null }
+                </div>
+                <div className={styles.messageContent}>
+                  {message.role === 'llm' ? (
+                    <div>
+                      <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                      {message.msg_id === lastestMessageLLMMessageId ? (
+                        <LLMFeedback
+                          handleMessageFeedback={handleMessageFeedback}
+                          messageId={message.msg_id}
+                          feedback={message.feedback}
+                          isDisableInput={setIsDisableInput}
+                        />
+                      ) : null}
+                    </div>
+                  )
+                    : message.msg.user_query }
+                </div>
               </div>
 
-              {message.feedback
+              {message.feedback && message.feedback.submitted !== true
                && (message.feedback.thumbsup === true || message.feedback.thumbsdown === true)
                 ? (
                   <div className={styles.feedbackContainer}>
@@ -273,9 +268,9 @@ const ChatComponent = () => {
         )}
         <div />
       </div>
-       {isPopupOpen && (
-            <PopUpMessage message={'Unable to fetch llm response. Please try again later'} />
-            )}
+      {isPopupOpen && (
+      <PopUpMessage message="Unable to fetch llm response. Please try again later..." />
+      )}
     </div>
   );
 };
