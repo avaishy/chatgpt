@@ -1,9 +1,56 @@
-{isPopupOpen && (
-      <PopUpMessage message="Unable to fetch llm response. Please try again later..." />
-      )}
-    </div>
- {isPopupOpen && (
-      <PopupMessage message={`These files are still indexing: ${notIndexFilesName}. Please wait until indexing is completed.`} />
-      )}
-    </div>
- const isPopupOpen = useSelector((state) => getTogglePopup(state));
+[
+  {
+    "msg_id": "b224a733-e6c3-40dc-a5dc-47880f2a1871",
+    "msg": {
+      "response": [
+        "Visa expects adjusted net revenue growth in the low-double digits for the upcoming financial periods.",
+        "Visa's EPS growth is expected to be in the low-teens for the upcoming financial period.",
+        "Visa Inc. reported a strong financial performance for the quarter.",
+        "Cross-border volume growth, excluding intra-Europe, was up 16% year-over-year in constant dollars.",
+        "Visa's GAAP operating expenses increased by 29%, while non-GAAP operating expenses grew by 11%, primarily due to increases in G&A and personnel expenses.",
+        "Visa bought back a significant amount in stock and distributed dividends to its stockholders, with a remaining amount left in the buyback authorization.",
+        "Visa reaffirmed its prior year guidance for adjusted net revenue and operating expense growth in the low-double digits and EPS growth in the low-teens for the upcoming period.",
+        "Visa adjusted its outlook for total payments volume growth to the high-single digits from the low-double digits due to trends in a specific location.",
+        "Management discussed three key strategic initiatives to drive growth.",
+        "Visa expects adjusted net revenue growth in the low-double digits for the upcoming period.",
+        "The company has outlined three major long-term goals: deepening the penetration of products with existing clients, expanding their product offerings in areas like risk and fraud as well as open banking, and driving geographic expansion.",
+        "Visa Inc. faces challenges due to currency volatility, which affects their treasury revenues and international business.",
+        "Visa has strategic initiatives to drive growth by focusing on deepening penetration of existing products with current clients, bringing new products to market, and driving geographic expansion.",
+        "Macroeconomic weakness in key markets such as [secondary_pii_location] and Mainland [secondary_pii_location] is a risk to future performance.",
+        "The company plans to drive organic growth through three main strategies: deepening the penetration of existing products with current clients, introducing new products to the market, and expanding geographically.",
+        "Visa manages its cash flow through strategic partnerships and agreements.",
+        "Consumer demand is influencing business by driving growth in e-commerce, which is offsetting weakness in travel.",
+        "Consumer demand is impacting the business positively in areas like consumer payments, new flows, and value-added services."
+      ],
+      "sources": [
+        {
+          "source_title": "Visa_Inc_Q2_April-2024.pdf",
+          "source_content": "Visa_Inc_Q2_April-2024.pdf",
+          "citation": [],
+          "reasoning": []
+        }
+      ]
+    },
+    "role": "llm",
+    "user_rating": null,
+    "user_comments": null
+  },
+  {
+    "msg_id": "eac881e1-76b7-4d5c-88df-0f717ee6f6af",
+    "msg": {
+      "user_query": "Whats the q1 revenue"
+    },
+    "role": "user",
+    "user_rating": null,
+    "user_comments": null
+  },
+  {
+    "msg_id": "c4dcdd85-43f7-4105-acc8-0ed387f81ac5",
+    "msg": {
+      "user_query": "Whats the q1 revenue"
+    },
+    "role": "user",
+    "user_rating": null,
+    "user_comments": null
+  }
+]
