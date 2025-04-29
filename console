@@ -1,13 +1,9 @@
-export const getTogglePopup = (state) => {
-  const res = getInsideReducerState(state, ['togglePopup']);
-  return res;
-};
-export const setTogglePopup = (data) => ({
-  type: TOGGLE_POPUP,
-  payload: { data},
-});
- case TOGGLE_POPUP:
-      return state.set('togglePopup', action.payload);
-export const TOGGLE_POPUP = `module/${ROOT}/TOGGLE_POPUP`;
- togglePopup: false,
-});
+{isPopupOpen && (
+      <PopUpMessage message="Unable to fetch llm response. Please try again later..." />
+      )}
+    </div>
+ {isPopupOpen && (
+      <PopupMessage message={`These files are still indexing: ${notIndexFilesName}. Please wait until indexing is completed.`} />
+      )}
+    </div>
+ const isPopupOpen = useSelector((state) => getTogglePopup(state));
