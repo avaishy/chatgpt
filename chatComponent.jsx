@@ -177,6 +177,7 @@ const ChatComponent = () => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
   }, [userMessages]);
+  console.log(">>>>>>>>>>>", messages);
 
   return (
     <div className={`${styles.chatContainer}`}>
@@ -200,7 +201,15 @@ const ChatComponent = () => {
                 <div className={styles.messageContent}>
                   {message.role === 'llm' ? (
                     <div>
-                      <ReactMarkdown>{message.msg.response}</ReactMarkdown>
+                      {Array.isArray(message.msg.response) ? (
+                        message.msg.response.map((resp, idx) =>(
+                          <ReactMarkdown key={idx}>{resp}</ReactMarkdown>
+                        ))
+                      ): (
+                        <ReactMarkdown >{message.msg.response}</ReactMarkdown>
+                      )}
+                       {/* <ReactMarkdown>{message.msg.response}</ReactMarkdown> */}
+                      
                       {message.msg_id === lastestMessageLLMMessageId ? (
                         <LLMFeedback
                           handleMessageFeedback={handleMessageFeedback}
