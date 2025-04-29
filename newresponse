@@ -22,3 +22,38 @@
                     "user_comments": null
                 }
             ]
+
+
+{message.role === 'llm' ? (
+                    <div>
+                      {Array.isArray(message.msg.response) && Array.isArray(message.msg.sources) ? (
+                        message.msg.response.map((resp, idx) => {
+                          const source = message.msg.sources?.[0] || {};
+                          const citation = source?.citation?.[idx];
+                          const reasoning = source?.reasoning?.[idx];
+
+                          return (
+                            <div key={idx} className={styles.responseBlock}>
+                              <ReactMarkdown>{cleanText(resp)}</ReactMarkdown>
+
+                              {citation && (
+                                <div className={styles.citationBlock}>
+                                  <strong>Citation:</strong>
+                                  <ReactMarkdown>{cleanText(citation)}</ReactMarkdown>
+                                </div>
+                              )}
+
+                              {message.showReasoning && reasoning && (
+                                <div className={styles.reasoningBlock}>
+                                  <strong>Reasoning:</strong>
+                                  <ReactMarkdown>{cleanText(reasoning)}</ReactMarkdown>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                      )}
+
+                     
