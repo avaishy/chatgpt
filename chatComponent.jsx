@@ -30,10 +30,13 @@ const ChatComponent = () => {
   const [feedback, setFeedback] = useState({});
   const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
   const [isDisableInput, setIsDisableInput] = useState(false);
-  const {show: isPopupOpen, message: popupMessage} = useSelector((state) => getTogglePopup(state));
   const [showReasoning,setShowReasoning] = useState(false);
+  const {
+    show: isPopupOpen,
+    message: popupMessage,
+  } = useSelector((state) => getTogglePopup(state));
   const handleSendMessage = async () => {
-    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random(), showReasoning:false }];
+    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random(),showReasoning:false }];
     setMessages(newMessages);
     dispatch(setChatMessages(newMessages));
     if (input.trim()) {
@@ -197,7 +200,7 @@ const ChatComponent = () => {
                 <div className={styles.messageContent}>
                   {message.role === 'llm' ? (
                     <div>
-                      <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                      <ReactMarkdown>{message.msg.response}</ReactMarkdown>
                       {message.msg_id === lastestMessageLLMMessageId ? (
                         <LLMFeedback
                           handleMessageFeedback={handleMessageFeedback}
@@ -240,7 +243,7 @@ const ChatComponent = () => {
                     </div>
                   </div>
                 ) : null}
-                {message.role === 'llm' ? ( <div className={styles.toggleContainer}>
+              {message.role === 'llm' ? ( <div className={styles.toggleContainer}>
                 <div className={styles.toggleLabel}>Show Reasoning</div>
                 <label className={styles.switch}>
                   <input
@@ -253,7 +256,7 @@ const ChatComponent = () => {
                   </span>
                 </label>
               </div>) : null}
-             
+
             </div>
           ))}
         </div>
