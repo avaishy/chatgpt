@@ -30,7 +30,7 @@ const ChatComponent = () => {
   const [feedback, setFeedback] = useState({});
   const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
   const [isDisableInput, setIsDisableInput] = useState(false);
-  const isPopupOpen = useSelector((state) => getTogglePopup(state));
+  const {show: isPopupOpen, message: popupMessage} = useSelector((state) => getTogglePopup(state));
   const [showReasoning,setShowReasoning] = useState(false);
   const handleSendMessage = async () => {
     const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random(), showReasoning:false }];
@@ -80,9 +80,9 @@ const ChatComponent = () => {
           setMessages(updatedMessages);
           dispatch(setChatMessages(updatedMessages));
         } else {
-          dispatch(setTogglePopup(true));
+          dispatch(setTogglePopup(true, 'Unable to fetch llm response. Please try again later'));
         }
-      } catch (error) { dispatch(setTogglePopup(true)); }
+      } catch (error) { dispatch(setTogglePopup(true, 'Something went wrong. Please try again later')); }
       setIsTyping(false);
     }
   };
@@ -293,7 +293,7 @@ const ChatComponent = () => {
         <div />
       </div>
       {isPopupOpen && (
-      <PopUpMessage message="Unable to fetch llm response. Please try again later..." />
+      <PopUpMessage message={popupMessage} />
       )}
     </div>
   );
