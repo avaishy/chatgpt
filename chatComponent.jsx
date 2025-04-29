@@ -31,8 +31,9 @@ const ChatComponent = () => {
   const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
   const [isDisableInput, setIsDisableInput] = useState(false);
   const isPopupOpen = useSelector((state) => getTogglePopup(state));
+  const [showReasoning,setShowReasoning] = useState(false);
   const handleSendMessage = async () => {
-    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random() }];
+    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random(), showReasoning:false }];
     setMessages(newMessages);
     dispatch(setChatMessages(newMessages));
     if (input.trim()) {
@@ -159,6 +160,16 @@ const ChatComponent = () => {
     }
   };
 
+  const toggleShowReasoning = (msgId) => {
+    const updatedMessage = messages.map((msg) => {
+      if(msg.msg_id === msgId){
+        return {...msg, showReasoning: !msg.showReasoning };
+      }
+      return msg;
+    });
+    setMessages(updatedMessage);
+  }
+
   useEffect(() => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
@@ -169,7 +180,6 @@ const ChatComponent = () => {
       <div className={`${styles.chatAndInputBoxContainer}`}>
         <div className={`${styles.chatMessages}`}>
           {isTyping && <TypingIndicator />}
-          <div><button> show</button></div>
           {[...messages].reverse().map((message) => (
             <div
               key={message.msg_id}
@@ -230,6 +240,20 @@ const ChatComponent = () => {
                     </div>
                   </div>
                 ) : null}
+                {message.role === 'llm' ? ( <div className={styles.toggleContainer}>
+                <div className={styles.toggleLabel}>Show Reasoning</div>
+                <label className={styles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={message.showReasoning}
+                    onChange={() => toggleShowReasoning(message.msg_id)}
+                  />
+                  <span className={styles.slider}>
+                    {message.showReasoning ? 'On' : 'Off'}
+                  </span>
+                </label>
+              </div>) : null}
+             
             </div>
           ))}
         </div>
