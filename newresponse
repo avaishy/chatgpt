@@ -98,3 +98,12 @@ source_content
 source_title
 : 
 "Visa-Inc-V-US-Q2-2023.pdf"
+ try {
+        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+        if (res.ok) {
+          const result = await res.json();
+          console.log("Result", result);
+          dispatch(setCurrentSessionDetails(result));
+          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+          dispatch(setCurrentChat(result.chats));
+          dispatch(toggleEditContextButton(false));
