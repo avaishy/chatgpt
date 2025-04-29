@@ -42,7 +42,10 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const [personalKnowledge, setPersonalKnowledge] = useState([]);
   const [industryType, setIndustryType] = useState('Payments');
   const useCase = useSelector((state) => getUseCase(state));
-  const isPopupOpen = useSelector((state) => getTogglePopup(state));
+  const {
+    show: isPopupOpen,
+    message: popupMessage,
+  } = useSelector((state) => getTogglePopup(state));
   const userId = useSelector((state) => getUserId(state));
   const seletedCompanyKnowldge = useSelector((state) => getUserSelectedCompanyKnowledge(state));
   const seletedIndustryKnowldge = useSelector((state) => getUserSelectedIndustryKnowledge(state));
@@ -59,15 +62,9 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pollingIntervalsRef = useRef({});
-  const [notIndexFilesName, setNotIndexFilesName] = useState([]);
 
   function addSelectedDocuments(document) {
-    const exists = selectedDocuments.some((doc) => doc.file_id === document.file_id);
-    if (!exists) {
-      setSelectedDocuments((prev) => [...prev, document]);
-    } else {
-      setSelectedDocuments((prev) => prev.filter((doc) => doc.file_id !== document.file_id));
-    }
+    setSelectedDocuments([document]);
   }
 
   const toggleFileUploadComponent = (condition) => {
@@ -220,7 +217,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     if (isUsedByManageContext === false) {
       dispatch(toggleNewSession(false));
     } else {
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing new document. Youll be able to ask follow up questions once the new document is ready' }));
+      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. Youll be able to ask follow up questions once the newly processes predefined document template is ready' }));
       openOrCloseManageKnowledgeWindow(false);
     }
   };
@@ -274,9 +271,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         return statusEntry && statusEntry.status !== 'Completed';
       });
       if (notIndexedFiles.length > 0) {
-        dispatch(setTogglePopup(true));
         const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
-        setNotIndexFilesName(filesName);
+        dispatch(setTogglePopup(true, `These files are still indexing: ${filesName}. Please wait until indexing is completed.`));
         return;
       }
 
@@ -314,13 +310,13 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       dispatch(toggleNewSession(false));
       dispatch(toggleEditContextButton(true));
       dispatch(toggleChatComponent(true));
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing new document. Youll be able to ask follow up questions once the new document is ready' }));
+      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. Youll be able to ask follow up questions once the newly processes predefined document template is ready' }));
       try {
         const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
         if (res.ok) {
-          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
           const result = await res.json();
           dispatch(setCurrentSessionDetails(result));
+          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
           dispatch(setCurrentChat(result.chats));
           dispatch(toggleEditContextButton(false));
         } else {
@@ -462,7 +458,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         </button>
       </div>
       {isPopupOpen && (
-      <PopupMessage message={`These files are still indexing: ${notIndexFilesName}. Please wait until indexing is completed.`} />
+      <PopupMessage message={popupMessage} />
       )}
     </div>
   );
