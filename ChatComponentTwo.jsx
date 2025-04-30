@@ -1,63 +1,56 @@
-/* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+  <div>
+                      {Array.isArray(message.msg.response) && Array.isArray(message.msg.sources)
+                        ? message.msg.response.map((resp, idx) => {
+                          const source = message.msg.sources?.[0] || {};
+                          const citation = source?.citation?.[idx];
+                          const reasoning = source?.reasoning?.[idx];
 
-function LLMFeedback({
-  handleMessageFeedback, messageId, feedback, isDisableInput,
-}) {
-  const [locFeedback, setLocFeedback] = useState({});
+                          return (
+                            <div key={idx} className={`${styles.responseBlock}`}>
+                              <ReactMarkdown>{resp}</ReactMarkdown>
 
-  useEffect(() => {
-    if (feedback) {
-      setLocFeedback(feedback);
-    }
-  }, [feedback]);
+                              {message.showReasoning && citation && (
+                              <div className={`${styles.citationBox}`}>
+                                <strong>Citation:</strong>
+                                <span className={`${styles.citationContent}`}>
+                                  <ReactMarkdown>{citation}</ReactMarkdown>
+                                </span>
+                              </div>
+                              )}
 
-  const handleThumbsUp = (data) => {
-    setLocFeedback(data);
-    handleMessageFeedback(data, messageId);
-    isDisableInput(data.thumbsup || data.thumbsdown);
-  };
+                              {message.showReasoning && reasoning && (
+                              <div className={`${styles.reasoningBox}`}>
+                                <strong>Reasoning:</strong>
+                                <span className={`${styles.reasoningContent}`}>
+                                  <ReactMarkdown>{reasoning}</ReactMarkdown>
+                                </span>
+                              </div>
+                              )}
+                            </div>
+                          );
+                        })
+                        : (
+                          <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                        )}
+{message.role === 'llm' ? (
+                <div className={styles.toggleContainer}>
+                  <div className={styles.toggleLabel}>Show Reasoning</div>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={message.showReasoning}
+                      onChange={() => toggleShowReasoning(message.msg_id)}
+                    />
+                    <span className={styles.slider}>
+                      {message.showReasoning ? 'On' : 'Off'}
+                    </span>
+                  </label>
+                </div>
+              ) : null}ay. You can also replace multiple useState variables with useReducer if 'setFeedback' needs the current value of 'messages.feedback' 
+ react-hooks/exhaustive-deps
+  206:39  error    Do not use Array index in keys
 
-  return (
-    <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-      <FaThumbsUp
-        onClick={() => handleThumbsUp({
-          thumbsup: !locFeedback.thumbsup,
-          thumbsdown: false,
-          comment: locFeedback.comment,
-          submitted: locFeedback.submitted,
-        })}
-        size={22}
-        color={locFeedback.thumbsup === true ? 'green' : '#ccc'}
-      />
-      <FaThumbsDown
-        onClick={() => handleThumbsUp({
-          thumbsup: false,
-          thumbsdown: !locFeedback.thumbsdown,
-          comment: locFeedback.comment,
-          submitted: locFeedback.submitted,
-        })}
-        size={22}
-        color={locFeedback.thumbsdown === true ? 'red' : '#ccc'}
-      />
-    </div>
-  );
-}
+ react/no-array-index-key
+  278:19  error    A form label must be associated with a control
 
-LLMFeedback.propTypes = {
-  handleMessageFeedback: PropTypes.func,
-  messageId: PropTypes.string,
-  feedback: PropTypes.objectOf(
-    PropTypes.shape({
-      thumbsup: PropTypes.bool,
-      thumbsdown: PropTypes.bool,
-      comment: PropTypes.string,
-      submitted: PropTypes.bool,
-    })
-  ),
-  isDisableInput: PropTypes.bool,
-};
-
-export default LLMFeedback;
+ jsx-a11y/label-has-associated-control
