@@ -1,19 +1,16 @@
- <div className={`${styles.inputContainer}`}>
-            <input
-              type="text"
-              className={`${styles.inputBox}`}
-              placeholder="Ask follow up questions..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isTyping) handleSendMessage();
-              }}
-              disabled={(isTyping || isDisableInput)}
-            />
-            <button
-              type="button"
-              className={`${styles.sendIcon}`}
-              onClick={handleSendMessage}
-              aria-label="Send message"
-              disabled={isTyping}
-            >
+ {message.role === 'llm' && message.msg.sources.citation !== '' ? (
+                <div className={styles.toggleContainer}>
+                  <div className={styles.toggleLabel}>Show Reasoning</div>
+                  <label className={styles.switch} htmlFor={`toggle-${message.msg_id}`}>
+                    <input
+                      id={`toggle-${message.msg_id}`}
+                      type="checkbox"
+                      checked={message.showReasoning}
+                      onChange={() => toggleShowReasoning(message.msg_id)}
+                    />
+                    <span className={styles.slider}>
+                      {message.showReasoning ? 'On' : 'Off'}
+                    </span>
+                  </label>
+                </div>
+              ) : null}
