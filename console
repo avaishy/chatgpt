@@ -14,3 +14,17 @@
                   </label>
                 </div>
               ) : null}
+    [
+    {
+        "msg_id": "1215fef8-2bb2-48ff-8abb-911784d09ad3",
+        "msg": {
+            "response": [
+                "Management mentioned monitoring fiscal and monetary policy reactions by central banks and governments as a challenge.",
+                ],
+            "sources": [
+                {
+                    "source_title": "Q1_Master_Card_2024.pdf",
+                    "source_content": "Q1_Master_Card_2024.pdf",
+                    "citation": [],
+                    "reasoning": []
+                }
