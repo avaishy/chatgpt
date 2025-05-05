@@ -26,3 +26,80 @@ discreteUpdates @ react-dom.development.js:3756
 dispatchDiscreteEvent @ react-dom.development.js:5889
 Knowledge.jsx:331 error>>>> TypeError: Failed to fetch
     at openChatCompoent (Knowledge.jsx:315:27)
+ const data = {
+        user_id: userId,
+        user_agent: 'Windows 10',
+        project_type: 'LUMOS',
+        use_case: useCaseTemp,
+        files_selected: fileIds,
+        contexts_selected: seletedContextIds,
+        industry_selected: industryType,
+      };
+      dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+      dispatch(toggleNewSession(false));
+      dispatch(toggleEditContextButton(true));
+      dispatch(toggleChatComponent(true));
+      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. Youll be able to ask follow up questions once the newly processes predefined document template is ready' }));
+      try {
+        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+        if (res.ok) {
+          const result = await res.json();
+          dispatch(setCurrentSessionDetails(result));
+          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+          dispatch(setCurrentChat(result.chats));
+          dispatch(toggleEditContextButton(false));
+        } else {
+          dispatch(toggleChatComponent(false));
+          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+          toast.error('Oops! Please try again later...');
+        }
+      } catch (error) {
+        dispatch(toggleChatComponent(false));
+        dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+        toast.error('Something went wrong');
+        console.log("error>>>>",error);
+This payload fail{user_id: "saqjk43", user_agent: "Windows 10", project_type: "LUMOS",…}
+contexts_selected
+: 
+[]
+files_selected
+: 
+[156]
+industry_selected
+: 
+"Payments"
+project_type
+: 
+"LUMOS"
+use_case
+: 
+"Earnings Call Transcript"
+user_agent
+: 
+"Windows 10"
+user_id
+: 
+"saqjk43"
+This is working fine {user_id: "saqjk43", user_agent: "Windows 10", project_type: "LUMOS",…}
+contexts_selected
+: 
+[]
+files_selected
+: 
+[141]
+industry_selected
+: 
+"Payments"
+project_type
+: 
+"LUMOS"
+use_case
+: 
+"Earnings Call Transcript"
+user_agent
+: 
+"Windows 10"
+user_id
+: 
+"saqjk43"
+FOr the failed i get 500 and 
