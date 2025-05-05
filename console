@@ -1,2 +1,19 @@
- "message": "Invalid Query or Schema Error: (psycopg2.errors.SyntaxError) syntax error at or near \"returning\"\nLINE 5: returning session_id::text as session_id;\n        ^\n\n[SQL: select session_id::text\nfrom tstcde0.user_chats\nwhere chat_id = '5bec3eac-fe3e-481c-83a5-6e0ac8ecf7e0'\nand valid_to_ts = '9999-12-31'\nreturning session_id::text as session_id;]\n(Background on this error at: https://sqlalche.me/e/20/f405)",
-    "path": "/fetchLLMResponse"
+ <div className={`${styles.inputContainer}`}>
+            <input
+              type="text"
+              className={`${styles.inputBox}`}
+              placeholder="Ask follow up questions..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isTyping) handleSendMessage();
+              }}
+              disabled={(isTyping || isDisableInput)}
+            />
+            <button
+              type="button"
+              className={`${styles.sendIcon}`}
+              onClick={handleSendMessage}
+              aria-label="Send message"
+              disabled={isTyping}
+            >
