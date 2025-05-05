@@ -28,3 +28,23 @@
                     "citation": [],
                     "reasoning": []
                 }
+{message.role === 'llm'
+  && Array.isArray(message.msg.sources)
+  && message.msg.sources.some(
+       (src) => Array.isArray(src.citation) && src.citation.length > 0
+     ) && (
+    <div className={styles.toggleContainer}>
+      <div className={styles.toggleLabel}>Show Reasoning</div>
+      <label className={styles.switch} htmlFor={`toggle-${message.msg_id}`}>
+        <input
+          id={`toggle-${message.msg_id}`}
+          type="checkbox"
+          checked={message.showReasoning}
+          onChange={() => toggleShowReasoning(message.msg_id)}
+        />
+        <span className={styles.slider}>
+          {message.showReasoning ? 'On' : 'Off'}
+        </span>
+      </label>
+    </div>
+)}
