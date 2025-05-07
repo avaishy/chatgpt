@@ -1,0 +1,76 @@
+.newSessionPage {
+    display: flex;
+}
+
+.navigationContainer {
+    padding: 12px;
+}
+
+.navigationItem {
+    color: white;
+    border-radius: 15px;
+    padding-left: 20px !important;
+    background-color: #3C4861;
+    display: flex;
+    font-size: 12px;
+    gap: 15px;
+    justify-content: space-between;
+}
+
+.navigationItem:hover {
+    color: white !important;
+    background-color: #2c3344 !important;
+}
+
+.newSessionButton{
+    border-radius: 15px;
+    color: black;
+    background-color: #45cc7a;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.newSessionButton:hover{
+    background-color: #38a464 !important;
+    color: black !important;
+}
+
+.buttonContainer {
+    padding: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.buttonContainerStatus {
+    margin-left: 23px;
+    margin-right: 19px;
+    margin-bottom: 22px;
+    margin-top: 14px;
+    width: 230px;
+}
+
+.text {
+    margin-left: 52px;
+    color: white;
+}
+
+.previousSessionsContainer {
+    height: 335px;
+    overflow-y: auto;
+    margin-top: 50px;
+    scrollbar-width: none;
+    scrollbar-color: #2c3445 #3C4861;
+}
+
+.previousSessionsContainerInsideChat {
+    height: 85px;
+    overflow-y: auto;
+    margin-top: 50px;
+    scrollbar-width: none;
+    scrollbar-color: #2c3445 #3C4861;
+}
+
+.sessionNames {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
