@@ -1,0 +1,16 @@
+.wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.rightPanel {
+    display: flex;
+    flex-direction: column;
+    width: 304px;
+    align-items: flex-start;
+    gap: 20px;
+    height: 91vh;
+}
+.chatComponentWrapper{
+    height: 91vh;
+}
