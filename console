@@ -1,50 +1,31 @@
- {message.role === 'llm' && message.msg.sources.citation !== '' ? (
-                <div className={styles.toggleContainer}>
-                  <div className={styles.toggleLabel}>Show Reasoning</div>
-                  <label className={styles.switch} htmlFor={`toggle-${message.msg_id}`}>
-                    <input
-                      id={`toggle-${message.msg_id}`}
-                      type="checkbox"
-                      checked={message.showReasoning}
-                      onChange={() => toggleShowReasoning(message.msg_id)}
-                    />
-                    <span className={styles.slider}>
-                      {message.showReasoning ? 'On' : 'Off'}
-                    </span>
-                  </label>
-                </div>
-              ) : null}
-    [
-    {
-        "msg_id": "1215fef8-2bb2-48ff-8abb-911784d09ad3",
-        "msg": {
-            "response": [
-                "Management mentioned monitoring fiscal and monetary policy reactions by central banks and governments as a challenge.",
-                ],
-            "sources": [
-                {
-                    "source_title": "Q1_Master_Card_2024.pdf",
-                    "source_content": "Q1_Master_Card_2024.pdf",
-                    "citation": [],
-                    "reasoning": []
-                }
-{message.role === 'llm'
-  && Array.isArray(message.msg.sources)
-  && message.msg.sources.some(
-       (src) => Array.isArray(src.citation) && src.citation.length > 0
-     ) && (
-    <div className={styles.toggleContainer}>
-      <div className={styles.toggleLabel}>Show Reasoning</div>
-      <label className={styles.switch} htmlFor={`toggle-${message.msg_id}`}>
-        <input
-          id={`toggle-${message.msg_id}`}
-          type="checkbox"
-          checked={message.showReasoning}
-          onChange={() => toggleShowReasoning(message.msg_id)}
-        />
-        <span className={styles.slider}>
-          {message.showReasoning ? 'On' : 'Off'}
-        </span>
-      </label>
-    </div>
-)}
+.skeletonSession {
+  height: 40px;
+  margin: 10px 20px;
+  border-radius: 15px;
+  background: linear-gradient(90deg, #3c4861 25%, #2c3344 50%, #3c4861 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+<p className={`${styles.text}`}>Previous Session</p>
+{loadingSessions
+  ? Array.from({ length: 5 }).map((_, index) => (
+      <div key={index} className={styles.skeletonSession}></div>
+    ))
+  : previousSessions.map((session) => (
+      <div key={session.session_id} className={`${styles.navigationContainer}`}>
+        <button
+          key={session.session_id}
+          type="button"
+          className={`${styles.navigationItem}`}
+          onClick={() => navigateToPreviousSession(session)}
+        >
+          <p className={styles.sessionNames}>{session.session_name}</p>
+        </button>
+      </div>
+    ))
+}
