@@ -82,3 +82,14 @@ const getAllUserDocuments = async () => {
         </div>
       ))}
 </div>
+initClient.jsx:68 TypeError: Cannot read properties of undefined (reading 'buildInitialState')
+    at createHolocronStore.js:51:30
+    at immutable.es.js:4490:46
+    at immutable.es.js:2491:1
+    at push../node_modules/immutable/dist/immutable.es.js.ArrayMapNode.iterate.HashCollisionNode.iterate (immutable.es.js:2880:1)
+    at Map.__iterate (immutable.es.js:2489:1)
+    at Set.__iterate (immutable.es.js:4490:1)
+    at Set.forEach (immutable.es.js:4874:1)
+    at createReducer (createHolocronStore.js:44:16)
+    at createHolocronStore.js:84:19
+    at createStore (redux.js:154:1)
