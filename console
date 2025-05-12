@@ -1,31 +1,84 @@
-.skeletonSession {
-  height: 40px;
-  margin: 10px 20px;
-  border-radius: 15px;
-  background: linear-gradient(90deg, #3c4861 25%, #2c3344 50%, #3c4861 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite linear;
+// DocumentSkeleton.jsx
+import styles from './YourStyles.module.css'; // Adjust path as needed
+
+const DocumentSkeleton = () => {
+  return (
+    <div className={styles.documentItem}>
+      <div className={styles.skeletonRadio} />
+      <div className={styles.skeletonText} />
+    </div>
+  );
+};
+
+export default DocumentSkeleton;
+
+
+/* Add to YourStyles.module.css */
+.skeletonRadio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  margin-right: 10px;
+  animation: pulse 1.5s infinite;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.skeletonText {
+  height: 16px;
+  width: 70%;
+  background: #e0e0e0;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
 }
-<p className={`${styles.text}`}>Previous Session</p>
-{loadingSessions
-  ? Array.from({ length: 5 }).map((_, index) => (
-      <div key={index} className={styles.skeletonSession}></div>
-    ))
-  : previousSessions.map((session) => (
-      <div key={session.session_id} className={`${styles.navigationContainer}`}>
-        <button
-          key={session.session_id}
-          type="button"
-          className={`${styles.navigationItem}`}
-          onClick={() => navigateToPreviousSession(session)}
-        >
-          <p className={styles.sessionNames}>{session.session_name}</p>
-        </button>
-      </div>
-    ))
+
+@keyframes pulse {
+  0% { background-color: #e0e0e0; }
+  50% { background-color: #f0f0f0; }
+  100% { background-color: #e0e0e0; }
 }
+
+
+const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
+
+const getAllUserDocuments = async () => {
+  let useCaseTemp = null;
+  setIsLoadingDocuments(true); // Start loading
+
+  try {
+    if (useCase === 'earnings_call_transcript') {
+      useCaseTemp = 'Earnings Call Transcript';
+    }
+    const data = {
+      user_id: userId,
+      use_case: useCaseTemp,
+    };
+    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getUserFiles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await res.json();
+    setAllUserDocuments(result);
+    dispatch(setAllUserFiles(result));
+    setFilteredDocuments(result);
+  } catch (error) {
+    console.log(error);
+    toast.error('Please try again');
+  } finally {
+    setIsLoadingDocuments(false); // Stop loading
+  }
+};
+
+
+
+
+
+<div className={`${styles.documentList}`}>
+  {isLoadingDocuments
+    ? Array.from({ length: 5 }).map((_, idx) => <DocumentSkeleton key={idx} />)
+    : filteredDocuments.map((doc, index) => (
+        <div key={doc.file_id} className={`${styles.documentItem}`}>
+          {/* existing document render logic */}
+        </div>
+      ))}
+</div>
