@@ -1,5 +1,6 @@
 .newSessionPage {
     display: flex;
+    height: 91vh;
 }
 
 .navigationContainer {
@@ -54,7 +55,7 @@
 }
 
 .previousSessionsContainer {
-    height: 335px;
+    height: 368px;
     overflow-y: auto;
     margin-top: 50px;
     scrollbar-width: none;
@@ -73,4 +74,116 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+@media screen and (min-height: 800px){
+    .previousSessionsContainer{
+        height: 471px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 120px;
+    }
+    .newSessionPage {
+        height: 92vh;
+    }
+}
+@media screen and (min-height: 830px){
+    .previousSessionsContainer{
+        height: 500px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 150px;
+    }
+}
+@media screen and (min-height: 870px){
+    .previousSessionsContainer{
+        height: 535px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 190px;
+    }
+    .newSessionPage {
+        height: 93vh;
+    }
+}
+@media screen and (min-height: 900px){
+    .previousSessionsContainer{
+        height: 565px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 195px;
+    }
+}
+@media screen and (min-height: 950px){
+    .previousSessionsContainer{
+        height: 610px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 235px;
+    }
+}
+@media screen and (min-height: 1000px){
+    .previousSessionsContainer{
+        height: 655px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 235px;
+    }
+    .newSessionPage {
+        height: 94vh;
+    }
+}
+@media screen and (min-height: 1050px){
+    .previousSessionsContainer{
+        height: 700px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 280px;
+    }
+}
+@media screen and (min-height: 1100px){
+    .previousSessionsContainer{
+        height: 745px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 325px;
+    }
+    .newSessionPage {
+        height: 95vh;
+    }
+}
+@media screen and (min-height: 1150px){
+    .previousSessionsContainer{
+        height: 785px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 375px;
+    }
+}
+@media screen and (min-height: 1200px){
+    .previousSessionsContainer{
+        height: 835px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 415px;
+    }
+}
+@media screen and (min-height: 1250px){
+    .previousSessionsContainer{
+        height: 880px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 465px;
+    }
+    .newSessionPage {
+        height: 96vh;
+    }
+}
+@media screen and (min-height: 1300px){
+    .previousSessionsContainer{
+        height: 930px;
+    }
+    .previousSessionsContainerInsideChat{
+        height: 500px;
+    }
 }
