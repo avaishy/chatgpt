@@ -1,65 +1,54 @@
-            "msgs": [
-                {
-                    "msg_id": "a0ca7b16-5893-43a3-b7e9-a77fb470a295",
-                    "msg": {
-                        "response": [
-                            "- Mastercard is confident that its value-added services, including cyber and intelligence solutions, fraud solutions, and data insights and analytics solutions, will sustain strong growth."
-                        ],
-                        "sources": [
-                            {
-                                "source_title": "Mastercard_Q4_2023.pdf [6,12,13,7,19,5,1,20,8,16,14]",
-                                "source_content": "```markdown\nGood morning, everyone. Here's the headline. We closed out 2023 with another quarter of strong earnings and revenue growth. Quarter four net revenues were up 11% and operating income up 13%, both versus a year ago on a non-GAAP currency-neutral basis, excluding special items as always. These results were driven by healthy consumer spending and the ongoing execution of our strategy. Our deal momentum continued this quarter, powered by a broad range of unique diversified products and services both designed to solve our customers' needs.\n\nLet's start on the macroeconomic front, where we see both tailwinds and headwinds. First, the labor market remains strong with low unemployment and rising wages. These remain key drivers of consumer spending. Some risks we're monitoring include credit availability and delinquency rates. Second, while inflation continues to moderate, prices of many goods and services remain elevated. We're tracking the efforts of central banks who are actively managing interest rates to normalize inflation. And finally, geopolitical uncertainty remains a concern in several markets. On balance, we remain fairly positive about the growth outlook, but we are monitoring the environment closely and we'll manage the business accordingly.\n\nLooking at our switch trends this quarter, domestic volume growth remains healthy and cross-border spending remains strong, up 18% globally in the fourth quarter on a local currency basis. With that as a backdrop, we remain focused on our strategic priorities which fuel our growth algorithm across payments and services and new networks. In payments, our growth algorithm consists of five key areas. One, being in the flow to capture the natural growth of economies. Two, accelerating the secular shift to digital payments. \n\nNet revenue was up 11%, reflecting continued growth in our payment network and our value-added services and solutions. Operating expenses increased 9%, including a minimal impact from acquisitions. And operating income was up 13%, including a minimal impact from acquisitions. Net income and EPS increased by 15% and 18%, respectively, both reflecting the strong operating income growth as well as a non-recurring tax benefit recognized in the fourth quarter. EPS was $3.18, which includes an $0.08 contribution from share repurchases. During the quarter, we repurchased $1.8 billion worth of stock and an additional $586 million through January 26, 2024.\n\nWorldwide gross dollar volume (GDV) increased by 10% year-over-year on a local currency basis. In the U.S., GDV increased by 4% with credit growth of 5% and debit growth of 3%. Outside of the U.S., volume increased 13% with credit growth of 13% and debit growth of 12%. Overall, cross-border volume increased 18% globally for the quarter on a local currency basis, reflecting continued strong growth in both travel and non-travel related cross-border spending. Switched transactions grew 12% year-over-year in Q4, both card-present and card-not-present growth rates remain strong. Card-present growth was aided in part by increases in contactless penetration as contactless now represents approximately 65% of all in-person switched purchase transactions. In addition, card growth was 8%. Globally, there are 3.3 billion Mastercard and Maestro-branded cards issued.\n\nPayment Network net revenue increased 7%, primarily driven by domestic and cross-border transaction and volume growth and also includes growth in rebates and incentives. Value-added Services & Solutions net revenue increased 17%, primarily driven by strong growth in our Cyber & Intelligence Solutions, driven by the growth in our underlying drivers and the continued scaling of our fraud and security solutions and our identity and authentication solutions. In addition, we saw strong growth in our marketing, data analytics and consulting services as well as our loyalty solutions.\n\nDomestic assessments were up 7%, while worldwide GDV grew 10%. Cross-border assessments increased 21%, while cross-border volumes increased 18%. Transaction processing assessments were up 10%, while switched transactions grew 12%.\n\nTotal adjusted operating expenses increased 9%, which includes a minimal impact from acquisitions. This increase was primarily due to increased spending on personnel to support the continued execution of our strategic initiatives and increased spending on marketing campaigns, advertising, and sponsorships like the UEFA Champions League and the Rugby World Cup.\n\nOur business fundamentals remain strong. We continue to grow through a combination of healthy consumer spending, new and renewed customer agreements, continued secular shift from cash to card and strong growth across our service offerings. Overall, we remain fairly positive about the growth outlook. Consumer spending continues to be supported by a strong labor market and wage growth. Our base case scenario for 2024 reflects healthy consumer spending and recent spending dynamics. Year-over-year net revenue growth is expected to be at the low end of a low double-digit rate on a currency-neutral basis, excluding acquisitions. From an operating expense standpoint, we expect Q1 operating expense growth to be at the high end of a high single-digit rate versus a year ago, again, on a currency-neutral basis, excluding acquisitions and special items.\n\nIn conclusion, we are successfully executing against our strategy and on our growth algorithm. Our differentiated capabilities, diversified business model and focused strategy position us well to capitalize on the significant opportunity in front of us.\n```",
-                                "citation": [
-                                    "On balance, we remain fairly positive about the growth outlook, but we are monitoring the environment closely and we'll manage the business accordingly."
-                                ],
-                                "reasoning": [
-                                    "Michael Miebach's comments indicate that while the company is optimistic about growth, they are also cautious and continuously monitoring macroeconomic factors and potential risks, reflecting their balanced and vigilant approach to managing growth."
-                                ]
-                            }
-                        ],
-                        "header": "\"**Key Themes, Topics, and Guidance Discussed in the Call**\""
-                    },
-                    "role": "llm",
-                    "user_rating": null,
-                    "user_comments": null
-                }
-            ]
-        },
-  {message.role === 'llm' ? (
-                    <div>
-                      {message.msg.header &&(
-                        <ReactMarkdown>{message.msg.header}</ReactMarkdown>
-                      )}
-                      {Array.isArray(message.msg.response) && Array.isArray(message.msg.sources)
-                        ? message.msg.response.map((resp, idx) => {
-                          const source = message.msg.sources?.[0] || {};
-                          const citation = source?.citation?.[idx];
-                          const reasoning = source?.reasoning?.[idx];
-                          const key = `${typeof resp === 'string' ? resp.slice(0, 20) : JSON.stringify(resp).slice(0, 20)}-${idx}`;
-                          return (
-                            <div key={key} className={`${styles.responseBlock}`}>
-                              <ReactMarkdown>{resp}</ReactMarkdown>
+<div className={styles.sessionHeader}>
+  <h3>{selectedChat.chat_title}</h3>
+  <button
+    className={styles.deleteButton}
+    onClick={() => handleDeleteSession(selectedChat.chat_id)}
+  >
+    Delete Session
+  </button>
+</div>
 
-                              {message.showReasoning && citation && (
-                              <div className={`${styles.citationBox}`}>
-                                <strong>Citation:</strong>
-                                <span className={`${styles.citationContent}`}>
-                                  <ReactMarkdown>{citation}</ReactMarkdown>
-                                </span>
-                              </div>
-                              )}
 
-                              {message.showReasoning && reasoning && (
-                              <div className={`${styles.reasoningBox}`}>
-                                <strong>Reasoning:</strong>
-                                <span className={`${styles.reasoningContent}`}>
-                                  <ReactMarkdown>{reasoning}</ReactMarkdown>
-                                </span>
-                              </div>
-                              )}
-                            </div>
-                          );
-                        })
-                        : (
-                          <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
-                        )}
+const handleDeleteSession = async (sessionId) => {
+  if (!sessionId) return;
+
+  const confirmed = window.confirm("Are you sure you want to delete this session?");
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/deleteUserSession/${sessionId}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      dispatch(setTogglePopup(true, 'Session deleted successfully.'));
+      // Optionally: redirect user, clear chat state, or update session list
+    } else {
+      dispatch(setTogglePopup(true, 'Failed to delete session.'));
+    }
+  } catch (error) {
+    dispatch(setTogglePopup(true, 'An error occurred while deleting the session.'));
+    console.error('Delete session error:', error);
+  }
+};
+
+.sessionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+
+.deleteButton {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.deleteButton:hover {
+  background-color: #d9363e;
+}
