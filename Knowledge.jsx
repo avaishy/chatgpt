@@ -70,11 +70,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
   }
-  const toggleFileUploadComponent = (condition) => {
-    setShowFileUploadComponent(condition);
-    //setShowFileUploadComponent(isToggleFileUpload);
-
-  };
 
   const startPolling = (filename) => {
     setInterval(async () => {
@@ -125,7 +120,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       });
 
       if (response.ok) {
-        setShowFileUploadComponent(false);
         dispatch(setToggleFileUpload(false));
         dispatch(setFileProcessingStatus(true));
         const uploadedName = data.fileName;
@@ -477,18 +471,17 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
             <button
               type="button"
               aria-label="Open File Upload"
-              onClick={() => toggleFileUploadComponent(true)}
+              onClick={() => dispatch(setToggleFileUpload(true))}
             >
               <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
                 <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
               </svg>
             </button>
-            {ShowFileUploadComponent === true
+            {isToggleFileUpload === true
               ? (
                 <div className={styles.overlay}>
                   <div className={styles.popup}>
                     <FileUpload
-                      toggleFileUploadComponent={toggleFileUploadComponent}
                       handleFileUpload={handleFileUpload}
                     />
                   </div>
