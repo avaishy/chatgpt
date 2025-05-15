@@ -62,11 +62,11 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pollingIntervalsRef = useRef({});
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
 
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
   }
-
   const toggleFileUploadComponent = (condition) => {
     setShowFileUploadComponent(condition);
   };
@@ -111,7 +111,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     data.fileInput.forEach((file) => {
       formData.append('file', file);
     });
-
+    console.log('Data', data.fileName);
+    dispatch(setTogglePopup(true, `${data.fileName} these file take 5-6 minutes to index. Please wait until indexing is completed.`));
     try {
       const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/uploadFiles', {
         method: 'POST',
@@ -122,7 +123,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         setShowFileUploadComponent(false);
         dispatch(setFileProcessingStatus(true));
         const uploadedName = data.fileName;
-        const updatedFileName = `EarningsCallTranscript/${uploadedName}`;
+        const updatedFileName = `${uploadedName}`;
         setUploadedFiles((prevFiles) => {
           const newFiles = [...prevFiles, {
             filename: updatedFileName,
@@ -138,14 +139,19 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           setRenderComponent(true);
         }
         toast.success('Successfully uploaded file');
+      } else {
+        const errorText = await response.text();
+        console.log('Upload failed:', errorText);
+        dispatch(setTogglePopup(true, 'Failed to upload file: server error'));
       }
     } catch (error) {
-      toast.error('failed to upload file');
+      toast.error('Failed to upload file: network error');
     }
   };
 
   const getAllUserDocuments = async () => {
     let useCaseTemp = null;
+    setIsLoadingDocuments(true);
     try {
       if (useCase === 'earnings_call_transcript') {
         useCaseTemp = 'Earnings Call Transcript';
@@ -162,6 +168,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     } catch (error) {
       console.log(error);
       toast.error('Please try again');
+    } finally {
+      setIsLoadingDocuments(false);
     }
   };
 
@@ -217,7 +225,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     if (isUsedByManageContext === false) {
       dispatch(toggleNewSession(false));
     } else {
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. Youll be able to ask follow up questions once the newly processes predefined document template is ready' }));
+      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. You will be able to ask follow up questions once the newly processes predefined document template is ready' }));
       openOrCloseManageKnowledgeWindow(false);
     }
   };
@@ -310,7 +318,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       dispatch(toggleNewSession(false));
       dispatch(toggleEditContextButton(true));
       dispatch(toggleChatComponent(true));
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. Youll be able to ask follow up questions once the newly processes predefined document template is ready' }));
+      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. You will be able to ask follow up questions once the newly processes predefined document template is ready' }));
       try {
         const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
         if (res.ok) {
@@ -322,12 +330,19 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         } else {
           dispatch(toggleChatComponent(false));
           dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-          toast.error('Oops! Please try again later...');
+          if (res.status === 422) {
+            toast.error('Unprocessable Entity: Invalid input provided');
+          } else if (res.status === 500) {
+            toast.error('Server Error: Something went wrong');
+          } else {
+            toast.error('Please try again later');
+          }
         }
       } catch (error) {
         dispatch(toggleChatComponent(false));
         dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-        toast.error('Something went wrong');
+        console.error('Network error: Something went wrong', error);
+        toast.error('Network error: Something went wrong');
       }
     } else {
       try {
@@ -382,7 +397,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   };
 
   return (
-    <div className={`${styles.container}`}>
+    <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
       <div className={`${styles.header}`}>
         <h2>{isUsedByManageContext === false ? 'New Session' : 'Edit Session'}</h2>
         <button type="button" className={`${styles.closeButton}`} onClick={closeNewSession}>close</button>
@@ -394,18 +409,29 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           <div>
             <input type="text" placeholder="Search document" className={`${styles.input}`} onChange={handleDocumentSearch} />
           </div>
-          <div className={`${styles.documentList}`}>
-            {filteredDocuments.length > 0 ? filteredDocuments.map((doc, index) => (
-              <div key={doc.file_id} className={`${styles.documentItem}`}>
-                {isUsedByManageContext === true ? <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} checked={selectedDocuments[0]?.file_id === doc.file_id} />
-                  : <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} />}
-                <label htmlFor={`doc-${index}`} className={styles.singleFileContainer} title={doc.additional_info ? `${doc.additional_info.company_name}, ${doc.additional_info.date}` : null}>
-                  {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
-                </label>
-              </div>
-            )) : null}
+          <div className={isUsedByManageContext === false ? `${styles.documentList}` : `${styles.currentSessionDocumentList}`}>
+            {isLoadingDocuments
+              ? (
+                <div className={styles.documentItem}>
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                </div>
+              )
+              : filteredDocuments.map((doc, index) => (
+                <div key={doc.file_id} className={`${styles.documentItem}`}>
+                  {isUsedByManageContext === true ? <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} checked={selectedDocuments[0]?.file_id === doc.file_id} />
+                    : <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} />}
+                  <label htmlFor={`doc-${index}`} className={styles.singleFileContainer} title={doc.additional_info ? `${doc.additional_info.company_name}, ${doc.additional_info.date}` : null}>
+                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
+                  </label>
+                </div>
+              ))}
           </div>
-          <div className={`${styles.fileUploadContainer}`}>
+          <div className={isUsedByManageContext === false ? `${styles.fileUploadContainer}` : `${styles.currentSessionFileUploadContainer}`}>
             <button type="button" aria-label="Open File Upload" onClick={() => toggleFileUploadComponent(true)}>
               <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
                 <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
