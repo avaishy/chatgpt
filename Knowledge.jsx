@@ -22,6 +22,7 @@ import {
   setFileProcessingStatus,
   toggleEditContextButton,
   setTogglePopup,
+  setToggleFileUpload,
 } from '../../../store/actions/earningsCallTranscriptActions';
 import {
   getUseCase, getUserSelectedDocumentForChat,
@@ -32,6 +33,7 @@ import {
   getCurrentChatDetails,
   getUserId,
   getTogglePopup,
+  getToggleFileUpload,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import FileUpload from './FileUpload';
 import PopupMessage from '../utility/PopUpMessage';
@@ -63,12 +65,15 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pollingIntervalsRef = useRef({});
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
+  const isToggleFileUpload = useSelector((state) => getToggleFileUpload(state));
 
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
   }
   const toggleFileUploadComponent = (condition) => {
     setShowFileUploadComponent(condition);
+    //setShowFileUploadComponent(isToggleFileUpload);
+
   };
 
   const startPolling = (filename) => {
@@ -121,6 +126,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
 
       if (response.ok) {
         setShowFileUploadComponent(false);
+        dispatch(setToggleFileUpload(false));
         dispatch(setFileProcessingStatus(true));
         const uploadedName = data.fileName;
         const updatedFileName = `${uploadedName}`;
@@ -366,7 +372,14 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           contexts_selected: seletedContextIds,
           industry_selected: industryType,
         };
-        dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+        const allSelectedDocs = isUsedByManageContext
+          ? [
+            ...userSelectedDocumentsFromReduxStore,
+            ...selectedDocuments.filter(
+              (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+            ),
+          ] : selectedDocuments;
+        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
         openOrCloseManageKnowledgeWindow(false);
         const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
         if (res.ok) {
@@ -422,17 +435,50 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
                 </div>
               )
               : filteredDocuments.map((doc, index) => (
+
                 <div key={doc.file_id} className={`${styles.documentItem}`}>
-                  {isUsedByManageContext === true ? <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} checked={selectedDocuments[0]?.file_id === doc.file_id} />
-                    : <input type="radio" name="documentSelection" id={`doc-${index}`} onChange={() => addSelectedDocuments(doc)} />}
-                  <label htmlFor={`doc-${index}`} className={styles.singleFileContainer} title={doc.additional_info ? `${doc.additional_info.company_name}, ${doc.additional_info.date}` : null}>
+                  {isUsedByManageContext === true ? (
+                    <input
+                      type="radio"
+                      name="documentSelection"
+                      id={`doc-${index}`}
+                      onChange={() => addSelectedDocuments(doc)}
+                      checked={selectedDocuments[0]?.file_id === doc.file_id}
+                      disabled={
+                      isUsedByManageContext
+                      && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+                    }
+                    />
+                  )
+                    : (
+                      <input
+                        type="radio"
+                        name="documentSelection"
+                        id={`doc-${index}`}
+                        onChange={() => addSelectedDocuments(doc)}
+                      />
+                    )}
+                  <label
+                    htmlFor={`doc-${index}`}
+                    className={styles.singleFileContainer}
+                    title={doc.additional_info
+                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
+                      : null}
+                  >
                     {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
                   </label>
                 </div>
               ))}
           </div>
-          <div className={isUsedByManageContext === false ? `${styles.fileUploadContainer}` : `${styles.currentSessionFileUploadContainer}`}>
-            <button type="button" aria-label="Open File Upload" onClick={() => toggleFileUploadComponent(true)}>
+          <div className={isUsedByManageContext === false
+            ? `${styles.fileUploadContainer}`
+            : `${styles.currentSessionFileUploadContainer}`}
+          >
+            <button
+              type="button"
+              aria-label="Open File Upload"
+              onClick={() => toggleFileUploadComponent(true)}
+            >
               <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
                 <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
               </svg>
