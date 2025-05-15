@@ -3,12 +3,14 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import styles from '../../../styles/PopUpMessage.scss';
-import { setTogglePopup } from '../../../store/actions/earningsCallTranscriptActions';
+import { setTogglePopup,setToggleFileUpload } from '../../../store/actions/earningsCallTranscriptActions';
 
 function PopUpMessage({ message }) {
   const dispatch = useDispatch();
   const closePopup = () => {
     dispatch(setTogglePopup(false));
+    dispatch(setToggleFileUpload(false));
+
   };
   return (
     <div className={`${styles.overlay}`}>
@@ -25,6 +27,3 @@ PopUpMessage.propTypes = {
 };
 
 export default PopUpMessage;
-{isPopupOpen && (
-      <PopUpMessage message="Unable to fetch llm response. Please try again later..." />
-      )}
