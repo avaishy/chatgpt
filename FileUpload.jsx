@@ -2,12 +2,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from '../../../styles/fileUpload.scss';
+import { useDispatch } from 'react-redux';
+import { setTogglePopup } from '../../../store/actions/earningsCallTranscriptActions';
 
-function FileUpload({ toggleFileUploadComponent, handleFileUpload }) {
+function FileUpload({ handleFileUpload }) {
   const [companyName, setCompanyName] = useState('');
   const [date, setDate] = useState('');
   const [fileName, setFileName] = useState('');
   const [files, setFiles] = useState([]);
+ const dispatch = useDispatch();
 
   const handleFileChange = (event) => {
     const selectedFiles = [...event.target.files];
@@ -19,7 +22,7 @@ function FileUpload({ toggleFileUploadComponent, handleFileUpload }) {
     <div className={styles.fileUploadComponent}>
       <div className={styles.headerContainer}>
         <div className={styles.header}>Upload File</div>
-        <button type="button" onClick={() => toggleFileUploadComponent(false)} className={styles.closeButton}>
+        <button type="button" onClick={() => dispatch(setTogglePopup(false))} className={styles.closeButton}>
           close
         </button>
       </div>
