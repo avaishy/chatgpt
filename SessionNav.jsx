@@ -30,13 +30,13 @@ import FileProcessingStatus from '../utility/FileProcessingStatus';
 const SessionsNav = () => {
   const dispatch = useDispatch();
   const showNewSession = useSelector((state) => getShowNewSession(state));
-  // const useCase = useSelector((state) => getUseCase(state));
   const userId = useSelector((state) => getUserId(state));
   const showChatComponent = useSelector((state) => getToggleChatComponent(state));
-  // const fileProcessButtonShow = useSelector((state) => getFileProcessingStatus(state));
   const [previousSessions, setPreviousSessions] = useState([]);
   const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
   const [fileProcessStatus, setFileProcessStatus] = useState(false);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [isSessionsId, setIsSessionsId] = useState(true);
 
   const handleNewSessionClick = () => {
     dispatch(setUserSelectedCompanyKnowledge([]));
@@ -55,6 +55,7 @@ const SessionsNav = () => {
   };
 
   const getPreviousSessions = async () => {
+    setLoadingSessions(true);
     dispatch(addUseCase('earnings_call_transcript'));
     const sessionsArray = [];
     let localUseCase = null;
@@ -79,7 +80,11 @@ const SessionsNav = () => {
         });
         setPreviousSessions(sessionsArray);
       }
-    } catch (error) { toast.error('Unable to load previous sessions'); }
+    } catch (error) {
+      toast.error('Unable to load previous sessions');
+    } finally {
+      setLoadingSessions(false);
+    }
   };
 
   useEffect(() => {
@@ -87,6 +92,7 @@ const SessionsNav = () => {
   }, [showChatComponent, currentSessionDetails]);
 
   const navigateToPreviousSession = async (session) => {
+    setIsSessionsId(session.session_id);
     setFileProcessStatus(false);
     dispatch(setCurrentSessionDetails(session));
     dispatch(setCurrentChat(session.chats));
@@ -116,11 +122,31 @@ const SessionsNav = () => {
             : styles.previousSessionsContainer}
           >
             <p className={`${styles.text}`}>Previous Session</p>
-            {previousSessions.map((session) => (
-              <div key={session.session_id} className={`${styles.navigationContainer}`}>
-                <button key={session.session_id} type="button" className={`${styles.navigationItem}`} onClick={() => navigateToPreviousSession(session)}><p className={styles.sessionNames}>{session.session_name}</p> {/* <MiniProcessingMessage /> */}</button>
-              </div>
-            ))}
+            {loadingSessions
+              ? (
+                <> <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                </>
+
+              )
+              : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => navigateToPreviousSession(session)}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                  </button>
+                </div>
+              ))}
           </div>
           <div className={`${styles.buttonContainer}`}>
             <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>File Processing status</button>
