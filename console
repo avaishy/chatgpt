@@ -1,54 +1,50 @@
-<div className={styles.sessionHeader}>
-  <h3>{selectedChat.chat_title}</h3>
-  <button
-    className={styles.deleteButton}
-    onClick={() => handleDeleteSession(selectedChat.chat_id)}
-  >
-    Delete Session
-  </button>
-</div>
-
-
-const handleDeleteSession = async (sessionId) => {
-  if (!sessionId) return;
-
-  const confirmed = window.confirm("Are you sure you want to delete this session?");
-  if (!confirmed) return;
-
-  try {
-    const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/deleteUserSession/${sessionId}`, {
-      method: 'DELETE',
-    });
-
-    if (response.ok) {
-      dispatch(setTogglePopup(true, 'Session deleted successfully.'));
-      // Optionally: redirect user, clear chat state, or update session list
-    } else {
-      dispatch(setTogglePopup(true, 'Failed to delete session.'));
-    }
-  } catch (error) {
-    dispatch(setTogglePopup(true, 'An error occurred while deleting the session.'));
-    console.error('Delete session error:', error);
-  }
-};
-
-.sessionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 1rem;
-}
-
-.deleteButton {
-  background-color: #ff4d4f;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.deleteButton:hover {
-  background-color: #d9363e;
-}
+Knowledge.jsx:140 Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function. Error Component Stack
+    at Knowledge (Knowledge.jsx:42:22)
+    at div (<anonymous>)
+    at NewSession (<anonymous>)
+overrideMethod @ hook.js:608
+printWarning @ react-dom.development.js:67
+error @ react-dom.development.js:43
+warnAboutUpdateOnUnmountedFiberInDEV @ react-dom.development.js:23914
+scheduleUpdateOnFiber @ react-dom.development.js:21840
+dispatchAction @ react-dom.development.js:16139
+getAllUserDocuments @ Knowledge.jsx:140
+await in getAllUserDocuments
+(anonymous) @ Knowledge.jsx:188
+invokePassiveEffectCreate @ react-dom.development.js:23487
+callCallback @ react-dom.development.js:3945
+invokeGuardedCallbackDev @ react-dom.development.js:3994
+invokeGuardedCallback @ react-dom.development.js:4056
+flushPassiveEffectsImpl @ react-dom.development.js:23574
+unstable_runWithPriority @ scheduler.development.js:468
+runWithPriority$1 @ react-dom.development.js:11276
+flushPassiveEffects @ react-dom.development.js:23447
+(anonymous) @ react-dom.development.js:23324
+workLoop @ scheduler.development.js:417
+flushWork @ scheduler.development.js:390
+performWorkUntilDeadline @ scheduler.development.js:157
+FileProcessingStatus.jsx:37 Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function. Error Component Stack
+    at FileProcessingStatus (FileProcessingStatus.jsx:9:18)
+overrideMethod @ hook.js:608
+printWarning @ react-dom.development.js:67
+error @ react-dom.development.js:43
+warnAboutUpdateOnUnmountedFiberInDEV @ react-dom.development.js:23914
+scheduleUpdateOnFiber @ react-dom.development.js:21840
+dispatchAction @ react-dom.development.js:16139
+fetchFileStatuses @ FileProcessingStatus.jsx:37
+await in fetchFileStatuses
+(anonymous) @ FileProcessingStatus.jsx:45
+invokePassiveEffectCreate @ react-dom.development.js:23487
+callCallback @ react-dom.development.js:3945
+invokeGuardedCallbackDev @ react-dom.development.js:3994
+invokeGuardedCallback @ react-dom.development.js:4056
+flushPassiveEffectsImpl @ react-dom.development.js:23574
+unstable_runWithPriority @ scheduler.development.js:468
+runWithPriority$1 @ react-dom.development.js:11276
+flushPassiveEffects @ react-dom.development.js:23447
+(anonymous) @ react-dom.development.js:23324
+workLoop @ scheduler.development.js:417
+flushWork @ scheduler.development.js:390
+performWorkUntilDeadline @ scheduler.development.js:157
+SessionsNav.jsx:81 Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function. Error Component Stack
+    at SessionsNav (SessionsNav.jsx:31:20)
