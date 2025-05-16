@@ -74,36 +74,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   function toggleFileUploadComponent(condition) {
     dispatch(setToggleFileUpload(condition));
   }
-  const startPolling = (filename) => {
-    setInterval(async () => {
-      try {
-        const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${filename}`, {
-          method: 'GET',
-          headers: { accept: 'application/json' },
-        });
-
-        const result = await response.json();
-
-        if (result.is_indexed === true) {
-          setUploadedFiles((prevFiles) => {
-            const updatedFiles = prevFiles.map((file) => (file.filename === filename
-              ? { ...file, isIndexing: false }
-              : file));
-
-            return updatedFiles;
-          });
-          console.log('Uploaded Files', uploadedFiles);
-          clearInterval(pollingIntervalsRef.current[filename]);
-          delete pollingIntervalsRef.current[filename];
-        }
-      } catch (error) {
-        toast.error(`Polling error for ${filename}:`, error);
-      }
-    }, 30000);
-  };
 
   const handleFileUpload = async (data) => {
-    console.log('Data 106',data);
     if (data.fileInput.length === 0) return;
     const formData = new FormData();
     formData.append('user_id', userId);
@@ -115,9 +87,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     data.fileInput.forEach((file) => {
       formData.append('file', file);
     });
-    // dispatch(setTogglePopup(true, `${data.fileName} these file take 5-6 minutes to index. Please wait until indexing is completed.`));
-    setIsUploading(true);
     try {
+      setIsUploading(true);
       const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/uploadFiles', {
         method: 'POST',
         body: formData,
@@ -131,19 +102,16 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         setUploadedFiles((prevFiles) => {
           const newFiles = [...prevFiles, {
             filename: updatedFileName,
-            isIndexing: true,
             user_id: userId,
           }];
           return newFiles;
         });
-        startPolling(updatedFileName);
         if (renderComponent === true) {
           setRenderComponent(false);
         } else {
           setRenderComponent(true);
         }
         toast.success('Successfully uploaded file');
-        openChatCompoent(data);
       } else {
         const errorText = await response.text();
         console.log('Upload failed:', errorText);
@@ -152,7 +120,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     } catch (error) {
       toast.error('Failed to upload file: network error');
     } finally {
-      setIsUploading(false);
+      setIsUploading(true);
     }
   };
 
@@ -533,11 +501,17 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       <PopupMessage message={popupMessage} />
       )}
       {isUploading && (
-      <div className={styles.uploadOverlay}>
-        <div className={styles.spinner} />
-        <div style={{ color: 'white', fontSize: '18px' }}>These file take 5-6 minutes to index. Please wait until indexing is completed.</div>
-        <Timer fontColor='white'/>
-      </div>
+        <div className={styles.uploadOverlay}>
+          <div className={styles.spinner} />
+          <div style={{
+            color: 'white',
+            fontSize: '18px',
+          }}
+          >
+            These file take 5-6 minutes to index. Please wait until indexing is completed.
+          </div>
+          <Timer fontColor="white" />
+        </div>
       )}
     </div>
   );
