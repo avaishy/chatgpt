@@ -120,7 +120,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     } catch (error) {
       toast.error('Failed to upload file: network error');
     } finally {
-      setIsUploading(true);
+      setIsUploading(false);
     }
   };
 
@@ -251,7 +251,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       const fileStatuses = await fetchFileStatuses();
       const notIndexedFiles = selectedDocuments.filter((doc) => {
         const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
-        return statusEntry && statusEntry.status !== 'Completed';
+        return !statusEntry && statusEntry.status !== 'Completed';
       });
       if (notIndexedFiles.length > 0) {
         const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
