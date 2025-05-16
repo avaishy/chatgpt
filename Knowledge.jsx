@@ -37,6 +37,7 @@ import {
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import FileUpload from './FileUpload';
 import PopupMessage from '../utility/PopUpMessage';
+import Timer from '../utility/Timer';
 
 function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWindow }) {
   const [companyKnowledge, setCompanyKnowledge] = useState([]);
@@ -60,17 +61,19 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const userSelectedDocumentsFromReduxStore = useSelector(
     (state) => getUserSelectedDocumentForChat(state));
   const selectedChat = useSelector((state) => getSelectedChatDetails(state));
-  const [ShowFileUploadComponent, setShowFileUploadComponent] = useState(false);
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pollingIntervalsRef = useRef({});
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const isToggleFileUpload = useSelector((state) => getToggleFileUpload(state));
+  const [isUploading, setIsUploading] = useState(false);
 
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
   }
-
+  function toggleFileUploadComponent(condition) {
+    dispatch(setToggleFileUpload(condition));
+  }
   const startPolling = (filename) => {
     setInterval(async () => {
       try {
@@ -100,6 +103,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   };
 
   const handleFileUpload = async (data) => {
+    console.log('Data 106',data);
     if (data.fileInput.length === 0) return;
     const formData = new FormData();
     formData.append('user_id', userId);
@@ -111,8 +115,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     data.fileInput.forEach((file) => {
       formData.append('file', file);
     });
-    console.log('Data', data.fileName);
-    dispatch(setTogglePopup(true, `${data.fileName} these file take 5-6 minutes to index. Please wait until indexing is completed.`));
+    // dispatch(setTogglePopup(true, `${data.fileName} these file take 5-6 minutes to index. Please wait until indexing is completed.`));
+    setIsUploading(true);
     try {
       const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/uploadFiles', {
         method: 'POST',
@@ -139,6 +143,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           setRenderComponent(true);
         }
         toast.success('Successfully uploaded file');
+        openChatCompoent(data);
       } else {
         const errorText = await response.text();
         console.log('Upload failed:', errorText);
@@ -146,6 +151,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       }
     } catch (error) {
       toast.error('Failed to upload file: network error');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -471,7 +478,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
             <button
               type="button"
               aria-label="Open File Upload"
-              onClick={() => dispatch(setToggleFileUpload(true))}
+              onClick={() => toggleFileUploadComponent(true)}
             >
               <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
                 <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
@@ -524,6 +531,13 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       </div>
       {isPopupOpen && (
       <PopupMessage message={popupMessage} />
+      )}
+      {isUploading && (
+      <div className={styles.uploadOverlay}>
+        <div className={styles.spinner} />
+        <div style={{ color: 'white', fontSize: '18px' }}>These file take 5-6 minutes to index. Please wait until indexing is completed.</div>
+        <Timer fontColor='white'/>
+      </div>
       )}
     </div>
   );
