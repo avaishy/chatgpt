@@ -67,6 +67,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const isToggleFileUpload = useSelector((state) => getToggleFileUpload(state));
   const [isUploading, setIsUploading] = useState(false);
+  const [shouldOpenChatAfterSelect, setShouldOpenChatAfterSelect] = useState(false);
 
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
@@ -123,6 +124,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       if (response.ok) {
         dispatch(setToggleFileUpload(false));
         dispatch(setFileProcessingStatus(true));
+        setShouldOpenChatAfterSelect(true);
         const uploadedName = data.fileName;
         const updatedFileName = `${uploadedName}`;
         setUploadedFiles((prevFiles) => {
@@ -133,12 +135,14 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           }];
           return newFiles;
         });
+        setSelectedDocuments([uploadedFiles]);
         startPolling(updatedFileName);
         if (renderComponent === true) {
           setRenderComponent(false);
         } else {
           setRenderComponent(true);
         }
+         generateAnswerAfterUpload();
         toast.success('Successfully uploaded file');
       } else {
         const errorText = await response.text();
@@ -215,6 +219,11 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   useEffect(() => {
     getAllUserDocuments();
     getUserAdditionalKnowledge();
+    // console.log('selectedDocuments>>>>>>>', selectedDocuments);
+    // if(selectedDocuments && shouldOpenChatAfterSelect){
+    //   openChatCompoent();
+    //   setShouldOpenChatAfterSelect(false);
+    // }
 
     if (isUsedByManageContext === true) {
       setSelectedDocuments(userSelectedDocumentsFromReduxStore);
@@ -280,7 +289,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       const fileStatuses = await fetchFileStatuses();
       const notIndexedFiles = selectedDocuments.filter((doc) => {
         const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
-        return !statusEntry && statusEntry.status !== 'Completed';
+        return statusEntry && statusEntry.status !== 'Completed';
       });
       if (notIndexedFiles.length > 0) {
         const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
@@ -407,6 +416,23 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const changeIndustryType = (event) => {
     setIndustryType(event.target.value);
   };
+
+  const generateAnswerAfterUpload = () =>{
+    const file = allUserDocuments[0]
+    console.log('file>>>>', file);
+    setSelectedDocuments([file]);
+    if (renderComponent === true) {
+      setRenderComponent(false);
+    } else {
+      setRenderComponent(true);
+    }
+  }
+
+  if(shouldOpenChatAfterSelect){
+    console.log('selectedDocuments>>>>', selectedDocuments);
+    openChatCompoent();
+    setShouldOpenChatAfterSelect(false);
+  }
 
   return (
     <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
