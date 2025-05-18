@@ -74,6 +74,32 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   function toggleFileUploadComponent(condition) {
     dispatch(setToggleFileUpload(condition));
   }
+  const startPolling = (filename) => {
+    setInterval(async () => {
+      try {
+        const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${filename}`, {
+          method: 'GET',
+          headers: { accept: 'application/json' },
+        });
+
+        const result = await response.json();
+
+        if (result.is_indexed === true) {
+          setUploadedFiles((prevFiles) => {
+            const updatedFiles = prevFiles.map((file) => (file.filename === filename
+              ? { ...file, isIndexing: false }
+              : file));
+
+            return updatedFiles;
+          });
+          clearInterval(pollingIntervalsRef.current[filename]);
+          delete pollingIntervalsRef.current[filename];
+        }
+      } catch (error) {
+        toast.error(`Polling error for ${filename}:`, error);
+      }
+    }, 30000);
+  };
 
   const handleFileUpload = async (data) => {
     if (data.fileInput.length === 0) return;
@@ -102,10 +128,12 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         setUploadedFiles((prevFiles) => {
           const newFiles = [...prevFiles, {
             filename: updatedFileName,
+            isIndexing: true,
             user_id: userId,
           }];
           return newFiles;
         });
+        startPolling(updatedFileName);
         if (renderComponent === true) {
           setRenderComponent(false);
         } else {
@@ -187,6 +215,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   useEffect(() => {
     getAllUserDocuments();
     getUserAdditionalKnowledge();
+
     if (isUsedByManageContext === true) {
       setSelectedDocuments(userSelectedDocumentsFromReduxStore);
     }
@@ -271,6 +300,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       seletedContexts.forEach((ele) => {
         seletedContextIds.push(ele.context_id);
       });
+      console.log('selectedDocuments', selectedDocuments);
       if (selectedDocuments.length > 0) {
         selectedDocuments.forEach((ele) => {
           fileIds.push(ele.file_id);
