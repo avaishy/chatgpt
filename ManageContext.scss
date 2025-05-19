@@ -1,0 +1,107 @@
+.container {
+    border: 1px dashed #364258;
+    padding: 15px;
+    width: 100%;
+    margin-top: 18px;
+    border-radius: 5px;
+    height: 260px;
+    background-color: #F7F7F9;
+}
+
+.header {
+    font-size: 12px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.section {
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.button {
+    background-color: #364258;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    min-width: auto;
+}
+
+.sessionButton {
+    background-color: #364258;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    white-space: nowrap;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.addButton {
+    margin-left: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #F7F7F9;
+    border-radius: 5px;
+}
+
+.contextContainer {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    width: 100%;
+    white-space: nowrap;
+    scrollbar-width: none;
+    scrollbar-color: #364258 white;
+}
+
+.filesContainer {
+    display: flex;
+    white-space: nowrap;
+    overflow-x: auto;
+    gap: 10px;
+    width: 100%;
+    scrollbar-width: none;
+    scrollbar-color: #364258 white;
+
+}
+
+.headerContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup {
+    background-color: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.editKnowledgeButton {
+    border-radius: 12px;
+    background-color: #6fc490;
+    padding: 0 20px;
+    border: none;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: -6px;
+    height: 35px;
+}
