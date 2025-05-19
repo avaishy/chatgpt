@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from '@americanexpress/one-app-router';
 import { toast } from 'react-hot-toast';
-import PropTypes from 'prop-types';
+import PropTypes, { bool } from 'prop-types';
 import styles from '../../../styles/newSession.scss';
 import AdditionalKnowledgeCard from './AdditionalKnowledgeCard';
 import {
@@ -23,6 +23,7 @@ import {
   toggleEditContextButton,
   setTogglePopup,
   setToggleFileUpload,
+  setToggleGeneratePopup,
 } from '../../../store/actions/earningsCallTranscriptActions';
 import {
   getUseCase, getUserSelectedDocumentForChat,
@@ -34,10 +35,12 @@ import {
   getUserId,
   getTogglePopup,
   getToggleFileUpload,
+  getToggleGeneratePopup,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import FileUpload from './FileUpload';
 import PopupMessage from '../utility/PopUpMessage';
 import Timer from '../utility/Timer';
+import PopUpMessageGenerateAnswer from '../utility/PopUpMessageGenerateAnswer';
 
 function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWindow }) {
   const [companyKnowledge, setCompanyKnowledge] = useState([]);
@@ -49,6 +52,10 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     show: isPopupOpen,
     message: popupMessage,
   } = useSelector((state) => getTogglePopup(state));
+  const {
+    showGeneratePopup: isGeneratePopupOpen,
+    messageGeneratePopup: generatePopupMessage,
+  } = useSelector((state) => getToggleGeneratePopup(state));
   const userId = useSelector((state) => getUserId(state));
   const seletedCompanyKnowldge = useSelector((state) => getUserSelectedCompanyKnowledge(state));
   const seletedIndustryKnowldge = useSelector((state) => getUserSelectedIndustryKnowledge(state));
@@ -67,8 +74,11 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const isToggleFileUpload = useSelector((state) => getToggleFileUpload(state));
   const [isUploading, setIsUploading] = useState(false);
-  const [shouldOpenChatAfterSelect, setShouldOpenChatAfterSelect] = useState(false);
+  const [showPopup, setShowPopup] = useState(true);
+  const [isGenerate, setIsGenerate] = useState(true);
 
+
+  showPopup
   function addSelectedDocuments(document) {
     setSelectedDocuments([document]);
   }
@@ -93,6 +103,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
 
             return updatedFiles;
           });
+          console.log('Uploaded Files', uploadedFiles);
           clearInterval(pollingIntervalsRef.current[filename]);
           delete pollingIntervalsRef.current[filename];
         }
@@ -124,7 +135,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       if (response.ok) {
         dispatch(setToggleFileUpload(false));
         dispatch(setFileProcessingStatus(true));
-        setShouldOpenChatAfterSelect(true);
         const uploadedName = data.fileName;
         const updatedFileName = `${uploadedName}`;
         setUploadedFiles((prevFiles) => {
@@ -135,14 +145,15 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           }];
           return newFiles;
         });
-        setSelectedDocuments([uploadedFiles]);
         startPolling(updatedFileName);
         if (renderComponent === true) {
           setRenderComponent(false);
         } else {
           setRenderComponent(true);
         }
-         generateAnswerAfterUpload();
+        dispatch(setToggleGeneratePopup({showGeneratePopup: true, messageGeneratePopup:'Do you want to add additional knowledge about company,industry or personal knowledge'}));
+        //generateAnswerAfterUpload();
+
         toast.success('Successfully uploaded file');
       } else {
         const errorText = await response.text();
@@ -219,12 +230,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   useEffect(() => {
     getAllUserDocuments();
     getUserAdditionalKnowledge();
-    // console.log('selectedDocuments>>>>>>>', selectedDocuments);
-    // if(selectedDocuments && shouldOpenChatAfterSelect){
-    //   openChatCompoent();
-    //   setShouldOpenChatAfterSelect(false);
-    // }
-
     if (isUsedByManageContext === true) {
       setSelectedDocuments(userSelectedDocumentsFromReduxStore);
     }
@@ -232,7 +237,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     return () => {
       Object.values(pollingIntervalsRef.current).forEach(clearInterval);
     };
-  }, [renderComponent]);
+  }, [renderComponent,selectedDocuments]);
 
   const closeNewSession = () => {
     if (isUsedByManageContext === false) {
@@ -260,6 +265,10 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   };
 
   const openChatCompoent = async () => {
+    if (!selectedDocuments || selectedDocuments.length === 0) {
+      console.warn('Cannot Generate predefine response - no document selected');
+      return;
+    }
     if (isUsedByManageContext === false) {
       const fetchFileStatuses = async () => {
         try {
@@ -309,7 +318,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       seletedContexts.forEach((ele) => {
         seletedContextIds.push(ele.context_id);
       });
-      console.log('selectedDocuments', selectedDocuments);
       if (selectedDocuments.length > 0) {
         selectedDocuments.forEach((ele) => {
           fileIds.push(ele.file_id);
@@ -418,22 +426,22 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
   };
 
   const generateAnswerAfterUpload = () =>{
-    const file = allUserDocuments[0]
-    console.log('file>>>>', file);
-    setSelectedDocuments([file]);
-    if (renderComponent === true) {
-      setRenderComponent(false);
-    } else {
-      setRenderComponent(true);
-    }
+      const matchingDoc = allUserDocuments[0];
+      if(matchingDoc && isGenerate){
+        setIsGenerate(false);
+        console.log('matchingDoc',matchingDoc);
+        setSelectedDocuments([matchingDoc]);
+      }
+    
+  }
+  if(showPopup){
+    generateAnswerAfterUpload();
   }
 
-  if(shouldOpenChatAfterSelect){
-    console.log('selectedDocuments>>>>', selectedDocuments);
-    openChatCompoent();
-    setShouldOpenChatAfterSelect(false);
+  function handleClose(){
+    //dispatch(setToggleGeneratePopup({show: false, message: ''}))
+  
   }
-
   return (
     <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
       <div className={`${styles.header}`}>
@@ -480,6 +488,8 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
                         type="radio"
                         name="documentSelection"
                         id={`doc-${index}`}
+                      checked={filteredDocuments[0]}
+
                         onChange={() => addSelectedDocuments(doc)}
                       />
                     )}
@@ -569,6 +579,13 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
           <Timer fontColor="white" />
         </div>
       )}
+      {isGeneratePopupOpen && ( isUsedByManageContext === false ?(
+      <PopUpMessageGenerateAnswer
+       message= {generatePopupMessage}
+       onNo={openChatCompoent}
+       onYes={handleClose}
+       ></PopUpMessageGenerateAnswer>
+      ) : null )}
     </div>
   );
 }
