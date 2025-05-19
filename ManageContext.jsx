@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from '../../../styles/manageContext.scss';
 import Knowledge from '../newSessionScreen/Knowledge';
-import { setDocumentProcessingAlert } from '../../../store/actions/earningsCallTranscriptActions';
+import { setDocumentProcessingAlert,setUserSelectedDocumentsForChat } from '../../../store/actions/earningsCallTranscriptActions';
 import {
   getUserSelectedDocumentForChat,
   getUserSelectedCompanyKnowledge,
@@ -12,6 +12,7 @@ import {
   getSelectedChatDetails,
   getCurrentChatDetails,
   getEditContextButton,
+  getCurrentSessionDetails,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 
 const ManageContext = () => {
@@ -25,10 +26,13 @@ const ManageContext = () => {
   const seletedPersonalKnowldge = useSelector((state) => getUserSelectedPersonalKnowledge(state));
   const [showManageKnowledgeWindow, setShowManageKnowledgeWindow] = useState(false);
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
+  const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
+  
   const isEditContextEnable = useSelector((state) => getEditContextButton(state));
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log('Selected Document form redux',selectedDocuments );
     setDocuments([...selectedDocuments]);
     setKnowledge([
       ...seletedCompanyKnowldge,
@@ -38,7 +42,7 @@ const ManageContext = () => {
     if ('chat_id' in selectedChat) {
       setChatName(selectedChat.chat_name);
     }
-  }, [selectedChat, currentChatsArray]);
+  }, [selectedChat, currentChatsArray, selectedDocuments]);
 
   const openOrCloseManageKnowledgeWindow = (toggle) => {
     setShowManageKnowledgeWindow(toggle);
@@ -71,14 +75,27 @@ const ManageContext = () => {
       </div>
 
       {documents.length > 0 && (
-      <div className={styles.section}>
-        <strong>Documents</strong>
-        <div className={styles.filesContainer}>
-          {documents.map((doc) => (
-            <button key={doc.file_id} type="button" className={styles.button}>{doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}</button>
-          ))}
+        <div className={styles.section}>
+          <strong>Documents</strong>
+          <div className={styles.filesContainer}>
+            {documents.map((doc) => (
+              <div key={doc.file_id} className={styles.documentWrapper}>
+                <button type="button" className={styles.button}>{doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}</button>
+                {doc.file_name !== currentSessionDetails.session_name ? (<span
+                  className={styles.removeButton}
+                  title='Remove Document'
+                  aria-label={`Remove ${doc.file_name}`}
+                  onClick={() => {
+                    const updatedDocs = documents.filter((d) => d.file_id !== doc.file_id);
+                    dispatch(setUserSelectedDocumentsForChat(updatedDocs));
+                  }}
+                >
+                  x
+                </span>) : null}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       )}
 
       {knowledge.length > 0 && (
