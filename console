@@ -1,13 +1,2 @@
-selectedDocuments>>>> []length: 0[[Prototype]]: Array(0)
-Knowledge.jsx:222 selectedDocuments>>>>>>> []
-Knowledge.jsx:222 selectedDocuments>>>>>>> [Array(0)]0: []length: 1[[Prototype]]: Array(0)
-Knowledge.jsx:313 selectedDocuments []length: 0[[Prototype]]: Array(0)
-Knowledge.jsx:210 Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function. Error Component Stack
-    at Knowledge (Knowledge.jsx:42:22)
-    at div (<anonymous>)
-    at NewSession (<anonymous>)
-
-Knowledge.jsx:338 
-            
-            
-           POST https://lumosusersessionmgmt-dev.aexp.com/createChatSession 400 (Bad Request)
+Knowledge.jsx:56 Uncaught TypeError: Cannot destructure property 'showGeneratePopup' of '(0 , import_react_redux5.useSelector)(...)' as it is undefined.
+    at Knowledge (Knowledge.jsx:56:24)
