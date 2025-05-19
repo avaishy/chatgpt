@@ -1,4 +1,4 @@
-.container {
+ .  container {
     border: 1px dashed #364258;
     padding: 15px;
     width: 100%;
@@ -7,7 +7,31 @@
     height: 260px;
     background-color: #F7F7F9;
 }
+.documentWrapper {
+  position: relative;
+  display: inline-block;
 
+  &:hover .removeButton {
+    display: block;
+  }
+}
+
+.removeButton {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4d4f;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  cursor: pointer;
+  display: none;
+  z-index: 1;
+}
 .header {
     font-size: 12px;
     margin-bottom: 10px;
