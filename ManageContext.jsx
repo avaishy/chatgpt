@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from '../../../styles/manageContext.scss';
 import Knowledge from '../newSessionScreen/Knowledge';
-import { setDocumentProcessingAlert,setUserSelectedDocumentsForChat,setCurrentSessionDetails } from '../../../store/actions/earningsCallTranscriptActions';
+import { setDocumentProcessingAlert,setUserSelectedDocumentsForChat } from '../../../store/actions/earningsCallTranscriptActions';
 import {
   getUserSelectedDocumentForChat,
   getUserSelectedCompanyKnowledge,
@@ -13,8 +13,6 @@ import {
   getCurrentChatDetails,
   getEditContextButton,
   getCurrentSessionDetails,
-  getUserId,
-  getUpdatedChatsArray,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 
 const ManageContext = () => {
@@ -29,12 +27,58 @@ const ManageContext = () => {
   const [showManageKnowledgeWindow, setShowManageKnowledgeWindow] = useState(false);
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
   const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
-  const userId = useSelector((state) => getUserId(state));
-    
-  
   
   const isEditContextEnable = useSelector((state) => getEditContextButton(state));
   const dispatch = useDispatch();
+
+  
+
+  const removeDocument = async (fileIdRemove) => {
+  console.log('Remove called');
+    try {
+    const updatedDocuments = selectedDocuments.filter(
+      (doc) => doc.file_id !== fileIdRemove
+    );
+    dispatch(setUserSelectedDocumentsForChat(updatedDocuments));
+    console.log('updatedDocuments',updatedDocuments);
+    const seletedContexts = [...seletedCompanyKnowldge,
+      ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
+    console.log('seletedContexts',seletedContexts);
+
+    const seletedContextIds = seletedContexts.map((ctx) => ctx.context_id);
+    console.log('seletedContextIds',seletedContextIds);
+
+    const updatedFileIds = updatedDocuments.map((doc)=> doc.file_id);
+    console.log('updatedFileIds',updatedFileIds);
+
+    
+    const data = {
+      user_id: userId,
+      chat_id: selectedChat.chat_id,
+      files_selected: updatedFileIds,
+      contexts_selected: seletedContextIds,
+      industry_selected: 'Payments',
+    };
+    console.log('data', data);
+
+    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+    if (res.ok) {
+      const updatedChatsArray = getUpdatedChatsArray({
+        previousChatsArray: currentChatsArray,
+        chatId: selectedChat.chat_id,
+        seletedContexts,
+        selectedDocuments,
+      });
+      dispatch(setCurrentChat(updatedChatsArray));
+      const result = await res.json();
+      if (result.status === 'Success') { console.log('Updated Successfully'); }
+    } else {
+      console.log('Something went wrong: Invalid Inputs');
+    }
+  } catch (error) { console.log('Something went wrong while opening chat components'); }
+
+    
+  }
 
   useEffect(() => {
     console.log('Selected Document form redux',selectedDocuments );
@@ -56,45 +100,6 @@ const ManageContext = () => {
     setShowManageKnowledgeWindow(toggle);
     dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
   };
-
-  const removeDocument = async (fileIdRemove) => {
-
-    try {
-    const updatedDocuments = selectedDocuments.filter(
-      (doc) => doc.file_id !== fileIdRemove
-    );
-    
-    const seletedContexts = [...seletedCompanyKnowldge,
-      ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-    const seletedContextIds = seletedContexts.map((ctx) => ctx.context_id);
-    const updatedFileIds = updatedDocuments.map((doc)=> doc.file_id);
-    const data = {
-      user_id: userId,
-      chat_id: selectedChat.chat_id,
-      files_selected: updatedFileIds,
-      contexts_selected: seletedContextIds,
-      industry_selected: 'Payments',
-    };
-    console.log('data', data);
-
-    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-    if (res.ok) {
-      const updatedChatsArray = getUpdatedChatsArray({
-        previousChatsArray: currentChatsArray,
-        chatId: selectedChat.chat_id,
-        seletedContexts,
-        selectedDocuments,
-      });
-      dispatch(setCurrentChat(updatedChatsArray));
-      const result = await res.json();
-      if (result.status === 'Success') { toast.success('Updated Successfully'); }
-    } else {
-      toast.error('Something went wrong: Invalid Inputs');
-    }
-  } catch (error) { toast.error('Something went wrong while opening chat components'); }
-
-    
-  }
 
   return (
     <div className={styles.container}>
@@ -132,7 +137,13 @@ const ManageContext = () => {
                   className={styles.removeButton}
                   title='Remove Document'
                   aria-label={`Remove ${doc.file_name}`}
-                  onClick={removeDocument(doc.file_id)}
+                  onClick={ () => {
+                    // const updatedDocs = documents.filter((d) => d.file_id !== doc.file_id);
+                    // console.log('Updated doc', updatedDocs);
+                    // dispatch(setUserSelectedDocumentsForChat(updatedDocs));
+                    removeDocument(doc.file_id);
+                  
+                  }}
                 >
                   x
                 </span>) : null}
@@ -164,4 +175,18 @@ const ManageContext = () => {
 };
 
 export default ManageContext;
-initClient.jsx:68 TypeError: Cannot read properties of undefined (reading 'buildInitialState')
+
+Selected Document form redux (5) [{…}, {…}, {…}, {…}, {…}]
+ManageContext.jsx:84 Selected Document local (5) [{…}, {…}, {…}, {…}, {…}]
+ManageContext.jsx:37 Remove called
+ManageContext.jsx:42 updatedDocuments (4) [{…}, {…}, {…}, {…}]
+ManageContext.jsx:45 seletedContexts []
+ManageContext.jsx:48 seletedContextIds []
+ManageContext.jsx:51 updatedFileIds (4) [265, 274, 279, 286]
+ManageContext.jsx:77 Something went wrong while opening chat components
+ManageContext.jsx:37 Remove called
+ManageContext.jsx:42 updatedDocuments (4) [{…}, {…}, {…}, {…}]
+ManageContext.jsx:45 seletedContexts []
+ManageContext.jsx:48 seletedContextIds []
+ManageContext.jsx:51 updatedFileIds (4) [271, 274, 279, 286]
+ManageContext.jsx:77 Something went wrong while opening chat components
