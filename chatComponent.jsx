@@ -30,13 +30,14 @@ const ChatComponent = () => {
   const [feedback, setFeedback] = useState({});
   const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
   const [isDisableInput, setIsDisableInput] = useState(false);
-  const [showReasoning,setShowReasoning] = useState(false);
   const {
     show: isPopupOpen,
     message: popupMessage,
   } = useSelector((state) => getTogglePopup(state));
   const handleSendMessage = async () => {
-    const newMessages = [...messages, { role: 'user', msg: { user_query: input }, msg_id: Math.random(),showReasoning:false }];
+    const newMessages = [...messages, {
+      role: 'user', msg: { user_query: input }, msg_id: Math.random(), showReasoning: false,
+    }];
     setMessages(newMessages);
     dispatch(setChatMessages(newMessages));
     if (input.trim()) {
@@ -65,10 +66,6 @@ const ChatComponent = () => {
             method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' },
           }
         );
-        if (!res.ok) {
-          const errorBody = await res.json();
-          throw new Error(errorBody?.message?.detail || 'Something went wrong while fetching response');
-        }
         if (res.ok) {
           const result = await res.json();
           const botMessage = {
@@ -165,20 +162,17 @@ const ChatComponent = () => {
 
   const toggleShowReasoning = (msgId) => {
     const updatedMessage = messages.map((msg) => {
-      if(msg.msg_id === msgId){
-        return {...msg, showReasoning: !msg.showReasoning };
+      if (msg.msg_id === msgId) {
+        return { ...msg, showReasoning: !msg.showReasoning };
       }
       return msg;
     });
     setMessages(updatedMessage);
-  }
-
+  };
   useEffect(() => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
   }, [userMessages]);
-  console.log(">>>>>>>>>>>", messages);
-
   return (
     <div className={`${styles.chatContainer}`}>
       <div className={`${styles.chatAndInputBoxContainer}`}>
@@ -199,17 +193,67 @@ const ChatComponent = () => {
                   ) : null }
                 </div>
                 <div className={styles.messageContent}>
+                  {message.role === 'llm'
+                && Array.isArray(message.msg.sources)
+                && message.msg.sources.some(
+                  (src) => Array.isArray(src.citation) && src.citation.length > 0
+                ) && (
+                  <div className={styles.toggleContainer}>
+                    <div className={styles.toggleLabel}>Show Reasoning</div>
+                    <label className={styles.switch} htmlFor={`toggle-${message.msg_id}`}>
+                      <input
+                        id={`toggle-${message.msg_id}`}
+                        type="checkbox"
+                        checked={message.showReasoning}
+                        onChange={() => toggleShowReasoning(message.msg_id)}
+                      />
+                      <span className={styles.slider}>
+                        {message.showReasoning ? 'On' : 'Off'}
+                      </span>
+                    </label>
+                  </div>
+                  )}
+
                   {message.role === 'llm' ? (
                     <div>
-                      {Array.isArray(message.msg.response) ? (
-                        message.msg.response.map((resp, idx) =>(
-                          <ReactMarkdown key={idx}>{resp}</ReactMarkdown>
-                        ))
-                      ): (
-                        <ReactMarkdown >{message.msg.response}</ReactMarkdown>
+
+                      {message.msg.header && (
+                        <div className={`${styles.header}`}><ReactMarkdown>{cleanText(message.msg.header)}</ReactMarkdown></div>
                       )}
-                       {/* <ReactMarkdown>{message.msg.response}</ReactMarkdown> */}
-                      
+                      {Array.isArray(message.msg.response) && Array.isArray(message.msg.sources)
+                        ? message.msg.response.map((resp, idx) => {
+                          const source = message.msg.sources?.[0] || {};
+                          const citation = source?.citation?.[idx];
+                          const reasoning = source?.reasoning?.[idx];
+                          const key = `${typeof resp === 'string' ? resp.slice(0, 20) : JSON.stringify(resp).slice(0, 20)}-${idx}`;
+                          return (
+                            <div key={key} className={`${styles.responseBlock}`}>
+                              <ReactMarkdown>{resp}</ReactMarkdown>
+
+                              {message.showReasoning && citation && (
+                              <div className={`${styles.citationBox}`}>
+                                <strong>Citation:</strong>
+                                <span className={`${styles.citationContent}`}>
+                                  <ReactMarkdown>{citation}</ReactMarkdown>
+                                </span>
+                              </div>
+                              )}
+
+                              {message.showReasoning && reasoning && (
+                              <div className={`${styles.reasoningBox}`}>
+                                <strong>Reasoning:</strong>
+                                <span className={`${styles.reasoningContent}`}>
+                                  <ReactMarkdown>{reasoning}</ReactMarkdown>
+                                </span>
+                              </div>
+                              )}
+                            </div>
+                          );
+                        })
+                        : (
+                          <ReactMarkdown>{cleanText(message.msg.response)}</ReactMarkdown>
+                        )}
+
                       {message.msg_id === lastestMessageLLMMessageId ? (
                         <LLMFeedback
                           handleMessageFeedback={handleMessageFeedback}
@@ -252,19 +296,6 @@ const ChatComponent = () => {
                     </div>
                   </div>
                 ) : null}
-              {message.role === 'llm' ? ( <div className={styles.toggleContainer}>
-                <div className={styles.toggleLabel}>Show Reasoning</div>
-                <label className={styles.switch}>
-                  <input
-                    type="checkbox"
-                    checked={message.showReasoning}
-                    onChange={() => toggleShowReasoning(message.msg_id)}
-                  />
-                  <span className={styles.slider}>
-                    {message.showReasoning ? 'On' : 'Off'}
-                  </span>
-                </label>
-              </div>) : null}
 
             </div>
           ))}
@@ -278,7 +309,7 @@ const ChatComponent = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isTyping) handleSendMessage();
+                if (e.key === 'Enter' && !isTyping && input.trim() !== '') handleSendMessage();
               }}
               disabled={(isTyping || isDisableInput)}
             />
@@ -287,7 +318,7 @@ const ChatComponent = () => {
               className={`${styles.sendIcon}`}
               onClick={handleSendMessage}
               aria-label="Send message"
-              disabled={isTyping}
+              disabled={isTyping || input.trim() === ''}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
