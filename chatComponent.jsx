@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 // import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -30,10 +30,12 @@ const ChatComponent = () => {
   const [feedback, setFeedback] = useState({});
   const lastestMessageLLMMessageId = [...messages].reverse().find((m) => m.role === 'llm')?.msg_id;
   const [isDisableInput, setIsDisableInput] = useState(false);
+  const messageEndRef = useRef(null);
   const {
     show: isPopupOpen,
     message: popupMessage,
   } = useSelector((state) => getTogglePopup(state));
+ 
   const handleSendMessage = async () => {
     const newMessages = [...messages, {
       role: 'user', msg: { user_query: input }, msg_id: Math.random(), showReasoning: false,
@@ -173,12 +175,15 @@ const ChatComponent = () => {
     setMessages(userMessages);
     setFeedback(messages.feedback);
   }, [userMessages]);
+  useEffect(() =>{
+    console.log('messageEndRef.current',messageEndRef.current);
+     messageEndRef.current?.scrollIntoView();
+  },[messages])
   return (
     <div className={`${styles.chatContainer}`}>
       <div className={`${styles.chatAndInputBoxContainer}`}>
         <div className={`${styles.chatMessages}`}>
-          {isTyping && <TypingIndicator />}
-          {[...messages].reverse().map((message) => (
+          {messages.map((message) => (
             <div
               key={message.msg_id}
               className={`${styles.chatMessage} ${message.role === 'llm'
@@ -299,7 +304,9 @@ const ChatComponent = () => {
 
             </div>
           ))}
-        </div>
+          {isTyping && <TypingIndicator />}
+        </div >
+        <div ref={messageEndRef} />
         {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
           <div className={`${styles.inputContainer}`}>
             <input
