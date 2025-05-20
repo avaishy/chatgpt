@@ -14,6 +14,7 @@ import {
   getEditContextButton,
   getCurrentSessionDetails,
   getUserId,
+  getUpdatedChatsArray,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 
 const ManageContext = () => {
@@ -56,25 +57,21 @@ const ManageContext = () => {
     dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
   };
 
-  const removeDocument = async () => {
+  const removeDocument = async (fileIdRemove) => {
 
     try {
-    const fileIds = [];
+    const updatedDocuments = selectedDocuments.filter(
+      (doc) => doc.file_id !== fileIdRemove
+    );
+    
     const seletedContexts = [...seletedCompanyKnowldge,
       ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-    const seletedContextIds = [];
-    seletedContexts.forEach((ele) => {
-      seletedContextIds.push(ele.context_id);
-    });
-    if (selectedDocuments.length > 0) {
-      selectedDocuments.forEach((ele) => {
-        fileIds.push(ele.file_id);
-      });
-    }
+    const seletedContextIds = seletedContexts.map((ctx) => ctx.context_id);
+    const updatedFileIds = updatedDocuments.map((doc)=> doc.file_id);
     const data = {
       user_id: userId,
       chat_id: selectedChat.chat_id,
-      files_selected: fileIds,
+      files_selected: updatedFileIds,
       contexts_selected: seletedContextIds,
       industry_selected: 'Payments',
     };
@@ -135,7 +132,7 @@ const ManageContext = () => {
                   className={styles.removeButton}
                   title='Remove Document'
                   aria-label={`Remove ${doc.file_name}`}
-                  onClick={removeDocument}
+                  onClick={removeDocument(doc.file_id)}
                 >
                   x
                 </span>) : null}
@@ -167,3 +164,4 @@ const ManageContext = () => {
 };
 
 export default ManageContext;
+initClient.jsx:68 TypeError: Cannot read properties of undefined (reading 'buildInitialState')
