@@ -1,2 +1,23 @@
-Knowledge.jsx:56 Uncaught TypeError: Cannot destructure property 'showGeneratePopup' of '(0 , import_react_redux5.useSelector)(...)' as it is undefined.
-    at Knowledge (Knowledge.jsx:56:24)
+  119:19  error    Visible, non-interactive elements with click handlers must have at least one keyboard listener
+                                                                    jsx-a11y/click-events-have-key-events
+  119:19  error    Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+ {documents.length > 0 && (
+        <div className={styles.section}>
+          <strong>Documents</strong>
+          <div className={styles.filesContainer}>
+            {selectedDocuments.map((doc) => (
+              <div key={doc.file_id} className={styles.documentWrapper}>
+                <button type="button" className={styles.button}>{doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}</button>
+                {doc.file_name !== currentSessionDetails.session_name ? (
+                  <span
+                    className={styles.removeButton}
+                    title="Remove Document"
+                    aria-label={`Remove ${doc.file_name}`}
+                    onClick={() => {
+                      removeDocument(doc.file_id);
+                    }}
+                  >
+                    x
+                  </span>
+                ) : null}
+              </div>
