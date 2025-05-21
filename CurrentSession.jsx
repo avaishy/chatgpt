@@ -80,6 +80,7 @@ function CurrentSessions() {
               <p className={`${styles.text}`}>{currentSessionDetails.session_name
                 || (userSelectDocuments?.[0]?.file_name?.split('/')?.pop() ?? 'Untitled Session')}
               </p>
+              {currentSessionDetails.session_name ? null : <MiniProcessingMessage />}
             </button>
           </div>
           {allChats.length > 0 ? allChats.map((ele) => (
