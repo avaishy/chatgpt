@@ -16,3 +16,25 @@
   147:18  error    Do not nest ternary expressions
   151:15  error    Nest ternary expression should be parenthesized
                         unicorn/no-nested-ternary
+
+{documents.length > 0 && (
+        <div className={styles.section}>
+          <strong>Documents</strong>
+          <div className={styles.filesContainer}>
+            {selectedDocuments.map((doc) => (
+              <div key={doc.file_id} className={styles.documentWrapper}>
+                <button type="button" className={styles.button}>{doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}</button>
+                {doc.file_name !== currentSessionDetails.session_name ? (
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    title="Remove Document"
+                    aria-label={`Remove ${doc.file_name}`}
+                    onClick={() => {
+                      removeDocument(doc.file_id);
+                    }}
+                  >
+                    x
+                  </button>
+                ) : null}
+              </div>
