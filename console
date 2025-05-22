@@ -1,21 +1,153 @@
-{showChatComponent && showCurrentSession && <CurrentSessions />}
-
-{(() => {
-  let containerClass = '';
-
-  if (showChatComponent) {
-    if (showProcessingSession) {
-      containerClass = showCurrentSession
-        ? styles.previousSessionsContainerInsideChat
-        : styles.previousSessionsProcessingSession;
+result {is_indexed: false}
+Knowledge.jsx:340 selectedDocument [{…}]0: {file_id: 334, file_name: 'T13.pdf', additional_info: {…}, is_selected: false}length: 1[[Prototype]]: Array(0)
+Knowledge.jsx:342 
+ GET https://lumosusersessionmgmt-dev.aexp.com/indexFile/undefined 405 (Method Not Allowed)
+checkFileIndex @ Knowledge.jsx:342
+Knowledge.jsx:348 result {detail: 'Method Not Allowed'}
+ const openChatCompoent = async () => {
+    if (isUsedByManageContext === false) {
+      dispatch(setToggleProcessingSession(true));
+      const checkFileIndex = async () => {
+        try {
+          const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${selectedDocuments.file_name}`, {
+            method: 'GET',
+            headers: { accept: 'application/json' },
+          });
+  
+          const result = await response.json();
+          console.log('result', result);
+        
+          if (result.is_indexed === true) {
+            dispatch(setChatMessages([]));
+            dispatch(setAllBotSourcesArray([]));
+            dispatch(setCurrentSessionDetails({}));
+            dispatch(setCurrentChat([]));
+            const fileIds = [];
+            let useCaseTemp = null;
+            const seletedContexts = [...seletedCompanyKnowldge,
+              ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
+            const seletedContextIds = [];
+            seletedContexts.forEach((ele) => {
+              seletedContextIds.push(ele.context_id);
+            });
+            if (selectedDocuments.length > 0) {
+              console.log('selectedDocuments', selectedDocuments);
+              selectedDocuments.forEach((ele) => {
+                fileIds.push(ele.file_id);
+              });
+            }
+      
+            if (useCase === 'earnings_call_transcript') {
+              useCaseTemp = 'Earnings Call Transcript';
+            }
+            const data = {
+              user_id: userId,
+              user_agent: 'Windows 10',
+              project_type: 'LUMOS',
+              use_case: useCaseTemp,
+              files_selected: fileIds,
+              contexts_selected: seletedContextIds,
+              industry_selected: industryType,
+            };
+            dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+            dispatch(toggleNewSession(false));
+            dispatch(toggleEditContextButton(true));
+            dispatch(toggleChatComponent(true));
+            dispatch(setToggleCurrentSession(false));
+            try {
+              const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+              if (res.ok) {
+                const result = await res.json();
+                dispatch(setToggleProcessingSession(false));
+                dispatch(setToggleCurrentSession(true));
+                dispatch(setCurrentSessionDetails(result));
+                dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+                dispatch(setCurrentChat(result.chats));
+                dispatch(toggleEditContextButton(false));
+              } else {
+                dispatch(toggleChatComponent(false));
+                dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+                if (res.status === 422) {
+                  toast.error('Unprocessable Entity: Invalid input provided');
+                } else if (res.status === 500) {
+                  toast.error('Server Error: Something went wrong');
+                } else {
+                  toast.error('Please try again later');
+                }
+              }
+            } catch (error) {
+              dispatch(toggleChatComponent(false));
+              dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
+              console.error('Network error: Something went wrong', error);
+              toast.error('Network error: Something went wrong');
+            }
+          }else{
+            console.log('selectedDocument',selectedDocuments);
+            // try {
+            //   const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/indexFile/${selectedDocuments.file_id}`, {
+            //     method: 'GET',
+            //     headers: { accept: 'application/json' },
+            //   });
+      
+            //   const result = await response.json();
+            //   console.log('result', result);
+            // }catch (error) {
+            //   toast.error('Something went wrong in indexing');
+            // }
+          }
+          return result;
+        } catch (error) {
+          toast.error('Something went wrong while checking the file status');
+        }
+      }
+        const FileStatus = await checkFileIndex();
+      
+     
     } else {
-      containerClass = styles.previousSessionsContainerInsideChat;
-    }
-  } else {
-    containerClass = showProcessingSession
-      ? styles.previousProcessSessionsContainer
-      : styles.previousSessionsContainer;
-  }
+      try {
+        const fileIds = [];
+        const seletedContexts = [...seletedCompanyKnowldge,
+          ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
+        const seletedContextIds = [];
+        seletedContexts.forEach((ele) => {
+          seletedContextIds.push(ele.context_id);
+        });
+        if (selectedDocuments.length > 0) {
+          selectedDocuments.forEach((ele) => {
+            fileIds.push(ele.file_id);
+          });
+        }
 
-  return <div className={containerClass}> {/* content */} </div>;
-})()}
+        const data = {
+          user_id: userId,
+          chat_id: selectedChat.chat_id,
+          files_selected: fileIds,
+          contexts_selected: seletedContextIds,
+          industry_selected: industryType,
+        };
+        const allSelectedDocs = isUsedByManageContext
+          ? [
+            ...userSelectedDocumentsFromReduxStore,
+            ...selectedDocuments.filter(
+              (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+            ),
+          ] : selectedDocuments;
+        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+        openOrCloseManageKnowledgeWindow(false);
+        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+        if (res.ok) {
+          const updatedChatsArray = getUpdatedChatsArray({
+            previousChatsArray: currentChatsArray,
+            chatId: selectedChat.chat_id,
+            seletedContexts,
+            selectedDocuments,
+          });
+          dispatch(setCurrentChat(updatedChatsArray));
+          const result = await res.json();
+          if (result.status === 'Success') { toast.success('Updated Successfully'); }
+        } else {
+          toast.error('Something went wrong: Invalid Inputs');
+        }
+      } catch (error) { toast.error('Something went wrong while opening chat components'); }
+    }
+  };
