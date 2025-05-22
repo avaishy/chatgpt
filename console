@@ -40,7 +40,7 @@ function Sources() {
             [{index + 1}] {source.source_title} {source.page}
           </p>
           <div className={styles.content}>
-            <ReactMarkdown style={{whileSpace: 'pre-wrap'}}>Ref. [1] : Page No : [14] for taking ed on over ficer & Director, Visa, Inc. A  \n Ref. [2] : Page No : [19] Visa, Inc. (V) Q3 2024 Earnings </ReactMarkdown>
+            <ReactMarkdown style={{whiteSpace: 'pre-wrap'}}>Ref. [1] : Page No : [14] for taking ed on over ficer & Director, Visa, Inc. A  \n Ref. [2] : Page No : [19] Visa, Inc. (V) Q3 2024 Earnings </ReactMarkdown>
           </div>
         </div>
       ))}
