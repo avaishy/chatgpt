@@ -1,204 +1,31 @@
- 249:0   error    Unexpected undescribed directive comment. Include descriptions to explain why the comment is 
-necessary
-               eslint-comments/require-description
-  253:0   error    Unexpected undescribed directive comment. Include descriptions to explain why the comment is 
-necessary
-               eslint-comments/require-description
-  265:7   error    'selectedDocuments' is already declared in the upper scope on line 60 column 10
+const pollUntilIndexed = async (fileName, maxAttempts = 10, delay = 30000) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    // eslint-disable-next-line no-await-in-loop -- polling requires sequential await
+    const status = await getFileStatus(fileName);
+    if (status.is_indexed) return true;
 
-               no-shadow
-  266:7   error    'userId' is already declared in the upper scope on line 53 column 9
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return -- setTimeout doesn't need return in promise executor
+    await new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
+  }
 
-               no-shadow
-  267:7   error    'useCase' is already declared in the upper scope on line 48 column 9
+  toast.error('Indexing timeout. Please try again later.');
+  return false;
+};const createChatSession = async ({
+  selectedDocuments: docs,
+  userId: uid,
+  useCase: uCase,
+  seletedCompanyKnowldge: compKnow,
+  seletedIndustryKnowldge: indKnow,
+  seletedPersonalKnowldge: perKnow,
+  industryType: industry,
+  dispatch,
+}) => {
+  const fileIds = docs.map((doc) => doc.file_id);
+  const selectedContexts = [...compKnow, ...indKnow, ...perKnow];
+  const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+  const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
 
-               no-shadow
-  268:7   error    'seletedCompanyKnowldge' is already declared in the upper scope on line 54 column 9
-
-               no-shadow
-  269:7   error    'seletedIndustryKnowldge' is already declared in the upper scope on line 55 column 9
-
-               no-shadow
-  270:7   error    'seletedPersonalKnowldge' is already declared in the upper scope on line 56 column 9
-
-               no-shadow
-  271:7   error    'industryType' is already declared in the upper scope on line 47 column 10
-
-               no-shadow
-  272:7   error    'dispatch' is already declared in the upper scope on line 57 column 9
-
-               no-shadow  const pollUntilIndexed = async (fileName, maxAttempts = 10, delay = 30000) => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      const status = await getFileStatus(fileName);
-      if (status.is_indexed) return true;
-
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((resolve) => {
-        setTimeout(resolve, delay);
-      });
-    }
-
-    toast.error('Indexing timeout. Please try again later.');
-    return false;
-  };
-
-  const createChatSession = async (params) => {
-    const {
-      selectedDocuments,
-      userId,
-      useCase,
-      seletedCompanyKnowldge,
-      seletedIndustryKnowldge,
-      seletedPersonalKnowldge,
-      industryType,
-      dispatch,
-    } = params;
-    const fileIds = selectedDocuments.map((doc) => doc.file_id);
-    const selectedContexts = [
-      ...seletedCompanyKnowldge,
-      ...seletedIndustryKnowldge,
-      ...seletedPersonalKnowldge,
-    ];
-    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
-    const useCaseTemp = useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase;
-
-    const body = {
-      user_id: userId,
-      user_agent: 'Windows 10',
-      project_type: 'LUMOS',
-      use_case: useCaseTemp,
-      files_selected: fileIds,
-      contexts_selected: contextIds,
-      industry_selected: industryType,
-    };
-
-    try {
-      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        dispatch(setCurrentSessionDetails(result));
-        dispatch(setCurrentChat(result.chats));
-        dispatch(toggleEditContextButton(false));
-        dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-        return true;
-      }
-      if (res.status === 422) {
-        toast.error('Unprocessable Entity: Invalid input provided');
-      } else if (res.status === 500) {
-        toast.error('Server Error: Something went wrong');
-      } else {
-        toast.error('Please try again later');
-      }
-    } catch (error) {
-      toast.error('Network error while creating chat session');
-    }
-    return false;
-  };
-
-  const openChatComponent = async () => {
-    if (!selectedDocuments?.length) {
-      toast.error('No document selected');
-      return;
-    }
-
-    const selectedDoc = selectedDocuments[0];
-
-    if (!isUsedByManageContext) {
-      dispatch(setToggleProcessingSession(true));
-      dispatch(toggleNewSession(false));
-      const status = await getFileStatus(selectedDoc.file_name);
-
-      if (!status.is_indexed) {
-        await startFileIndexing(selectedDoc.file_id);
-        const indexed = await pollUntilIndexed(selectedDoc.file_name);
-        if (!indexed) {
-          dispatch(setToggleProcessingSession(false));
-          return;
-        }
-      }
-
-      dispatch(setChatMessages([]));
-      dispatch(setAllBotSourcesArray([]));
-      dispatch(setCurrentSessionDetails({}));
-      dispatch(setCurrentChat([]));
-      dispatch(toggleEditContextButton(true));
-      dispatch(setToggleCurrentSession(false));
-      dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
-
-      const success = await createChatSession({
-        selectedDocuments,
-        userId,
-        useCase,
-        seletedCompanyKnowldge,
-        seletedIndustryKnowldge,
-        seletedPersonalKnowldge,
-        industryType,
-        dispatch,
-      });
-
-      if (!success) {
-        dispatch(toggleChatComponent(false));
-      }
-      
-      dispatch(toggleChatComponent(true));
-      dispatch(setToggleProcessingSession(false));
-    } else {
-      try {
-        const fileIds = selectedDocuments.map((d) => d.file_id);
-        const selectedContexts = [
-          ...seletedCompanyKnowldge,
-          ...seletedIndustryKnowldge,
-          ...seletedPersonalKnowldge,
-        ];
-        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
-
-        const body = {
-          user_id: userId,
-          chat_id: selectedChat.chat_id,
-          files_selected: fileIds,
-          contexts_selected: contextIds,
-          industry_selected: industryType,
-        };
-
-        const allSelectedDocs = [
-          ...userSelectedDocumentsFromReduxStore,
-          ...selectedDocuments.filter(
-            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-          ),
-        ];
-
-        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
-        openOrCloseManageKnowledgeWindow(false);
-
-        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (res.ok) {
-          const result = await res.json();
-          if (result.status === 'Success') {
-            const updatedChatsArray = getUpdatedChatsArray({
-              previousChatsArray: currentChatsArray,
-              chatId: selectedChat.chat_id,
-              seletedContexts: selectedContexts,
-              selectedDocuments,
-            });
-            dispatch(setCurrentChat(updatedChatsArray));
-            toast.success('Updated Successfully');
-          }
-        } else {
-          toast.error('Something went wrong: Invalid Inputs');
-        }
-      } catch (error) {
-        toast.error('Something went wrong while opening chat components');
-      }
-    }
-  };
+  // continue using `uid`, `docs`, etc.
+};
