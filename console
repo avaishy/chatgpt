@@ -1,31 +1,51 @@
-const pollUntilIndexed = async (fileName, maxAttempts = 10, delay = 30000) => {
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    // eslint-disable-next-line no-await-in-loop -- polling requires sequential await
-    const status = await getFileStatus(fileName);
-    if (status.is_indexed) return true;
+/* istanbul ignore file */
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import ReactMarkdown from 'react-markdown';
+import styles from '../../../styles/sources.scss';
+import {
+  getChatMessages,
+} from '../../../store/selectors/earningsCallTranscriptSelectors';
 
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return -- setTimeout doesn't need return in promise executor
-    await new Promise((resolve) => {
-      setTimeout(resolve, delay);
-    });
-  }
+function Sources() {
+  const [sources, setSources] = useState([]);
+  const userMessages = useSelector((state) => getChatMessages(state));
 
-  toast.error('Indexing timeout. Please try again later.');
-  return false;
-};const createChatSession = async ({
-  selectedDocuments: docs,
-  userId: uid,
-  useCase: uCase,
-  seletedCompanyKnowldge: compKnow,
-  seletedIndustryKnowldge: indKnow,
-  seletedPersonalKnowldge: perKnow,
-  industryType: industry,
-  dispatch,
-}) => {
-  const fileIds = docs.map((doc) => doc.file_id);
-  const selectedContexts = [...compKnow, ...indKnow, ...perKnow];
-  const contextIds = selectedContexts.map((ctx) => ctx.context_id);
-  const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+  useEffect(() => {
+    let latestSources = [];
+    if (userMessages.length > 0) {
+      const latestBotMessage = userMessages.filter((msg) => msg.role === 'llm').at(-1);
+      if ('msg' in latestBotMessage) {
+        latestSources = latestBotMessage.msg.sources;
+      }
+      setSources(latestSources);
+    }
+  }, [userMessages]);
 
-  // continue using `uid`, `docs`, etc.
-};
+  const cleanText = (text) => {
+    try {
+      const unwrapped = JSON.parse(text);
+      return unwrapped.replace(/\\n/g, '\n');
+    } catch (e) {
+      return text.replace(/\\n/g, '\n');
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <h3 className={styles.heading}>Sources</h3>
+      {sources.map((source, index) => (
+        <div key={source.llm_response_id} className={styles.source} >
+          <p className={styles.title}>
+            [{index + 1}] {source.source_title} {source.page}
+          </p>
+          <div className={styles.content}>
+            <ReactMarkdown style={{whileSpace: 'pre-wrap'}}>Ref. [1] : Page No : [14] for taking ed on over ficer & Director, Visa, Inc. A  \n Ref. [2] : Page No : [19] Visa, Inc. (V) Q3 2024 Earnings </ReactMarkdown>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default Sources;
