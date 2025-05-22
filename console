@@ -1,71 +1,21 @@
-        {showChatComponent === true && showCurrentSession === true ? <CurrentSessions /> : null}
-          <div className={showChatComponent === true
-            ? showProcessingSession
-              ? (showCurrentSession
-                ? styles.previousSessionsContainerInsideChat
-                : styles.previousSessionsProcessingSession)
-              : styles.previousSessionsContainerInsideChat
-            : showProcessingSession
-              ? styles.previousProcessSessionsContainer
-              : styles.previousSessionsContainer}
-          >
-  146:15  error    Nest ternary expression should be parenthesized
-                                   unicorn/no-nested-ternary
-  147:17  error    Unnecessary parentheses around expression
-                                   no-extra-parens
-  147:18  error    Do not nest ternary expressions
-  151:15  error    Nest ternary expression should be parenthesized
-                        unicorn/no-nested-ternary
+{showChatComponent && showCurrentSession && <CurrentSessions />}
 
-{documents.length > 0 && (
-        <div className={styles.section}>
-          <strong>Documents</strong>
-          <div className={styles.filesContainer}>
-            {selectedDocuments.map((doc) => (
-              <div key={doc.file_id} className={styles.documentWrapper}>
-                <button type="button" className={styles.button}>{doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}</button>
-                {doc.file_name !== currentSessionDetails.session_name ? (
-                  <button
-                    type="button"
-                    className={styles.removeButton}
-                    title="Remove Document"
-                    aria-label={`Remove ${doc.file_name}`}
-                    onClick={() => {
-                      removeDocument(doc.file_id);
-                    }}
-                  >
-                    x
-                  </button>
-                ) : null}
-              </div>
+{(() => {
+  let containerClass = '';
 
-{documents.length > 0 && (
-  <div className={styles.section}>
-    <strong>Documents</strong>
-    <div className={styles.filesContainer}>
-      {selectedDocuments.map((doc) => {
-        const fileName = doc.additional_info.fileName || doc.file_name;
-        const truncatedName = fileName.length > 30 ? `${fileName.slice(0, 30)}…` : fileName;
+  if (showChatComponent) {
+    if (showProcessingSession) {
+      containerClass = showCurrentSession
+        ? styles.previousSessionsContainerInsideChat
+        : styles.previousSessionsProcessingSession;
+    } else {
+      containerClass = styles.previousSessionsContainerInsideChat;
+    }
+  } else {
+    containerClass = showProcessingSession
+      ? styles.previousProcessSessionsContainer
+      : styles.previousSessionsContainer;
+  }
 
-        return (
-          <div key={doc.file_id} className={styles.documentWrapper}>
-            <button type="button" className={styles.button}>
-              {truncatedName}
-            </button>
-            {doc.file_name !== currentSessionDetails.session_name && (
-              <button
-                type="button"
-                className={styles.removeButton}
-                title="Remove Document"
-                aria-label={`Remove ${doc.file_name}`}
-                onClick={() => removeDocument(doc.file_id)}
-              >
-                x
-              </button>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+  return <div className={containerClass}> {/* content */} </div>;
+})()}
