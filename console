@@ -1,22 +1,15 @@
-  error    Unary operator '++' used
+const pollUntilIndexed = async (fileName, maxAttempts = 10, delay = 30000) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const status = await getFileStatus(fileName);
+    if (status.is_indexed) return true;
 
-               no-plusplus
-  250:22  error    Unexpected `await` inside a loop
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
+  }
 
-               no-await-in-loop
-  252:7   error    Unexpected `await` inside a loop
-
-               no-await-in-loop
-  252:38  error    Return values from promise executor functions cannot be read
-
-               no-promise-executor-return
-
-  const pollUntilIndexed = async (fileName, maxAttempts = 10, delay = 30000) => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const status = await getFileStatus(fileName);
-      if (status.is_indexed) return true;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-    toast.error('Indexing timeout. Please try again later.');
-    return false;
-  };
+  toast.error('Indexing timeout. Please try again later.');
+  return false;
+};
