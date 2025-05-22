@@ -38,3 +38,34 @@
                   </button>
                 ) : null}
               </div>
+
+{documents.length > 0 && (
+  <div className={styles.section}>
+    <strong>Documents</strong>
+    <div className={styles.filesContainer}>
+      {selectedDocuments.map((doc) => {
+        const fileName = doc.additional_info.fileName || doc.file_name;
+        const truncatedName = fileName.length > 30 ? `${fileName.slice(0, 30)}…` : fileName;
+
+        return (
+          <div key={doc.file_id} className={styles.documentWrapper}>
+            <button type="button" className={styles.button}>
+              {truncatedName}
+            </button>
+            {doc.file_name !== currentSessionDetails.session_name && (
+              <button
+                type="button"
+                className={styles.removeButton}
+                title="Remove Document"
+                aria-label={`Remove ${doc.file_name}`}
+                onClick={() => removeDocument(doc.file_id)}
+              >
+                x
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
