@@ -12,6 +12,7 @@ import {
   getCurrentSessionDetails,
   getToggleChatComponent,
   getUserId,
+  getToggleCurrentSession,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import {
   toggleNewSession, setCurrentSessionDetails,
@@ -24,8 +25,10 @@ import {
   setCurrentChat,
   toggleEditContextButton,
   addUseCase,
+  setToggleCurrentSession,
 } from '../../../store/actions/earningsCallTranscriptActions';
 import FileProcessingStatus from '../utility/FileProcessingStatus';
+import NewSessionStatus from '../utility/NewSessionStatus';
 
 const SessionsNav = () => {
   const dispatch = useDispatch();
@@ -35,9 +38,10 @@ const SessionsNav = () => {
   const [previousSessions, setPreviousSessions] = useState([]);
   const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
   const [fileProcessStatus, setFileProcessStatus] = useState(false);
+  const [newSessionStatus, setNewSessionStatus] = useState(false);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [isSessionsId, setIsSessionsId] = useState(true);
-
+  const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
   const handleNewSessionClick = () => {
     dispatch(setUserSelectedCompanyKnowledge([]));
     dispatch(setUserSelectedIndustryKnowledge([]));
@@ -46,12 +50,20 @@ const SessionsNav = () => {
     dispatch(toggleNewSession(true));
     dispatch(toggleChatComponent(false));
     setFileProcessStatus(false);
+    setNewSessionStatus(false);
   };
 
   const handleFileProcessingClick = () => {
+    setNewSessionStatus(false);
     dispatch(toggleChatComponent(false));
-    setFileProcessStatus(true);
     dispatch(toggleNewSession(false));
+    setFileProcessStatus(true);
+  };
+  const handleNewSessionProcessingClick = () => {
+    dispatch(toggleChatComponent(false));
+    setNewSessionStatus(true);
+    dispatch(toggleNewSession(false));
+    setFileProcessStatus(false);
   };
 
   const getPreviousSessions = async () => {
@@ -92,8 +104,10 @@ const SessionsNav = () => {
   }, [showChatComponent, currentSessionDetails]);
 
   const navigateToPreviousSession = async (session) => {
+    dispatch(setToggleCurrentSession(true));
     setIsSessionsId(session.session_id);
     setFileProcessStatus(false);
+    setNewSessionStatus(false);
     dispatch(setCurrentSessionDetails(session));
     dispatch(setCurrentChat(session.chats));
     dispatch(toggleNewSession(false));
@@ -116,7 +130,20 @@ const SessionsNav = () => {
           <div className={`${styles.buttonContainer}`}>
             <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
           </div>
-          {showChatComponent === true ? <CurrentSessions /> : null}
+          <div>
+            <div className={`${styles.navigationContainer}`}>
+              <button
+                type="button"
+                className={`${styles.navigationItem}`}
+                onClick={handleNewSessionProcessingClick}
+              >
+                <div className={styles.textWrapper}>
+                  <p className={styles.newSessionNames}>New Session Status</p>
+                </div>
+              </button>
+            </div>
+          </div>
+          {showChatComponent && showCurrentSession && <CurrentSessions />}
           <div className={showChatComponent === true
             ? styles.previousSessionsContainerInsideChat
             : styles.previousSessionsContainer}
@@ -153,6 +180,7 @@ const SessionsNav = () => {
           </div>
         </Navigation>
         {fileProcessStatus === true ? <FileProcessingStatus /> : null}
+        {newSessionStatus === true ? <NewSessionStatus /> : null}
         {showNewSession === true ? <NewSesssion /> : null}
         {showChatComponent === true ? <ChatComponentWrapper /> : null}
       </div>
