@@ -47,16 +47,32 @@ const FileProcessingStatus = () => {
     fetchFileStatuses();
   }, [userId]);
 
-  if (showNewSessionStatus) {
-    return <NewSessionStatus />;
+  const toggleShowReasoning = () => {
+    if(showNewSessionStatus){
+      setShowNewSessionStatus(false);
+
+      return <NewSessionStatus />;
+    }else{
+      setShowNewSessionStatus(true);
+    }
   }
+
+  
 
   return (
     <div className={styles.section}>
       <div className={styles.statusHeader}>
-        <button onClick={() => setShowNewSessionStatus(true)} className={styles.changeStatusButton}>
-          Change Status
-        </button>
+        <div className={styles.toggleContainer}>
+                                <label className={styles.switch}>
+                                  <input
+                                    type="checkbox"
+                                    onChange={() => toggleShowReasoning}
+                                  />
+                                  <span className={styles.slider}>
+                                    {showNewSessionStatus ? 'Session Status' : 'File Status'}
+                                  </span>
+                                </label>
+                              </div>
       </div>
       <table className={styles.fileProcessingTable}>
         <thead>
