@@ -16,32 +16,32 @@ const FileProcessingStatus = () => {
     const seconds = Math.floor(Number.parseFloat(rest));
     return `${Number.parseInt(hours, 10)}h ${Number.parseInt(minutes, 10)}m ${seconds}s`;
   };
+  const fetchFileStatuses = async () => {
+    try {
+      const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setFileStatuses(result);
+      } else {
+        toast.error('Invalid request. Please try again later');
+      }
+    } catch (error) {
+      toast.error('Something went wrong while loading file statuses. Please try again later');
+    }
+  };
 
   useEffect(() => {
-    const fetchFileStatuses = async () => {
-      try {
-        const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setFileStatuses(result);
-        } else {
-          toast.error('Invalid request. Please try again later');
-        }
-      } catch (error) {
-        toast.error('Something went wrong while loading file statuses. Please try again later');
-      }
-    };
     fetchFileStatuses();
   }, [userId]);
 
