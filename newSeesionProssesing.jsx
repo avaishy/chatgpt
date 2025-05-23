@@ -1,14 +1,15 @@
-/* istanbul ignore file */
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import styles from '../../../styles/FileProcessing.scss';
 import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
+import NewSessionStatus from './NewSessionStatus';
 
-const NewSessionStatus = () => {
+const FileProcessingStatus = () => {
   const userId = useSelector((state) => getUserId(state));
   const useCase = 'Earnings Call Transcript';
-  const [newSessionStatus, setNewSessionStatus] = useState([]);
+  const [fileStatuses, setFileStatuses] = useState([]);
+  const [showNewSessionStatus, setShowNewSessionStatus] = useState(false);
 
   const formatTimeDuration = (duration) => {
     if (!duration) return '—';
@@ -16,9 +17,10 @@ const NewSessionStatus = () => {
     const seconds = Math.floor(Number.parseFloat(rest));
     return `${Number.parseInt(hours, 10)}h ${Number.parseInt(minutes, 10)}m ${seconds}s`;
   };
-  const fetchNewSessionStatus = async () => {
+
+  const fetchFileStatuses = async () => {
     try {
-      const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
+      const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,42 +28,51 @@ const NewSessionStatus = () => {
         },
         body: JSON.stringify({
           user_id: userId,
-          use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
+          use_case: useCase,
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        setNewSessionStatus(result);
+        setFileStatuses(result);
       } else {
         toast.error('Invalid request. Please try again later');
       }
     } catch (error) {
-      toast.error('Something went wrong while loading new session statuses. Please try again later');
+      toast.error('Something went wrong while loading file statuses. Please try again later');
     }
   };
 
   useEffect(() => {
-    fetchNewSessionStatus();
+    fetchFileStatuses();
   }, [userId]);
 
+  if (showNewSessionStatus) {
+    return <NewSessionStatus />;
+  }
+
   return (
-    <div className={`${styles.section}`}>
+    <div className={styles.section}>
+      <div className={styles.statusHeader}>
+        <button onClick={() => setShowNewSessionStatus(true)} className={styles.changeStatusButton}>
+          Change Status
+        </button>
+      </div>
       <table className={styles.fileProcessingTable}>
         <thead>
           <tr>
-            <th>Session Name</th>
+            <th>File Name</th>
             <th>Status</th>
             <th>Execution Time</th>
             <th>User ID</th>
           </tr>
         </thead>
         <tbody>
-          {newSessionStatus.map((session) => (
-            <tr key={`${session.session_name}-${session.status}-${session.duration}-${userId}`}>
-              <td style={{ width: '40%' }}>{session.session_name}</td>
-              <td style={{ width: '20%' }}>{session.status}</td>
-              <td style={{ width: '20%' }}>{session.duration ? formatTimeDuration(session.duration) : '—'}</td>
+          {fileStatuses.map((file) => (
+            <tr key={`${file.file_name}-${file.status}-${file.duration}-${userId}`}>
+              <td style={{ width: '40%' }}>{file.file_name}</td>
+              <td style={{ width: '20%' }}>{file.status}</td>
+              <td style={{ width: '20%' }}>{file.duration ? formatTimeDuration(file.duration) : '—'}</td>
               <td style={{ width: '20%' }}>{userId}</td>
             </tr>
           ))}
@@ -71,4 +82,4 @@ const NewSessionStatus = () => {
   );
 };
 
-export default NewSessionStatus;
+export default FileProcessingStatus;
