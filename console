@@ -1,11 +1,21 @@
-indexingStatuses []
-ProcessingStatus.jsx:98 anyProcessing false
-ProcessingStatus.jsx:101 allCompleted false
-ProcessingStatus.jsx:102 indexingWasProcessing.current false
-ProcessingStatus.jsx:96 indexingStatuses (17) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-ProcessingStatus.jsx:98 anyProcessing false
-ProcessingStatus.jsx:101 allCompleted false
-ProcessingStatus.jsx:102 indexingWasProcessing.current false
+first useeffect fetch called which is unneccessary
+ProcessingStatus.jsx:97 indexingStatuses []
+ProcessingStatus.jsx:99 anyProcessing false
+ProcessingStatus.jsx:102 allCompleted false
+ProcessingStatus.jsx:113 indexingWasProcessing.current false
+ProcessingStatus.jsx:97 indexingStatuses (18) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+ProcessingStatus.jsx:99 anyProcessing true
+ProcessingStatus.jsx:102 allCompleted false
+ProcessingStatus.jsx:113 indexingWasProcessing.current true
+ProcessingStatus.jsx:89 first useeffect fetch called which is unneccessary
+ProcessingStatus.jsx:97 indexingStatuses []
+ProcessingStatus.jsx:99 anyProcessing false
+ProcessingStatus.jsx:102 allCompleted false
+ProcessingStatus.jsx:113 indexingWasProcessing.current false
+ProcessingStatus.jsx:97 indexingStatuses (18) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+ProcessingStatus.jsx:99 anyProcessing true
+ProcessingStatus.jsx:102 allCompleted false
+ProcessingStatus.jsx:113 indexingWasProcessing.current true
 /* istanbul ignore file */
 import React, {
   useEffect, useState, useMemo, useCallback, useRef,
@@ -94,6 +104,7 @@ const ProcessingStatus = () => {
 
   useEffect(() => {
     if (userId) {
+      console.log('first useeffect fetch called which is unneccessary');
       fetchStatuses();
     }
   }, [userId, fetchStatuses]);
@@ -107,15 +118,18 @@ const ProcessingStatus = () => {
 
     const allCompleted = indexingStatuses.length > 0 && indexingStatuses.every((item) => item.status === 'Completed');
     console.log('allCompleted', allCompleted);
-    console.log('indexingWasProcessing.current', indexingWasProcessing.current);
    
     
     if (indexingWasProcessing.current && allCompleted) {
+    console.log('fetch is called inside useeffect');
+
       fetchStatuses(); // Only now: after processing becomes completed
     }
 
     // Update ref for next comparison
     indexingWasProcessing.current = anyProcessing;
+    console.log('indexingWasProcessing.current', indexingWasProcessing.current);
+
   }, [allStatuses, fetchStatuses]);
 
   const filteredStatuses = useMemo(() => allStatuses.filter((item) => {
