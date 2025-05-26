@@ -1,5 +1,7 @@
 /* istanbul ignore file */
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, {
+  useEffect, useState, useMemo, useCallback, useRef,
+} from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import styles from '../../../styles/FileProcessing.scss';
@@ -8,16 +10,19 @@ import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelect
 const ProcessingStatus = () => {
   const userId = useSelector(getUserId);
   const [allStatuses, setAllStatuses] = useState([]);
-  const [taskFilter, setTaskFilter] = useState('Indexing');
+  const [taskFilter, setTaskFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(false);
 
   const useCase = 'Earnings Call Transcript';
+
+  const indexingWasProcessing = useRef(false); // Track if we were processing
 
   const formatTimeDuration = (duration) => {
     if (!duration) return '—';
     const [hours, minutes, rest] = duration.split(':');
     const seconds = Math.floor(Number.parseFloat(rest));
-    return `${parseInt(hours, 10)}h ${parseInt(minutes, 10)}m ${seconds}s`;
+    return `${Number.parseInt(hours, 10)}h ${Number.parseInt(minutes, 10)}m ${seconds}s`;
   };
 
   const fetchStatuses = useCallback(async () => {
@@ -85,11 +90,29 @@ const ProcessingStatus = () => {
     }
   }, [userId, fetchStatuses]);
 
-  // useMemo to compute filtered data only when dependencies change
-  const filteredStatuses = useMemo(() => {
-    if (taskFilter === 'All') return allStatuses;
-    return allStatuses.filter((item) => item.task === taskFilter);
-  }, [allStatuses, taskFilter]);
+  // Detect transition from Indexing "Processing" → "Completed"
+  useEffect(() => {
+    const indexingStatuses = allStatuses.filter((item) => item.task === 'Indexing');
+    console.log('indexingStatuses', indexingStatuses);
+    const anyProcessing = indexingStatuses.some((item) => item.status === 'Processing');
+    console.log('anyProcessing', anyProcessing);
+
+    const allCompleted = indexingStatuses.length > 0 && indexingStatuses.every((item) => item.status === 'Completed');
+    console.log('allCompleted', allCompleted);
+   
+    if (indexingWasProcessing.current && allCompleted) {
+      fetchStatuses(); // Only now: after processing becomes completed
+    }
+
+    // Update ref for next comparison
+    indexingWasProcessing.current = anyProcessing;
+  }, [allStatuses, fetchStatuses]);
+
+  const filteredStatuses = useMemo(() => allStatuses.filter((item) => {
+    const matchesTask = taskFilter === 'All' || item.task === taskFilter;
+    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+    return matchesTask && matchesStatus;
+  }), [allStatuses, taskFilter, statusFilter]);
 
   return (
     <div className={styles.section}>
@@ -99,19 +122,33 @@ const ProcessingStatus = () => {
         <table className={styles.fileProcessingTable}>
           <thead>
             <tr>
-              <th><div className={styles.toggleContainer}>
-          <select
-            value={taskFilter}
-            onChange={(e) => setTaskFilter(e.target.value)}
-            className={styles.dropdown}
-          >
-            <option value="All">All</option>
-            <option value="Indexing">Indexing</option>
-            <option value="Pre-summarized">Pre-summarized chats</option>
-          </select>
-        </div></th>
+              <th>
+                <div className={styles.toggleContainer}>
+                  <select
+                    value={taskFilter}
+                    onChange={(e) => setTaskFilter(e.target.value)}
+                    className={styles.dropdown}
+                  >
+                    <option value="All">All</option>
+                    <option value="Indexing">Indexing</option>
+                    <option value="Pre-summarized">Pre-summarized chats</option>
+                  </select>
+                </div>
+              </th>
               <th>Name</th>
-              <th>Status</th>
+              <th>
+                <div className={styles.toggleContainer}>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className={styles.dropdown}
+                  >
+                    <option value="All">All</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </th>
               <th>Execution Time</th>
               <th>User ID</th>
             </tr>
