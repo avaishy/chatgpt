@@ -1,35 +1,12 @@
-import React from 'react';
-import './LoadingDots.scss'; // optional, if using SCSS module
-
-const LoadingDots = ({ text = 'Loading', dotCount = 3, speed = 500 }) => {
-  const [dots, setDots] = React.useState('');
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length < dotCount ? prev + '.' : ''));
-    }, speed);
-
-    return () => clearInterval(interval);
-  }, [dotCount, speed]);
-
-  return <span>{text}{dots}</span>;
-};
-
-export default LoadingDots;
-.loading-dots {
-  display: inline-block;
-  &::after {
-    content: '';
-    display: inline-block;
-    width: 1em;
-    text-align: left;
-    animation: dots 1.5s steps(3, end) infinite;
-  }
-}
-
-@keyframes dots {
-  0%   { content: ''; }
-  33%  { content: '.'; }
-  66%  { content: '..'; }
-  100% { content: '...'; }
-}
+ {filteredStatuses.map((item) => (
+              <tr key={`${item.task}-${item.name}-${item.status}-${item.file_name}-${userId}`}>
+                <td style={{ width: '20%' }}>{item.task}</td>
+                <td style={{ width: '20%' }}>{item.name}</td>
+                <td style={{ width: '20%' }}>{item.status}</td>
+                <td style={{ width: '20%' }}>
+                  {item.duration ? formatTimeDuration(item.duration) : '—'}
+                </td>
+                <td style={{ width: '20%' }}>{userId}</td>
+              </tr>
+            ))}
+          </tbody>Warning: Encountered two children with the same key, `Test13.pdf-anupam`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Error Component Stack
