@@ -13,6 +13,7 @@ import {
   getToggleChatComponent,
   getUserId,
   getToggleCurrentSession,
+  getToggleProcessingStatus,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import {
   toggleNewSession, setCurrentSessionDetails,
@@ -26,9 +27,9 @@ import {
   toggleEditContextButton,
   addUseCase,
   setToggleCurrentSession,
+  setToggleProcessingStatus,
 } from '../../../store/actions/earningsCallTranscriptActions';
-import FileProcessingStatus from '../utility/FileProcessingStatus';
-import NewSessionStatus from '../utility/NewSessionStatus';
+import ProcessingStatus from '../utility/ProcessingStatus';
 
 const SessionsNav = () => {
   const dispatch = useDispatch();
@@ -37,11 +38,11 @@ const SessionsNav = () => {
   const showChatComponent = useSelector((state) => getToggleChatComponent(state));
   const [previousSessions, setPreviousSessions] = useState([]);
   const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
-  const [fileProcessStatus, setFileProcessStatus] = useState(false);
-  const [newSessionStatus, setNewSessionStatus] = useState(false);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [isSessionsId, setIsSessionsId] = useState(true);
   const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
+  const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
+
   const handleNewSessionClick = () => {
     dispatch(setUserSelectedCompanyKnowledge([]));
     dispatch(setUserSelectedIndustryKnowledge([]));
@@ -49,21 +50,13 @@ const SessionsNav = () => {
     dispatch(setUserSelectedDocumentsForChat([]));
     dispatch(toggleNewSession(true));
     dispatch(toggleChatComponent(false));
-    setFileProcessStatus(false);
-    setNewSessionStatus(false);
+    dispatch(setToggleProcessingStatus(false));
   };
 
   const handleFileProcessingClick = () => {
-    setNewSessionStatus(false);
     dispatch(toggleChatComponent(false));
     dispatch(toggleNewSession(false));
-    setFileProcessStatus(true);
-  };
-  const handleNewSessionProcessingClick = () => {
-    dispatch(toggleChatComponent(false));
-    setNewSessionStatus(true);
-    dispatch(toggleNewSession(false));
-    setFileProcessStatus(false);
+    dispatch(setToggleProcessingStatus(true));
   };
 
   const getPreviousSessions = async () => {
@@ -106,8 +99,7 @@ const SessionsNav = () => {
   const navigateToPreviousSession = async (session) => {
     dispatch(setToggleCurrentSession(true));
     setIsSessionsId(session.session_id);
-    setFileProcessStatus(false);
-    setNewSessionStatus(false);
+    dispatch(setToggleProcessingStatus(false));
     dispatch(setCurrentSessionDetails(session));
     dispatch(setCurrentChat(session.chats));
     dispatch(toggleNewSession(false));
@@ -130,19 +122,7 @@ const SessionsNav = () => {
           <div className={`${styles.buttonContainer}`}>
             <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
           </div>
-          <div>
-            <div className={`${styles.navigationContainer}`}>
-              <button
-                type="button"
-                className={`${styles.navigationItem}`}
-                onClick={handleNewSessionProcessingClick}
-              >
-                <div className={styles.textWrapper}>
-                  <p className={styles.newSessionNames}>New Session Status</p>
-                </div>
-              </button>
-            </div>
-          </div>
+          <div />
           {showChatComponent && showCurrentSession && <CurrentSessions />}
           <div className={showChatComponent === true
             ? styles.previousSessionsContainerInsideChat
@@ -176,11 +156,10 @@ const SessionsNav = () => {
               ))}
           </div>
           <div className={`${styles.buttonContainer}`}>
-            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>File Processing status</button>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>Processing status</button>
           </div>
         </Navigation>
-        {fileProcessStatus === true ? <FileProcessingStatus /> : null}
-        {newSessionStatus === true ? <NewSessionStatus /> : null}
+        {showProcessStatus === true ? <ProcessingStatus /> : null}
         {showNewSession === true ? <NewSesssion /> : null}
         {showChatComponent === true ? <ChatComponentWrapper /> : null}
       </div>
