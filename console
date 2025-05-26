@@ -1,88 +1,143 @@
- try {
-        const status = await getFileStatus(selectedDoc.file_name);
+/* istanbul ignore file */
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import styles from '../../../styles/FileProcessing.scss';
+import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
 
-        const fileStatuses = await fetchFileStatuses();
-      const notIndexedFiles = selectedDocuments.filter((doc) => {
-        const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
-        return statusEntry && statusEntry.status !== 'Completed';
-      });
-      if (notIndexedFiles.length > 0) {
-        const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
-        dispatch(setTogglePopup(true, `These files are still indexing: ${filesName}. Please wait until indexing is completed.`));
-        return;
+const ProcessingStatus = () => {
+  const userId = useSelector(getUserId);
+  const [allStatuses, setAllStatuses] = useState([]);
+  const [taskFilter, setTaskFilter] = useState('All'); // Options: All, Indexing, Preprocessing
+  const [loading, setLoading] = useState(false);
 
-        const fileIds = selectedDocuments.map((d) => d.file_id);
-        const selectedContexts = [
-          ...seletedCompanyKnowldge,
-          ...seletedIndustryKnowldge,
-          ...seletedPersonalKnowldge,
-        ];
-        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+  const useCase = 'Earnings Call Transcript';
 
-        const body = {
-          user_id: userId,
-          chat_id: selectedChat.chat_id,
-          files_selected: fileIds,
-          contexts_selected: contextIds,
-          industry_selected: industryType,
-        };
-
-        const allSelectedDocs = [
-          ...userSelectedDocumentsFromReduxStore,
-          ...selectedDocuments.filter(
-            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-          ),
-        ];
-
-        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
-        openOrCloseManageKnowledgeWindow(false);
-
-        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (res.ok) {
-          const result = await res.json();
-          if (result.status === 'Success') {
-            const updatedChatsArray = getUpdatedChatsArray({
-              previousChatsArray: currentChatsArray,
-              chatId: selectedChat.chat_id,
-              seletedContexts: selectedContexts,
-              selectedDocuments,
-            });
-            dispatch(setCurrentChat(updatedChatsArray));
-            toast.success('Updated Successfully');
-          }
-        } else {
-          toast.error('Something went wrong: Invalid Inputs');
-        }
-      } catch (error) {
-        toast.error('Something went wrong while opening chat components');
-      }
-    }
-  }; const getFileStatus = async (fileName) => {
-    try {
-      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${fileName}`, {
-        method: 'GET',
-        headers: { accept: 'application/json' },
-      });
-      return await res.json();
-    } catch (err) {
-      toast.error('Failed to check file status');
-      return { is_indexed: false };
-    }
-  }; const startFileIndexing = async (fileId) => {
-    try {
-      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/indexFile/${fileId}`, {
-        method: 'POST',
-        headers: { accept: 'application/json' },
-      });
-      if (res.status === 200) {
-        toast.success('Indexing completed...');
-      }
-    } catch (err) {
-      console.log('Error starting indexing');
-    }
+  const formatTimeDuration = (duration) => {
+    if (!duration) return '—';
+    const [hours, minutes, rest] = duration.split(':');
+    const seconds = Math.floor(Number.parseFloat(rest));
+    return `${parseInt(hours, 10)}h ${parseInt(minutes, 10)}m ${seconds}s`;
   };
+
+  const fetchStatuses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [fileRes, sessionRes] = await Promise.all([
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            use_case: useCase,
+          }),
+        }),
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            use_case: useCase,
+          }),
+        }),
+      ]);
+
+      if (!fileRes.ok || !sessionRes.ok) {
+        throw new Error('Failed to fetch one or both statuses');
+      }
+
+      const [fileStatuses, sessionStatuses] = await Promise.all([
+        fileRes.json(),
+        sessionRes.json(),
+      ]);
+
+      const formattedFiles = fileStatuses.map((item) => ({
+        task: 'Indexing',
+        name: item.file_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      const formattedSessions = sessionStatuses.map((item) => ({
+        task: 'Preprocessing',
+        name: item.session_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      setAllStatuses([...formattedFiles, ...formattedSessions]);
+    } catch (error) {
+      toast.error('Error fetching statuses');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchStatuses();
+    }
+  }, [userId, fetchStatuses]);
+
+  // useMemo to compute filtered data only when dependencies change
+  const filteredStatuses = useMemo(() => {
+    if (taskFilter === 'All') return allStatuses;
+    return allStatuses.filter((item) => item.task === taskFilter);
+  }, [allStatuses, taskFilter]);
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.statusHeader}>
+        <div className={styles.text}><p>Filter by Task</p></div>
+        <div className={styles.toggleContainer}>
+          <select
+            value={taskFilter}
+            onChange={(e) => setTaskFilter(e.target.value)}
+            className={styles.dropdown}
+          >
+            <option value="All">All</option>
+            <option value="Indexing">Indexing</option>
+            <option value="Preprocessing">Preprocessing</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className={styles.fileProcessingTable}>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Execution Time</th>
+              <th>User ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStatuses.map((item, idx) => (
+              <tr key={`${item.name}-${item.status}-${idx}`}>
+                <td style={{ width: '20%' }}>{item.task}</td>
+                <td style={{ width: '20%' }}>{item.name}</td>
+                <td style={{ width: '20%' }}>{item.status}</td>
+                <td style={{ width: '20%' }}>
+                  {item.duration ? formatTimeDuration(item.duration) : '—'}
+                </td>
+                <td style={{ width: '20%' }}>{userId}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+export default ProcessingStatus;
