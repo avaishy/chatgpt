@@ -8,7 +8,8 @@ import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelect
 const ProcessingStatus = () => {
   const userId = useSelector(getUserId);
   const [allStatuses, setAllStatuses] = useState([]);
-  const [taskFilter, setTaskFilter] = useState('All'); // Options: All, Indexing, Preprocessing
+  const [taskFilter, setTaskFilter] = useState('Indexing');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(false);
 
   const useCase = 'Earnings Call Transcript';
@@ -65,7 +66,7 @@ const ProcessingStatus = () => {
       }));
 
       const formattedSessions = sessionStatuses.map((item) => ({
-        task: 'Preprocessing',
+        task: 'Pre-summarized',
         name: item.session_name,
         status: item.status,
         duration: item.duration,
@@ -85,56 +86,73 @@ const ProcessingStatus = () => {
     }
   }, [userId, fetchStatuses]);
 
-  // useMemo to compute filtered data only when dependencies change
+  // useMemo to filter based on task and status
   const filteredStatuses = useMemo(() => {
-    if (taskFilter === 'All') return allStatuses;
-    return allStatuses.filter((item) => item.task === taskFilter);
-  }, [allStatuses, taskFilter]);
+    return allStatuses.filter((item) => {
+      const matchesTask = taskFilter === 'All' || item.task === taskFilter;
+      const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+      return matchesTask && matchesStatus;
+    });
+  }, [allStatuses, taskFilter, statusFilter]);
 
   return (
     <div className={styles.section}>
-      <div className={styles.statusHeader}>
-        <div className={styles.text}><p>Filter by Task</p></div>
-        <div className={styles.toggleContainer}>
-          <select
-            value={taskFilter}
-            onChange={(e) => setTaskFilter(e.target.value)}
-            className={styles.dropdown}
-          >
-            <option value="All">All</option>
-            <option value="Indexing">Indexing</option>
-            <option value="Preprocessing">Preprocessing</option>
-          </select>
-        </div>
-      </div>
-
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table className={styles.fileProcessingTable}>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Execution Time</th>
-              <th>User ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStatuses.map((item, idx) => (
-              <tr key={`${item.name}-${item.status}-${idx}`}>
-                <td style={{ width: '20%' }}>{item.task}</td>
-                <td style={{ width: '20%' }}>{item.name}</td>
-                <td style={{ width: '20%' }}>{item.status}</td>
-                <td style={{ width: '20%' }}>
-                  {item.duration ? formatTimeDuration(item.duration) : '—'}
-                </td>
-                <td style={{ width: '20%' }}>{userId}</td>
+        <>
+          <div className={styles.filtersRow}>
+            <div className={styles.toggleContainer}>
+              <label>Filter by Task:</label>
+              <select
+                value={taskFilter}
+                onChange={(e) => setTaskFilter(e.target.value)}
+                className={styles.dropdown}
+              >
+                <option value="All">All</option>
+                <option value="Indexing">Indexing</option>
+                <option value="Pre-summarized">Pre-summarized chats</option>
+              </select>
+            </div>
+            <div className={styles.toggleContainer}>
+              <label>Filter by Status:</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className={styles.dropdown}
+              >
+                <option value="All">All</option>
+                <option value="Processing">Processing</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <table className={styles.fileProcessingTable}>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Execution Time</th>
+                <th>User ID</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredStatuses.map((item, idx) => (
+                <tr key={`${item.name}-${item.status}-${idx}`}>
+                  <td style={{ width: '20%' }}>{item.task}</td>
+                  <td style={{ width: '20%' }}>{item.name}</td>
+                  <td style={{ width: '20%' }}>{item.status}</td>
+                  <td style={{ width: '20%' }}>
+                    {item.duration ? formatTimeDuration(item.duration) : '—'}
+                  </td>
+                  <td style={{ width: '20%' }}>{userId}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
     </div>
   );
