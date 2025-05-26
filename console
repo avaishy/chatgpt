@@ -1,20 +1,141 @@
-useEffect(() => {
-  if (!userId) return;
+const ProcessingStatus = () => {
+  const userId = useSelector(getUserId);
+  const [allStatuses, setAllStatuses] = useState([]);
+  const [taskFilter, setTaskFilter] = useState('Indexing');
+  const [loading, setLoading] = useState(false);
 
-  fetchStatuses();
-}, [userId]);
+  const indexingWasProcessing = useRef(false); // Track if we were processing
 
-// Re-fetch when any indexing status is "Processing"
-useEffect(() => {
-  const hasPendingIndexing = allStatuses.some(
-    (item) => item.task === 'Indexing' && item.status !== 'Completed'
-  );
+  const useCase = 'Earnings Call Transcript';
 
-  if (hasPendingIndexing) {
-    const timeout = setTimeout(() => {
+  const formatTimeDuration = (duration) => {
+    if (!duration) return '—';
+    const [hours, minutes, rest] = duration.split(':');
+    const seconds = Math.floor(Number.parseFloat(rest));
+    return `${parseInt(hours, 10)}h ${parseInt(minutes, 10)}m ${seconds}s`;
+  };
+
+  const fetchStatuses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [fileRes, sessionRes] = await Promise.all([
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ user_id: userId, use_case: useCase }),
+        }),
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ user_id: userId, use_case: useCase }),
+        }),
+      ]);
+
+      if (!fileRes.ok || !sessionRes.ok) {
+        throw new Error('Failed to fetch statuses');
+      }
+
+      const [fileStatuses, sessionStatuses] = await Promise.all([
+        fileRes.json(),
+        sessionRes.json(),
+      ]);
+
+      const formattedFiles = fileStatuses.map((item) => ({
+        task: 'Indexing',
+        name: item.file_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      const formattedSessions = sessionStatuses.map((item) => ({
+        task: 'Pre-summarized',
+        name: item.session_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      setAllStatuses([...formattedFiles, ...formattedSessions]);
+    } catch (error) {
+      toast.error('Error fetching statuses');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  // Initial fetch
+  useEffect(() => {
+    if (userId) {
       fetchStatuses();
-    }, 5000); // Re-fetch after 5 seconds
+    }
+  }, [userId, fetchStatuses]);
 
-    return () => clearTimeout(timeout);
-  }
-}, [allStatuses]);
+  // Detect transition from Indexing "Processing" → "Completed"
+  useEffect(() => {
+    const indexingStatuses = allStatuses.filter((item) => item.task === 'Indexing');
+    const anyProcessing = indexingStatuses.some((item) => item.status === 'Processing');
+    const allCompleted = indexingStatuses.length > 0 && indexingStatuses.every((item) => item.status === 'Completed');
+
+    if (indexingWasProcessing.current && allCompleted) {
+      fetchStatuses(); // Only now: after processing becomes completed
+    }
+
+    // Update ref for next comparison
+    indexingWasProcessing.current = anyProcessing;
+  }, [allStatuses, fetchStatuses]);
+
+  const filteredStatuses = useMemo(() => {
+    if (taskFilter === 'All') return allStatuses;
+    return allStatuses.filter((item) => item.task === taskFilter);
+  }, [allStatuses, taskFilter]);
+
+  return (
+    <div className={styles.section}>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className={styles.fileProcessingTable}>
+          <thead>
+            <tr>
+              <th>
+                <div className={styles.toggleContainer}>
+                  <select
+                    value={taskFilter}
+                    onChange={(e) => setTaskFilter(e.target.value)}
+                    className={styles.dropdown}
+                  >
+                    <option value="All">All</option>
+                    <option value="Indexing">Indexing</option>
+                    <option value="Pre-summarized">Pre-summarized chats</option>
+                  </select>
+                </div>
+              </th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Execution Time</th>
+              <th>User ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStatuses.map((item, idx) => (
+              <tr key={`${item.name}-${item.status}-${idx}`}>
+                <td>{item.task}</td>
+                <td>{item.name}</td>
+                <td>{item.status}</td>
+                <td>{item.duration ? formatTimeDuration(item.duration) : '—'}</td>
+                <td>{userId}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+export default ProcessingStatus;
