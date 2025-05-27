@@ -1,7 +1,15 @@
- <div className={showChatComponent === true && showBanner === false
-            ? styles.previousSessionsContainerInsideChat
-            : {showProcessingButton  === true ? 
-              styles.previousCurrentContainer :
-               styles.previousSessionsContainer
-             }}
-          >
+let containerClass = '';
+
+if (showChatComponent === true && showBanner === false) {
+  containerClass = styles.previousSessionsContainerInsideChat;
+} else if (showProcessingButton === true) {
+  containerClass = styles.previousCurrentContainer;
+} else {
+  containerClass = styles.previousSessionsContainer;
+}
+
+return (
+  <div className={containerClass}>
+    {/* content */}
+  </div>
+);
