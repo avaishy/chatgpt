@@ -1,72 +1,39 @@
-const fetchProcessingStatus = async (userId, useCase) => {
-  const [fileStatsRes, chatStatusRes] = await Promise.all([
-    fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ user_id: userId, use_case: useCase }),
-    }),
-    fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ user_id: userId, use_case: useCase }),
-    }),
-  ]);
+import React from 'react';
+import styles from '../../../styles/processingNotice.scss';
+import { FaInfoCircle } from 'react-icons/fa';
 
-  const fileStats = await fileStatsRes.json();
-  const chatStatus = await chatStatusRes.json();
-
-  // Create a processing session list
-  const processingSessions = [];
-
-  fileStats.forEach(file => {
-    const chat = chatStatus.find(c => c.file_name === file.file_name);
-    if (!file.is_indexed || (chat && chat.status !== 'completed')) {
-      processingSessions.push({
-        file_name: file.file_name,
-        status: file.is_indexed ? 'Creating Chat' : 'Indexing',
-      });
-    }
-  });
-
-  return processingSessions;
-};
-
-
-
-useEffect(() => {
-  const loadProcessingSessions = async () => {
-    const processingSessions = await fetchProcessingStatus(userId, 'Earnings Call Transcript');
-    if (processingSessions.length > 0) {
-      // Show the first one in current session
-      dispatch({ type: 'SET_CURRENT_PROCESSING_SESSION', payload: processingSessions[0] });
-
-      // Move the rest to previous (optional)
-      const previousOnes = processingSessions.slice(1).map((p, i) => ({
-        session_name: `${p.file_name} (In Progress)`,
-        session_id: `processing-${i}-${Date.now()}`,
-      }));
-      setPreviousSessions(prev => [...previousOnes, ...prev]);
-    }
-  };
-
-  if (userId) {
-    loadProcessingSessions();
-  }
-}, [userId]);
-
-
-
-const currentProcessingSession = useSelector(state => state.earningsCallTranscript.currentProcessingSession);
-
-{currentProcessingSession && (
-  <div className={styles.processingSession}>
-    <p>{currentProcessingSession.file_name}</p>
-    <span>Status: {currentProcessingSession.status}</span>
+const ProcessingNotice = () => (
+  <div className={styles.noticeContainer}>
+    <FaInfoCircle className={styles.icon} />
+    <p className={styles.noticeText}>
+      Your file is currently being indexed and summarized.
+      It will be available shortly.
+    </p>
   </div>
-)}
+);
+
+export default ProcessingNotice;
+
+
+.noticeContainer {
+  display: flex;
+  align-items: center;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 12px;
+  margin: 10px;
+  border-left: 4px solid #f39c12;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.icon {
+  margin-right: 10px;
+  color: #f39c12;
+  font-size: 16px;
+}
+
+.noticeText {
+  margin: 0;
+  line-height: 1.4;
+}
