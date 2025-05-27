@@ -1,9 +1,9 @@
 /* istanbul ignore file */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from '@americanexpress/one-app-router';
 import { toast } from 'react-hot-toast';
-import PropTypes, { bool } from 'prop-types';
+import PropTypes from 'prop-types';
 import styles from '../../../styles/newSession.scss';
 import AdditionalKnowledgeCard from './AdditionalKnowledgeCard';
 import {
@@ -14,7 +14,6 @@ import {
   setAllPersonalKnowledge,
   setCurrentSessionDetails,
   toggleChatComponent,
-  setDocumentProcessingAlert,
   setChatMessages,
   setAllBotSourcesArray,
   setCurrentChat,
@@ -23,7 +22,9 @@ import {
   toggleEditContextButton,
   setTogglePopup,
   setToggleFileUpload,
-  setToggleGeneratePopup,
+  setToggleCurrentSession,
+  setToggleProcessingStatus,
+  setRefressPreviousSession,
 } from '../../../store/actions/earningsCallTranscriptActions';
 import {
   getUseCase, getUserSelectedDocumentForChat,
@@ -35,12 +36,9 @@ import {
   getUserId,
   getTogglePopup,
   getToggleFileUpload,
-  getToggleGeneratePopup,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import FileUpload from './FileUpload';
 import PopupMessage from '../utility/PopUpMessage';
-import Timer from '../utility/Timer';
-import PopUpMessageGenerateAnswer from '../utility/PopUpMessageGenerateAnswer';
 
 function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWindow }) {
   const [companyKnowledge, setCompanyKnowledge] = useState([]);
@@ -52,10 +50,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     show: isPopupOpen,
     message: popupMessage,
   } = useSelector((state) => getTogglePopup(state));
-  const {
-    showGeneratePopup: isGeneratePopupOpen,
-    messageGeneratePopup: generatePopupMessage,
-  } = useSelector((state) => getToggleGeneratePopup(state));
   const userId = useSelector((state) => getUserId(state));
   const seletedCompanyKnowldge = useSelector((state) => getUserSelectedCompanyKnowledge(state));
   const seletedIndustryKnowldge = useSelector((state) => getUserSelectedIndustryKnowledge(state));
@@ -69,51 +63,28 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     (state) => getUserSelectedDocumentForChat(state));
   const selectedChat = useSelector((state) => getSelectedChatDetails(state));
   const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const pollingIntervalsRef = useRef({});
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const isToggleFileUpload = useSelector((state) => getToggleFileUpload(state));
   const [isUploading, setIsUploading] = useState(false);
-  const [showPopup, setShowPopup] = useState(true);
-  const [isGenerate, setIsGenerate] = useState(true);
 
-
-  showPopup
   function addSelectedDocuments(document) {
-    setSelectedDocuments([document]);
+    if (isUsedByManageContext === false) {
+      setSelectedDocuments([document]);
+    } else {
+      const exists = selectedDocuments.some((doc) => doc.file_id === document.file_id);
+      if (!exists) {
+        setSelectedDocuments((prev) => [...prev, document]);
+      } else {
+        setSelectedDocuments((prev) => prev.filter((doc) => doc.file_id !== document.file_id));
+      }
+    }
   }
   function toggleFileUploadComponent(condition) {
     dispatch(setToggleFileUpload(condition));
   }
-  const startPolling = (filename) => {
-    setInterval(async () => {
-      try {
-        const response = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${filename}`, {
-          method: 'GET',
-          headers: { accept: 'application/json' },
-        });
-
-        const result = await response.json();
-
-        if (result.is_indexed === true) {
-          setUploadedFiles((prevFiles) => {
-            const updatedFiles = prevFiles.map((file) => (file.filename === filename
-              ? { ...file, isIndexing: false }
-              : file));
-
-            return updatedFiles;
-          });
-          console.log('Uploaded Files', uploadedFiles);
-          clearInterval(pollingIntervalsRef.current[filename]);
-          delete pollingIntervalsRef.current[filename];
-        }
-      } catch (error) {
-        toast.error(`Polling error for ${filename}:`, error);
-      }
-    }, 30000);
-  };
 
   const handleFileUpload = async (data) => {
+    setIsUploading(true);
     if (data.fileInput.length === 0) return;
     const formData = new FormData();
     formData.append('user_id', userId);
@@ -126,7 +97,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       formData.append('file', file);
     });
     try {
-      setIsUploading(true);
       const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/uploadFiles', {
         method: 'POST',
         body: formData,
@@ -135,39 +105,24 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       if (response.ok) {
         dispatch(setToggleFileUpload(false));
         dispatch(setFileProcessingStatus(true));
-        const uploadedName = data.fileName;
-        const updatedFileName = `${uploadedName}`;
-        setUploadedFiles((prevFiles) => {
-          const newFiles = [...prevFiles, {
-            filename: updatedFileName,
-            isIndexing: true,
-            user_id: userId,
-          }];
-          return newFiles;
-        });
-        startPolling(updatedFileName);
         if (renderComponent === true) {
           setRenderComponent(false);
         } else {
           setRenderComponent(true);
         }
-        dispatch(setToggleGeneratePopup({showGeneratePopup: true, messageGeneratePopup:'Do you want to add additional knowledge about company,industry or personal knowledge'}));
-        //generateAnswerAfterUpload();
-
+        setIsUploading(false);
         toast.success('Successfully uploaded file');
       } else {
-        const errorText = await response.text();
-        console.log('Upload failed:', errorText);
+        setIsUploading(false);
         dispatch(setTogglePopup(true, 'Failed to upload file: server error'));
       }
     } catch (error) {
-      toast.error('Failed to upload file: network error');
-    } finally {
       setIsUploading(false);
+      dispatch(setTogglePopup(true, 'Failed to upload file: network error'));
     }
   };
 
-  const getAllUserDocuments = async () => {
+  const getAllUserDocuments = useCallback(async () => {
     let useCaseTemp = null;
     setIsLoadingDocuments(true);
     try {
@@ -189,9 +144,9 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     } finally {
       setIsLoadingDocuments(false);
     }
-  };
+  },[renderComponent]);
 
-  const getUserAdditionalKnowledge = async () => {
+  const getUserAdditionalKnowledge = useCallback(async () => {
     let useCaseTemp = null;
     const lCompanyKnowledge = [];
     const lIndustryKnowledge = [];
@@ -225,25 +180,12 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       dispatch(setAllIndustryKnowledge(lIndustryKnowledge));
       dispatch(setAllPersonalKnowledge(lPersonalKnowledge));
     } catch (error) { toast.error('failed to fetch user knowledge'); }
-  };
-
-  useEffect(() => {
-    getAllUserDocuments();
-    getUserAdditionalKnowledge();
-    if (isUsedByManageContext === true) {
-      setSelectedDocuments(userSelectedDocumentsFromReduxStore);
-    }
-
-    return () => {
-      Object.values(pollingIntervalsRef.current).forEach(clearInterval);
-    };
-  }, [renderComponent,selectedDocuments]);
+  },[renderComponent]);
 
   const closeNewSession = () => {
     if (isUsedByManageContext === false) {
       dispatch(toggleNewSession(false));
     } else {
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. You will be able to ask follow up questions once the newly processes predefined document template is ready' }));
       openOrCloseManageKnowledgeWindow(false);
     }
   };
@@ -264,154 +206,222 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     return newRference;
   };
 
-  const openChatCompoent = async () => {
-    if (!selectedDocuments || selectedDocuments.length === 0) {
-      console.warn('Cannot Generate predefine response - no document selected');
+  const getFileStatus = async (fileName) => {
+    try {
+      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getFileStatus/${fileName}`, {
+        method: 'GET',
+        headers: { accept: 'application/json' },
+      });
+      return await res.json();
+    } catch (err) {
+      toast.error('Failed to check file status');
+      return { is_indexed: false };
+    }
+  };
+
+  const startFileIndexing = async (fileId) => {
+    try {
+      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/indexFile/${fileId}`, {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+      });
+      if (res.status === 200) {
+        console.log('Indexing completed...');
+      }
+    } catch (err) {
+      console.log('Error starting indexing');
+    }
+  };
+
+  const fetchFileStatuses = async () => {
+    try {
+      const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      }
+      toast.error('Invalid request. Please try again later');
+      return [];
+    } catch (error) {
+      toast.error('Something went wrong while loading file statuses. Please try again later');
+      return [];
+    }
+  };
+
+  const createChatSession = async ({
+    selectedDocuments: docs,
+    userId: uid,
+    useCase: uCase,
+    seletedCompanyKnowldge: compKnow,
+    seletedIndustryKnowldge: indKnow,
+    seletedPersonalKnowldge: perKnow,
+    industryType: industry,
+  }) => {
+    const fileIds = docs.map((doc) => doc.file_id);
+    const selectedContexts = [
+      ...compKnow,
+      ...indKnow,
+      ...perKnow,
+    ];
+    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+    const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+
+    const body = {
+      user_id: uid,
+      user_agent: 'Windows 10',
+      project_type: 'LUMOS',
+      use_case: useCaseTemp,
+      files_selected: fileIds,
+      contexts_selected: contextIds,
+      industry_selected: industry,
+    };
+
+    try {
+      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (res.ok) {
+        return res;
+      }
+      if (res.status === 422) {
+        toast.error('Unprocessable Entity: Invalid input provided');
+      } else if (res.status === 500) {
+        toast.error('Server Error: Something went wrong');
+      } else {
+        toast.error('Please try again later');
+      }
+    } catch (error) {
+      toast.error('Network error while creating chat session');
+    }
+    return false;
+  };
+
+  const openChatComponent = async () => {
+    if (!selectedDocuments?.length) {
+      toast.error('No document selected');
       return;
     }
-    if (isUsedByManageContext === false) {
-      const fetchFileStatuses = async () => {
-        try {
-          const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({
-              user_id: userId,
-              use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
-            }),
-          });
 
-          if (response.ok) {
-            const result = await response.json();
-            return result;
-          }
-          toast.error('Invalid request. Please try again later');
-          return [];
-        } catch (error) {
-          toast.error('Something went wrong while loading file statuses. Please try again later');
-          return [];
-        }
-      };
-      const fileStatuses = await fetchFileStatuses();
-      const notIndexedFiles = selectedDocuments.filter((doc) => {
-        const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
-        return statusEntry && statusEntry.status !== 'Completed';
-      });
-      if (notIndexedFiles.length > 0) {
-        const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
-        dispatch(setTogglePopup(true, `These files are still indexing: ${filesName}. Please wait until indexing is completed.`));
-        return;
+    const selectedDoc = selectedDocuments[0];
+
+    if (!isUsedByManageContext) {
+      dispatch(toggleNewSession(false));
+      const status = await getFileStatus(selectedDoc.file_name);
+
+      if (!status.is_indexed) {
+        await startFileIndexing(selectedDoc.file_id);
       }
 
       dispatch(setChatMessages([]));
       dispatch(setAllBotSourcesArray([]));
       dispatch(setCurrentSessionDetails({}));
       dispatch(setCurrentChat([]));
-      const fileIds = [];
-      let useCaseTemp = null;
-      const seletedContexts = [...seletedCompanyKnowldge,
-        ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-      const seletedContextIds = [];
-      seletedContexts.forEach((ele) => {
-        seletedContextIds.push(ele.context_id);
-      });
-      if (selectedDocuments.length > 0) {
-        selectedDocuments.forEach((ele) => {
-          fileIds.push(ele.file_id);
-        });
-      }
-
-      if (useCase === 'earnings_call_transcript') {
-        useCaseTemp = 'Earnings Call Transcript';
-      }
-      const data = {
-        user_id: userId,
-        user_agent: 'Windows 10',
-        project_type: 'LUMOS',
-        use_case: useCaseTemp,
-        files_selected: fileIds,
-        contexts_selected: seletedContextIds,
-        industry_selected: industryType,
-      };
-      dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
-      dispatch(toggleNewSession(false));
       dispatch(toggleEditContextButton(true));
-      dispatch(toggleChatComponent(true));
-      dispatch(setDocumentProcessingAlert({ show: true, message: 'Processing the predefined document template. You will be able to ask follow up questions once the newly processes predefined document template is ready' }));
-      try {
-        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/createChatSession', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-        if (res.ok) {
-          const result = await res.json();
-          dispatch(setCurrentSessionDetails(result));
-          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-          dispatch(setCurrentChat(result.chats));
-          dispatch(toggleEditContextButton(false));
-        } else {
-          dispatch(toggleChatComponent(false));
-          dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-          if (res.status === 422) {
-            toast.error('Unprocessable Entity: Invalid input provided');
-          } else if (res.status === 500) {
-            toast.error('Server Error: Something went wrong');
-          } else {
-            toast.error('Please try again later');
-          }
-        }
-      } catch (error) {
-        dispatch(toggleChatComponent(false));
-        dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-        console.error('Network error: Something went wrong', error);
-        toast.error('Network error: Something went wrong');
+      dispatch(setToggleCurrentSession(false));
+      dispatch(toggleChatComponent(false));
+      dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+
+      const res = await createChatSession({
+        selectedDocuments,
+        userId,
+        useCase,
+        seletedCompanyKnowldge,
+        seletedIndustryKnowldge,
+        seletedPersonalKnowldge,
+        industryType,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        dispatch(setRefressPreviousSession(true));
+        dispatch(setToggleProcessingStatus(false));
+        dispatch(toggleChatComponent(true));
+        dispatch(setCurrentSessionDetails(result));
+        dispatch(setCurrentChat(result.chats));
+        dispatch(setToggleCurrentSession(true));
+        dispatch(toggleEditContextButton(false));
       }
     } else {
       try {
-        const fileIds = [];
-        const seletedContexts = [...seletedCompanyKnowldge,
-          ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-        const seletedContextIds = [];
-        seletedContexts.forEach((ele) => {
-          seletedContextIds.push(ele.context_id);
+        const fileStatuses = await fetchFileStatuses();
+        const notIndexedFiles = selectedDocuments.filter((doc) => {
+          const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
+          return statusEntry && statusEntry.status !== 'Completed';
         });
-        if (selectedDocuments.length > 0) {
-          selectedDocuments.forEach((ele) => {
-            fileIds.push(ele.file_id);
-          });
+        if (notIndexedFiles.length > 0) {
+          const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
+          dispatch(setTogglePopup(true, `Indexing of these files: ${filesName} started. Once indexing is complete it will automatically added to the Manage Context.`));
+          openOrCloseManageKnowledgeWindow(false);
         }
 
-        const data = {
+        await Promise.all(
+          notIndexedFiles.map((file) => startFileIndexing(file.file_id))
+        );
+
+        const fileIds = selectedDocuments.map((d) => d.file_id);
+        const selectedContexts = [
+          ...seletedCompanyKnowldge,
+          ...seletedIndustryKnowldge,
+          ...seletedPersonalKnowldge,
+        ];
+        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+
+        const body = {
           user_id: userId,
           chat_id: selectedChat.chat_id,
           files_selected: fileIds,
-          contexts_selected: seletedContextIds,
+          contexts_selected: contextIds,
           industry_selected: industryType,
         };
-        const allSelectedDocs = isUsedByManageContext
-          ? [
-            ...userSelectedDocumentsFromReduxStore,
-            ...selectedDocuments.filter(
-              (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-            ),
-          ] : selectedDocuments;
+
+        const allSelectedDocs = [
+          ...userSelectedDocumentsFromReduxStore,
+          ...selectedDocuments.filter(
+            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+          ),
+        ];
+
         dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
         openOrCloseManageKnowledgeWindow(false);
-        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
+
         if (res.ok) {
-          const updatedChatsArray = getUpdatedChatsArray({
-            previousChatsArray: currentChatsArray,
-            chatId: selectedChat.chat_id,
-            seletedContexts,
-            selectedDocuments,
-          });
-          dispatch(setCurrentChat(updatedChatsArray));
           const result = await res.json();
-          if (result.status === 'Success') { toast.success('Updated Successfully'); }
+          if (result.status === 'Success') {
+            const updatedChatsArray = getUpdatedChatsArray({
+              previousChatsArray: currentChatsArray,
+              chatId: selectedChat.chat_id,
+              seletedContexts: selectedContexts,
+              selectedDocuments,
+            });
+            dispatch(setToggleProcessingStatus(false));
+            dispatch(setCurrentChat(updatedChatsArray));
+            toast.success('Updated Successfully');
+          }
         } else {
           toast.error('Something went wrong: Invalid Inputs');
         }
-      } catch (error) { toast.error('Something went wrong while opening chat components'); }
+      } catch (error) {
+        toast.error('Something went wrong while opening chat components');
+      }
     }
   };
 
@@ -425,23 +435,14 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
     setIndustryType(event.target.value);
   };
 
-  const generateAnswerAfterUpload = () =>{
-      const matchingDoc = allUserDocuments[0];
-      if(matchingDoc && isGenerate){
-        setIsGenerate(false);
-        console.log('matchingDoc',matchingDoc);
-        setSelectedDocuments([matchingDoc]);
-      }
-    
-  }
-  if(showPopup){
-    generateAnswerAfterUpload();
-  }
+  useEffect(() => {
+    getAllUserDocuments();
+    getUserAdditionalKnowledge();
+    if (isUsedByManageContext === true) {
+      setSelectedDocuments(userSelectedDocumentsFromReduxStore);
+    }
+  }, [getAllUserDocuments,getUserAdditionalKnowledge]);
 
-  function handleClose(){
-    //dispatch(setToggleGeneratePopup({show: false, message: ''}))
-  
-  }
   return (
     <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
       <div className={`${styles.header}`}>
@@ -472,11 +473,14 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
                 <div key={doc.file_id} className={`${styles.documentItem}`}>
                   {isUsedByManageContext === true ? (
                     <input
-                      type="radio"
-                      name="documentSelection"
+                      type="checkbox"
                       id={`doc-${index}`}
                       onChange={() => addSelectedDocuments(doc)}
-                      checked={selectedDocuments[0]?.file_id === doc.file_id}
+                      checked={
+                        selectedDocuments.some(
+                          (selectedDoc) => selectedDoc.file_id === doc.file_id
+                        )
+}
                       disabled={
                       isUsedByManageContext
                       && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
@@ -488,8 +492,6 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
                         type="radio"
                         name="documentSelection"
                         id={`doc-${index}`}
-                      checked={filteredDocuments[0]}
-
                         onChange={() => addSelectedDocuments(doc)}
                       />
                     )}
@@ -558,7 +560,7 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
         <button
           type="button"
           className={`${styles.answerButton}`}
-          onClick={openChatCompoent}
+          onClick={openChatComponent}
         >
           {isUsedByManageContext === false ? 'Generate Answers' : 'Submit'}
         </button>
@@ -567,25 +569,11 @@ function Knowledge({ isUsedByManageContext = false, openOrCloseManageKnowledgeWi
       <PopupMessage message={popupMessage} />
       )}
       {isUploading && (
-        <div className={styles.uploadOverlay}>
-          <div className={styles.spinner} />
-          <div style={{
-            color: 'white',
-            fontSize: '18px',
-          }}
-          >
-            These file take 5-6 minutes to index. Please wait until indexing is completed.
-          </div>
-          <Timer fontColor="white" />
-        </div>
+      <div className={styles.uploadOverlay}>
+        <div className={styles.spinner} />
+        <div style={{ color: 'white', fontSize: '18px' }}>Please wait... This should only take a moment.</div>
+      </div>
       )}
-      {isGeneratePopupOpen && ( isUsedByManageContext === false ?(
-      <PopUpMessageGenerateAnswer
-       message= {generatePopupMessage}
-       onNo={openChatCompoent}
-       onYes={handleClose}
-       ></PopUpMessageGenerateAnswer>
-      ) : null )}
     </div>
   );
 }
