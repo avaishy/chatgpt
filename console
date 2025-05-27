@@ -1,39 +1,63 @@
 import React from 'react';
-import styles from '../../../styles/processingNotice.scss';
-import { FaInfoCircle } from 'react-icons/fa';
+import styles from '../../../styles/processingNoticeBanner.scss';
+import { FaSpinner } from 'react-icons/fa';
 
 const ProcessingNotice = () => (
-  <div className={styles.noticeContainer}>
-    <FaInfoCircle className={styles.icon} />
-    <p className={styles.noticeText}>
-      Your file is currently being indexed and summarized.
-      It will be available shortly.
-    </p>
+  <div className={styles.bannerContainer}>
+    <FaSpinner className={styles.spinner} />
+    <div className={styles.textBlock}>
+      <p className={styles.heading}>We're preparing your file</p>
+      <p className={styles.subText}>Indexing and summarization are in progress. This will only take a moment.</p>
+    </div>
   </div>
 );
 
 export default ProcessingNotice;
 
-
-.noticeContainer {
+.bannerContainer {
   display: flex;
   align-items: center;
-  background-color: #2c3e50;
+  background: linear-gradient(90deg, #2c3e50, #34495e);
+  border-left: 6px solid #f39c12;
   color: #ecf0f1;
-  padding: 12px;
-  margin: 10px;
-  border-left: 4px solid #f39c12;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 16px 20px;
+  margin: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.icon {
-  margin-right: 10px;
+.spinner {
+  font-size: 24px;
+  margin-right: 16px;
+  animation: spin 1s linear infinite;
   color: #f39c12;
-  font-size: 16px;
 }
 
-.noticeText {
+.textBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.subText {
+  font-size: 14px;
+  font-weight: 400;
   margin: 0;
-  line-height: 1.4;
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
