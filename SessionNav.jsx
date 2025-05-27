@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Navigation } from '@americanexpress/dls-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
@@ -42,8 +42,11 @@ const SessionsNav = () => {
   const [isSessionsId, setIsSessionsId] = useState(true);
   const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
   const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
+  const sessionCacheRef = useRef(null);
+
 
   const handleNewSessionClick = () => {
+      sessionCacheRef.current = null;
     dispatch(setUserSelectedCompanyKnowledge([]));
     dispatch(setUserSelectedIndustryKnowledge([]));
     dispatch(setUserSelectedPersonalKnowledge([]));
@@ -59,7 +62,12 @@ const SessionsNav = () => {
     dispatch(setToggleProcessingStatus(true));
   };
 
-  const getPreviousSessions = async () => {
+  const getPreviousSessions = useCallback(async () => {
+    if(sessionCacheRef.current){
+      setPreviousSessions(sessionCacheRef.current);
+      setLoadingSessions(false);
+      return;
+    }
     setLoadingSessions(true);
     dispatch(addUseCase('earnings_call_transcript'));
     const sessionsArray = [];
@@ -83,6 +91,7 @@ const SessionsNav = () => {
             sessionsArray.push('----');
           }
         });
+        sessionCacheRef.current = sessionsArray;
         setPreviousSessions(sessionsArray);
       }
     } catch (error) {
@@ -90,11 +99,13 @@ const SessionsNav = () => {
     } finally {
       setLoadingSessions(false);
     }
-  };
+  },[userId, dispatch]);
 
   useEffect(() => {
-    getPreviousSessions();
-  }, [showChatComponent, currentSessionDetails]);
+    if(userId){
+      getPreviousSessions();
+    }
+  }, [userId, getPreviousSessions,currentSessionDetails]);
 
   const navigateToPreviousSession = async (session) => {
     dispatch(setToggleCurrentSession(true));
