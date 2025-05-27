@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '@americanexpress/dls-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
@@ -9,11 +9,11 @@ import ChatComponentWrapper from '../chatScreen/ChatComponentWrapper';
 import CurrentSessions from '../utility/CurrrentSessions';
 import {
   getShowNewSession,
-  getCurrentSessionDetails,
   getToggleChatComponent,
   getUserId,
   getToggleCurrentSession,
   getToggleProcessingStatus,
+  getShouldRefreshPreviousSession,
 } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import {
   toggleNewSession, setCurrentSessionDetails,
@@ -28,6 +28,7 @@ import {
   addUseCase,
   setToggleCurrentSession,
   setToggleProcessingStatus,
+  setRefressPreviousSession,
 } from '../../../store/actions/earningsCallTranscriptActions';
 import ProcessingStatus from '../utility/ProcessingStatus';
 
@@ -37,16 +38,15 @@ const SessionsNav = () => {
   const userId = useSelector((state) => getUserId(state));
   const showChatComponent = useSelector((state) => getToggleChatComponent(state));
   const [previousSessions, setPreviousSessions] = useState([]);
-  const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [isSessionsId, setIsSessionsId] = useState(true);
   const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
   const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
-  const sessionCacheRef = useRef(null);
-
+  const shouldPreviousSessionRefresh = useSelector(
+    (state) => getShouldRefreshPreviousSession(state)
+  );
 
   const handleNewSessionClick = () => {
-      sessionCacheRef.current = null;
     dispatch(setUserSelectedCompanyKnowledge([]));
     dispatch(setUserSelectedIndustryKnowledge([]));
     dispatch(setUserSelectedPersonalKnowledge([]));
@@ -55,19 +55,12 @@ const SessionsNav = () => {
     dispatch(toggleChatComponent(false));
     dispatch(setToggleProcessingStatus(false));
   };
-
   const handleFileProcessingClick = () => {
     dispatch(toggleChatComponent(false));
     dispatch(toggleNewSession(false));
     dispatch(setToggleProcessingStatus(true));
   };
-
   const getPreviousSessions = useCallback(async () => {
-    if(sessionCacheRef.current){
-      setPreviousSessions(sessionCacheRef.current);
-      setLoadingSessions(false);
-      return;
-    }
     setLoadingSessions(true);
     dispatch(addUseCase('earnings_call_transcript'));
     const sessionsArray = [];
@@ -91,7 +84,6 @@ const SessionsNav = () => {
             sessionsArray.push('----');
           }
         });
-        sessionCacheRef.current = sessionsArray;
         setPreviousSessions(sessionsArray);
       }
     } catch (error) {
@@ -99,13 +91,14 @@ const SessionsNav = () => {
     } finally {
       setLoadingSessions(false);
     }
-  },[userId, dispatch]);
+  }, [userId, dispatch]);
 
   useEffect(() => {
-    if(userId){
+    if (userId) {
       getPreviousSessions();
+      dispatch(setRefressPreviousSession(false));
     }
-  }, [userId, getPreviousSessions,currentSessionDetails]);
+  }, [userId, getPreviousSessions, shouldPreviousSessionRefresh]);
 
   const navigateToPreviousSession = async (session) => {
     dispatch(setToggleCurrentSession(true));
