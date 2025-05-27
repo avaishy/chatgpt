@@ -1,15 +1,106 @@
-let containerClass = '';
 
-if (showChatComponent === true && showBanner === false) {
-  containerClass = styles.previousSessionsContainerInsideChat;
-} else if (showProcessingButton === true) {
-  containerClass = styles.previousCurrentContainer;
-} else {
-  containerClass = styles.previousSessionsContainer;
-}
+  return (
+    <div>
+      <div className={`${styles.newSessionPage}`}>
+        <Navigation theme={{
+          maxWidth: '320px',
+          minWidth: '320px',
+          height: '100%',
+          backgroundColor: ' #364258',
+          border: '0px',
+        }}
+        >
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
+          </div>
+          <div />
+          {showProcessingButton && (
+            <div>
+            <p className={`${styles.currentText}`}>Current Session</p>
+            <div className={`${styles.currentProcessingContainer}`}>
+              <button
+                type="button"
+                className={`${styles.currentProcessingItem}`}
+                onClick={handleProcessingPreviousSession}
+              >
+                <div className={styles.textWrapper}>
+                  <p className={styles.sessionNames}>{userSelectDocuments?.[0]?.file_name?.split('/')?.pop() ?? 'Untitled Session'}</p>
+                  <div className={styles.tooltip}>{userSelectDocuments?.[0]?.file_name?.split('/')?.pop() ?? 'Untitled Session'}</div>
+                </div> <MiniProcessingMessage />
+              </button>
+            </div>
+          </div>
+          )}
 
-return (
-  <div className={containerClass}>
-    {/* content */}
-  </div>
-);
+          {showChatComponent && showCurrentSession && <CurrentSessions />}
+            let containerClass = '';
+
+            if (showChatComponent === true && showBanner === false) {
+              containerClass = styles.previousSessionsContainerInsideChat;
+            } else if (showProcessingButton === true) {
+              containerClass = styles.previousCurrentContainer;
+              } else {
+            containerClass = styles.previousSessionsContainer;
+              }
+          return (
+          <div className={containerClass}>
+            <p className={`${styles.text}`}>Previous Session</p>
+            {!showCurrentSession
+              ? fileStatus
+                .filter((file) => file.status === 'Completed')
+                .map((file) => (
+                  <div key={file.file_id} className={`${styles.navigationContainer}`}>
+                    <button
+                      key={file.file_id}
+                      type="button"
+                      className={`${styles.navigationItem}`}
+                      onClick={handleProcessingPreviousSession}
+                    >
+                      <div className={styles.textWrapper}>
+                        <p className={styles.sessionNames}>{file.file_name}</p>
+                        <div className={styles.tooltip}>{file.file_name}</div>
+                      </div> <MiniProcessingMessage />
+                    </button>
+                  </div>
+                ))
+              : null}
+            {loadingSessions
+              ? (
+                <> <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                </>
+
+              )
+              : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => navigateToPreviousSession(session)}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                  </button>
+                </div>
+              ))}
+          </div>
+          )
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>Processing status</button>
+          </div>
+        </Navigation>
+        {showProcessStatus === true ? <ProcessingStatus /> : null}
+        {showNewSession === true ? <NewSesssion /> : null}
+        {showChatComponent === true ? <ChatComponentWrapper /> : null}
+      </div>
+    </div>
+  );
+};
+
+export default SessionsNav;
