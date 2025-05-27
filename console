@@ -1,63 +1,21 @@
-import React from 'react';
-import styles from '../../../styles/processingNoticeBanner.scss';
-import { FaSpinner } from 'react-icons/fa';
-
-const ProcessingNotice = () => (
-  <div className={styles.bannerContainer}>
-    <FaSpinner className={styles.spinner} />
-    <div className={styles.textBlock}>
-      <p className={styles.heading}>We're preparing your file</p>
-      <p className={styles.subText}>Indexing and summarization are in progress. This will only take a moment.</p>
-    </div>
-  </div>
-);
-
-export default ProcessingNotice;
-
-.bannerContainer {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(90deg, #2c3e50, #34495e);
-  border-left: 6px solid #f39c12;
-  color: #ecf0f1;
-  padding: 16px 20px;
-  margin: 20px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.spinner {
-  font-size: 24px;
-  margin-right: 16px;
-  animation: spin 1s linear infinite;
-  color: #f39c12;
-}
-
-.textBlock {
-  display: flex;
-  flex-direction: column;
-}
-
-.heading {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.subText {
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
-
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+{!showCurrentSession ? (
+            fileStatus.map((file) => (
+              {if(file.status === "Processing"){
+                <div key={file.file_id} className={`${styles.navigationContainer}`}>
+                <button
+                  key={file.file_id}
+                  type="button"
+                  className={`${styles.navigationItem}`}
+                  onClick={handleProcessingPreviousSession}
+                >
+                  <div className={styles.textWrapper}>
+                    <p className={styles.sessionNames}>{file.file_name}</p> 
+                    <div className={styles.tooltip}>{file.file_name}</div>
+                  </div> <MiniProcessingMessage />
+                </button>
+              </div>
+              }}
+             
+            ))
+            ) : null
+          }
