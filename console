@@ -1,12 +1,72 @@
- {filteredStatuses.map((item) => (
-              <tr key={`${item.task}-${item.name}-${item.status}-${item.file_name}-${userId}`}>
-                <td style={{ width: '20%' }}>{item.task}</td>
-                <td style={{ width: '20%' }}>{item.name}</td>
-                <td style={{ width: '20%' }}>{item.status}</td>
-                <td style={{ width: '20%' }}>
-                  {item.duration ? formatTimeDuration(item.duration) : '—'}
-                </td>
-                <td style={{ width: '20%' }}>{userId}</td>
-              </tr>
-            ))}
-          </tbody>Warning: Encountered two children with the same key, `Test13.pdf-anupam`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Error Component Stack
+const fetchProcessingStatus = async (userId, useCase) => {
+  const [fileStatsRes, chatStatusRes] = await Promise.all([
+    fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId, use_case: useCase }),
+    }),
+    fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId, use_case: useCase }),
+    }),
+  ]);
+
+  const fileStats = await fileStatsRes.json();
+  const chatStatus = await chatStatusRes.json();
+
+  // Create a processing session list
+  const processingSessions = [];
+
+  fileStats.forEach(file => {
+    const chat = chatStatus.find(c => c.file_name === file.file_name);
+    if (!file.is_indexed || (chat && chat.status !== 'completed')) {
+      processingSessions.push({
+        file_name: file.file_name,
+        status: file.is_indexed ? 'Creating Chat' : 'Indexing',
+      });
+    }
+  });
+
+  return processingSessions;
+};
+
+
+
+useEffect(() => {
+  const loadProcessingSessions = async () => {
+    const processingSessions = await fetchProcessingStatus(userId, 'Earnings Call Transcript');
+    if (processingSessions.length > 0) {
+      // Show the first one in current session
+      dispatch({ type: 'SET_CURRENT_PROCESSING_SESSION', payload: processingSessions[0] });
+
+      // Move the rest to previous (optional)
+      const previousOnes = processingSessions.slice(1).map((p, i) => ({
+        session_name: `${p.file_name} (In Progress)`,
+        session_id: `processing-${i}-${Date.now()}`,
+      }));
+      setPreviousSessions(prev => [...previousOnes, ...prev]);
+    }
+  };
+
+  if (userId) {
+    loadProcessingSessions();
+  }
+}, [userId]);
+
+
+
+const currentProcessingSession = useSelector(state => state.earningsCallTranscript.currentProcessingSession);
+
+{currentProcessingSession && (
+  <div className={styles.processingSession}>
+    <p>{currentProcessingSession.file_name}</p>
+    <span>Status: {currentProcessingSession.status}</span>
+  </div>
+)}
