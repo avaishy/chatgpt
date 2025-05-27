@@ -40,11 +40,13 @@ const SessionsNav = () => {
   const [previousSessions, setPreviousSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [isSessionsId, setIsSessionsId] = useState(true);
+  const [fileStatus, setFileStatus] = useState([]);
   const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
   const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
   const shouldPreviousSessionRefresh = useSelector(
     (state) => getShouldRefreshPreviousSession(state)
   );
+  const useCase = 'Earnings Call Transcript';
 
   const handleNewSessionClick = () => {
     dispatch(setUserSelectedCompanyKnowledge([]));
@@ -59,6 +61,30 @@ const SessionsNav = () => {
     dispatch(toggleChatComponent(false));
     dispatch(toggleNewSession(false));
     dispatch(setToggleProcessingStatus(true));
+  };
+  const fetchStatuses = async () => {
+    try {
+      const response = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
+        }),
+      });
+        if(response.ok) {
+          const result = await response.json();
+          setFileStatus(result);
+    } else {
+      toast.error('Failed to fetch file statuses');
+    } }catch (error) {
+      toast.error('Error fetching file statuses');
+    } finally {
+      setLoading(false);
+    }
   };
   const getPreviousSessions = useCallback(async () => {
     setLoadingSessions(true);
@@ -95,10 +121,12 @@ const SessionsNav = () => {
 
   useEffect(() => {
     if (userId) {
+      fetchStatuses();
       getPreviousSessions();
       dispatch(setRefressPreviousSession(false));
     }
   }, [userId, getPreviousSessions, shouldPreviousSessionRefresh]);
+
 
   const navigateToPreviousSession = async (session) => {
     dispatch(setToggleCurrentSession(true));
@@ -127,6 +155,23 @@ const SessionsNav = () => {
             <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
           </div>
           <div />
+          {!showCurrentSession ? (
+            fileStatus.map((file) => (
+              <div key={file.file_name} className={`${styles.navigationContainer}`}>
+                <button
+                  key={file.file_name}
+                  type="button"
+                  className={`${styles.navigationItem}`}
+                >
+                  <div className={styles.textWrapper}>
+                    <p className={styles.sessionNames}>{file.status}</p>
+                    <div className={styles.tooltip}>{file.file_name}</div>
+                  </div>
+                </button>
+              </div>
+            ))
+            ) : null
+          }
           {showChatComponent && showCurrentSession && <CurrentSessions />}
           <div className={showChatComponent === true
             ? styles.previousSessionsContainerInsideChat
