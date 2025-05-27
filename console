@@ -1,21 +1,7 @@
-{!showCurrentSession ? (
-            fileStatus.map((file) => (
-              {if(file.status === "Processing"){
-                <div key={file.file_id} className={`${styles.navigationContainer}`}>
-                <button
-                  key={file.file_id}
-                  type="button"
-                  className={`${styles.navigationItem}`}
-                  onClick={handleProcessingPreviousSession}
-                >
-                  <div className={styles.textWrapper}>
-                    <p className={styles.sessionNames}>{file.file_name}</p> 
-                    <div className={styles.tooltip}>{file.file_name}</div>
-                  </div> <MiniProcessingMessage />
-                </button>
-              </div>
-              }}
-             
-            ))
-            ) : null
-          }
+ <div className={showChatComponent === true && showBanner === false
+            ? styles.previousSessionsContainerInsideChat
+            : {showProcessingButton  === true ? 
+              styles.previousCurrentContainer :
+               styles.previousSessionsContainer
+             }}
+          >
