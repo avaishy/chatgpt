@@ -16,7 +16,7 @@ const dummyData = {
       file_indexing: 'Completed',
       answer_generation: 'Processing',
       execution_time: '3m 23s',
-      user_id: 'wluo2',
+      user_id: 'anupam',
     },
     {
       upload_time: '2025-05-30 09:02:34',
@@ -25,7 +25,7 @@ const dummyData = {
       file_indexing: 'Completed',
       answer_generation: 'NA',
       execution_time: '5m 22s',
-      user_id: 'wluo2',
+      user_id: 'anupam',
     },
     {
       upload_time: '2025-05-30 09:00:05',
@@ -34,7 +34,7 @@ const dummyData = {
       file_indexing: 'Completed',
       answer_generation: 'Completed',
       execution_time: '8m 13s',
-      user_id: 'wluo2',
+      user_id: 'anupam',
     },
   ],
 };
