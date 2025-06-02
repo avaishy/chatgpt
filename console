@@ -1,11 +1,8 @@
 /* istanbul ignore file */
-import React, {
-  useEffect, useState, useMemo,
-} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styles from '../../../styles/FileProcessing.scss';
 import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
-import LoadingDots from './LoadingDots';
 
 const dummyData = {
   fileProcessingStatus: [
@@ -41,113 +38,64 @@ const dummyData = {
 
 const ProcessingStatus = () => {
   const userId = useSelector(getUserId);
-  const [allStatuses, setAllStatuses] = useState([]);
-  const [taskFilter, setTaskFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [loading, setLoading] = useState(true);
-
-  const formatTimeDuration = (duration) => {
-    if (!duration) return '—';
-    const parts = duration.match(/(\d+)h\s*(\d+)m\s*(\d+)s/) || duration.match(/(\d+)m\s*(\d+)s/);
-    if (!parts) return duration;
-    if (parts.length === 4) return `${parts[1]}h ${parts[2]}m ${parts[3]}s`;
-    return `${parts[1]}m ${parts[2]}s`;
-  };
+  const [rows, setRows] = useState([]);
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      const formattedData = dummyData.fileProcessingStatus.flatMap((item, idx) => {
-        const rows = [];
+    const formattedRows = dummyData.fileProcessingStatus.flatMap((item, index) => {
+      const base = {
+        name: item.name,
+        execution_time: item.execution_time,
+        user_id: item.user_id,
+      };
 
-        // File indexing task
-        rows.push({
-          id: `file-${item.name}-${idx}`,
+      const result = [
+        {
+          id: `indexing-${index}`,
           task: 'Indexing',
-          name: item.name,
           status: item.file_indexing,
-          duration: item.execution_time,
-          user_id: item.user_id,
+          ...base,
+        },
+      ];
+
+      if (item.answer_generation && item.answer_generation !== 'NA') {
+        result.push({
+          id: `pre-summary-${index}`,
+          task: 'Pre-summarized',
+          status: item.answer_generation,
+          ...base,
         });
+      }
 
-        // Answer generation task if applicable
-        if (item.answer_generation && item.answer_generation !== 'NA') {
-          rows.push({
-            id: `answer-${item.name}-${idx}`,
-            task: 'Pre-summarized',
-            name: item.name,
-            status: item.answer_generation,
-            duration: item.execution_time,
-            user_id: item.user_id,
-          });
-        }
+      return result;
+    });
 
-        return rows;
-      });
-
-      setAllStatuses(formattedData);
-      setLoading(false);
-    }, 500); // simulate slight delay
+    setRows(formattedRows);
   }, []);
-
-  const filteredStatuses = useMemo(() => allStatuses.filter((item) => {
-    const matchesTask = taskFilter === 'All' || item.task === taskFilter;
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-    return matchesTask && matchesStatus;
-  }), [allStatuses, taskFilter, statusFilter]);
 
   return (
     <div className={styles.section}>
-      {loading ? (
-        <LoadingDots text="Loading" />
-      ) : (
-        <table className={styles.fileProcessingTable}>
-          <thead>
-            <tr>
-              <th style={{ width: '20%' }}>
-                <div className={styles.toggleContainer}>
-                  <select
-                    value={taskFilter}
-                    onChange={(e) => setTaskFilter(e.target.value)}
-                    className={styles.dropdown}
-                  >
-                    <option value="All">All</option>
-                    <option value="Indexing">Indexing</option>
-                    <option value="Pre-summarized">Pre-summarized chats</option>
-                  </select>
-                </div>
-              </th>
-              <th style={{ width: '20%' }}>Name</th>
-              <th style={{ width: '20%' }}>
-                <div className={styles.toggleContainer}>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className={styles.dropdown}
-                  >
-                    <option value="All">All</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                </div>
-              </th>
-              <th style={{ width: '20%' }}>Execution Time</th>
-              <th style={{ width: '20%' }}>User ID</th>
+      <table className={styles.fileProcessingTable}>
+        <thead>
+          <tr>
+            <th style={{ width: '20%' }}>Task</th>
+            <th style={{ width: '20%' }}>Name</th>
+            <th style={{ width: '20%' }}>Status</th>
+            <th style={{ width: '20%' }}>Execution Time</th>
+            <th style={{ width: '20%' }}>User ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((item) => (
+            <tr key={item.id}>
+              <td>{item.task}</td>
+              <td>{item.name}</td>
+              <td>{item.status}</td>
+              <td>{item.execution_time}</td>
+              <td>{item.user_id}</td>
             </tr>
-          </thead>
-          <tbody>
-            {filteredStatuses.map((item) => (
-              <tr key={item.id}>
-                <td style={{ width: '20%' }}>{item.task}</td>
-                <td style={{ width: '20%' }}>{item.name}</td>
-                <td style={{ width: '20%' }}>{item.status}</td>
-                <td style={{ width: '20%' }}>{formatTimeDuration(item.duration)}</td>
-                <td style={{ width: '20%' }}>{item.user_id}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
