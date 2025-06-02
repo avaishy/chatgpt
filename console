@@ -1,12 +1,43 @@
 /* istanbul ignore file */
 import React, {
-  useEffect, useState, useMemo, useCallback, useRef,
+  useEffect, useState, useMemo,
 } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-hot-toast';
 import styles from '../../../styles/FileProcessing.scss';
 import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
 import LoadingDots from './LoadingDots';
+
+const dummyData = {
+  fileProcessingStatus: [
+    {
+      upload_time: '2025-05-30 10:00:01',
+      name: 'VISA 2024 Q3.pdf',
+      is_main_file: true,
+      file_indexing: 'Completed',
+      answer_generation: 'Processing',
+      execution_time: '3m 23s',
+      user_id: 'wluo2',
+    },
+    {
+      upload_time: '2025-05-30 09:02:34',
+      name: 'Mastercard 2024 Q2.pdf',
+      is_main_file: false,
+      file_indexing: 'Completed',
+      answer_generation: 'NA',
+      execution_time: '5m 22s',
+      user_id: 'wluo2',
+    },
+    {
+      upload_time: '2025-05-30 09:00:05',
+      name: 'VISA 2024 Q2.pdf',
+      is_main_file: true,
+      file_indexing: 'Completed',
+      answer_generation: 'Completed',
+      execution_time: '8m 13s',
+      user_id: 'wluo2',
+    },
+  ],
+};
 
 const ProcessingStatus = () => {
   const userId = useSelector(getUserId);
@@ -14,90 +45,50 @@ const ProcessingStatus = () => {
   const [taskFilter, setTaskFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
-  const useCase = 'Earnings Call Transcript';
-  const indexingWasProcessing = useRef(false);
-  const initiallyCall = useRef(false);
 
   const formatTimeDuration = (duration) => {
     if (!duration) return '—';
-    const [hours, minutes, rest] = duration.split(':');
-    const seconds = Math.floor(Number.parseFloat(rest));
-    return `${Number.parseInt(hours, 10)}h ${Number.parseInt(minutes, 10)}m ${seconds}s`;
+    const parts = duration.match(/(\d+)h\s*(\d+)m\s*(\d+)s/) || duration.match(/(\d+)m\s*(\d+)s/);
+    if (!parts) return duration;
+    if (parts.length === 4) return `${parts[1]}h ${parts[2]}m ${parts[3]}s`;
+    return `${parts[1]}m ${parts[2]}s`;
   };
 
-  const fetchStatuses = useCallback(async () => {
-    try {
-      const [fileRes, sessionRes] = await Promise.all([
-        fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            use_case: useCase,
-          }),
-        }),
-        fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            use_case: useCase,
-          }),
-        }),
-      ]);
-
-      if (!fileRes.ok || !sessionRes.ok) {
-        throw new Error('Failed to fetch one or both statuses');
-      }
-
-      const [fileStatuses, sessionStatuses] = await Promise.all([
-        fileRes.json(),
-        sessionRes.json(),
-      ]);
-
-      const formattedFiles = fileStatuses.map((item, idx) => ({
-        id: `file-${item.file_name}-${idx}`,
-        task: 'Indexing',
-        name: item.file_name,
-        status: item.status,
-        duration: item.duration,
-      }));
-
-      const formattedSessions = sessionStatuses.map((item, idx) => ({
-        id: `session-${item.file_name}-${idx}`,
-        task: 'Pre-summarized',
-        name: item.session_name,
-        status: item.status,
-        duration: item.duration,
-      }));
-
-      setAllStatuses([...formattedFiles, ...formattedSessions]);
-    } catch (error) {
-      toast.error('Error fetching statuses');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
   useEffect(() => {
-    if (userId && !initiallyCall.current) {
-      fetchStatuses();
-      initiallyCall.current = true;
-    }
-    const indexingStatuses = allStatuses.filter((item) => item.task === 'Indexing');
-    const anyProcessing = indexingStatuses.some((item) => item.status === 'Processing');
-    const allCompleted = indexingStatuses.length > 0 && indexingStatuses.every((item) => item.status === 'Completed');
-    if (indexingWasProcessing.current && allCompleted) {
-      fetchStatuses();
-    }
-    indexingWasProcessing.current = anyProcessing;
-  }, [userId, allStatuses, fetchStatuses]);
+    // Simulate loading
+    setTimeout(() => {
+      const formattedData = dummyData.fileProcessingStatus.flatMap((item, idx) => {
+        const rows = [];
+
+        // File indexing task
+        rows.push({
+          id: `file-${item.name}-${idx}`,
+          task: 'Indexing',
+          name: item.name,
+          status: item.file_indexing,
+          duration: item.execution_time,
+          user_id: item.user_id,
+        });
+
+        // Answer generation task if applicable
+        if (item.answer_generation && item.answer_generation !== 'NA') {
+          rows.push({
+            id: `answer-${item.name}-${idx}`,
+            task: 'Pre-summarized',
+            name: item.name,
+            status: item.answer_generation,
+            duration: item.execution_time,
+            user_id: item.user_id,
+          });
+        }
+
+        return rows;
+      });
+
+      setAllStatuses(formattedData);
+      setLoading(false);
+    }, 500); // simulate slight delay
+  }, []);
 
   const filteredStatuses = useMemo(() => allStatuses.filter((item) => {
     const matchesTask = taskFilter === 'All' || item.task === taskFilter;
@@ -150,10 +141,8 @@ const ProcessingStatus = () => {
                 <td style={{ width: '20%' }}>{item.task}</td>
                 <td style={{ width: '20%' }}>{item.name}</td>
                 <td style={{ width: '20%' }}>{item.status}</td>
-                <td style={{ width: '20%' }}>
-                  {item.duration ? formatTimeDuration(item.duration) : '—'}
-                </td>
-                <td style={{ width: '20%' }}>{userId}</td>
+                <td style={{ width: '20%' }}>{formatTimeDuration(item.duration)}</td>
+                <td style={{ width: '20%' }}>{item.user_id}</td>
               </tr>
             ))}
           </tbody>
