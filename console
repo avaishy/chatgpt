@@ -1,42 +1,149 @@
-  <div className={`${styles.buttonContainer}`}>
-            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
+
+  return (
+    <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
+      <div className={`${styles.header}`}>
+        <h2>{isUsedByManageContext === false ? 'New Session' : 'Edit Session'}</h2>
+        <button type="button" className={`${styles.closeButton}`} onClick={closeNewSession}>close</button>
+      </div>
+      <div className={`${styles.contentWrapper}`}>
+        {/* Left: Documents */}
+        <div className={`${styles.section}`}>
+          <h3 className={`${styles.SectionTitle}`}>Add documents</h3>
+          <div>
+            <input type="text" placeholder="Search document" className={`${styles.input}`} onChange={handleDocumentSearch} />
           </div>
-          <div />
-          {showProcessingButton && (
-            <div>
-              <p className={`${styles.currentText}`}>Current Session</p>
-              <div className={`${styles.currentProcessingContainer}`}>
-                <button
-                  type="button"
-                  className={`${styles.currentProcessingItem}`}
-                  onClick={handleProcessingPreviousSession}
-                >
-                  <div className={styles.textWrapper}>
-                    <p className={styles.sessionNames}>{currentProcessing ?? userSelectDocuments?.[0]?.file_name}</p>
-                    <div className={styles.tooltip}>{currentProcessing}</div>
-                  </div> <MiniProcessingMessage />
-                </button>
-              </div>
-            </div>
-          )}
+          <div className={isUsedByManageContext === false ? `${styles.documentList}` : `${styles.currentSessionDocumentList}`}>
+            {isLoadingDocuments
+              ? (
+                <div className={styles.documentItem}>
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonText} />
+                </div>
+              )
+              : filteredDocuments.map((doc, index) => (
+             
+                <div key={doc.file_id} className={`${styles.documentItem}`}>
+                  {isUsedByManageContext === true ? (
+                    <input
+                      type="checkbox"
+                      id={`doc-${index}`}
+                      onChange={() => addSelectedDocuments(doc)}
+                      checked={
+                        selectedDocuments.some(
+                          (selectedDoc) => selectedDoc.file_id === doc.file_id
+                        )}
+                      disabled={
+                      isUsedByManageContext
+                      && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+                    }
+                    />
+                  )
+                    : {lastestFileUploaded ? (
+                      <input
+                        type="radio"
+                        name="documentSelection"
+                        id={`doc-${index}`}
+                        checked={doc.file_id === filteredDocuments[0]?.file_id}
+                        onChange={() => addSelectedDocuments(doc)}
+                      />
+                    ) : (
+                      <input
+                        type="radio"
+                        name="documentSelection"
+                        id={`doc-${index}`}
+                        onChange={() => addSelectedDocuments(doc)}
+                      />
+                    )}}
+                  <label
+                    htmlFor={`doc-${index}`}
+                    className={styles.singleFileContainer}
+                    title={doc.additional_info
+                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
+                      : null}
+                  >
+                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
+                  </label>
+                </div>
+              ))}
+          </div>
+          <div className={isUsedByManageContext === false
+            ? `${styles.fileUploadContainer}`
+            : `${styles.currentSessionFileUploadContainer}`}
+          >
+            <button
+              type="button"
+              aria-label="Open File Upload"
+              onClick={() => toggleFileUploadComponent(true)}
+            >
+              <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
+                <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
+              </svg>
+            </button>
+            {isToggleFileUpload === true
+              ? (
+                <div className={styles.overlay}>
+                  <div className={styles.popup}>
+                    <FileUpload
+                      handleFileUpload={handleFileUpload}
+                    />
+                  </div>
+                </div>
+              ) : null}
+          </div>
+        </div>
 
- const handleProcessingPreviousSession = (session) => {
-    setCurrentProcessing(session.session_name);
-    dispatch(setCurrentProcessingButton(true));
-    dispatch(setUserSelectedCompanyKnowledge([]));
-    dispatch(setUserSelectedIndustryKnowledge([]));
-    dispatch(setUserSelectedPersonalKnowledge([]));
-    dispatch(setUserSelectedDocumentsForChat([]));
+        {/* Right: Filters */}
+        <div className={`${styles.section}`}>
+          <div className={styles.additionalKnowledgeHeader}>
+            <h3 className={`${styles.SectionTitle}`}>Add additional knowledge</h3>
+            <Link to="/earnings-call-tanscripts/edit-knowledge" className={styles.overrideLink}>
+              <button type="button" className={`${styles.editKnowledgeButton}`}>
+                Edit Knowledge
+              </button>
+            </Link>
 
-    dispatch(setChatMessages([]));
-    dispatch(setAllBotSourcesArray([]));
-    dispatch(setCurrentSessionDetails({}));
-    dispatch(toggleEditContextButton(true));
-    dispatch(setToggleCurrentSession(false));
-    dispatch(setCurrentChat([]));
-    dispatch(toggleChatComponent(true));
-    dispatch(setToggleBanner(true));
-    dispatch(toggleNewSession(false));
-    dispatch(setToggleProcessingStatus(false));
-  };
-  const [currentProcessing, setCurrentProcessing] = useState();
+          </div>
+          <AdditionalKnowledgeCard knowledgeType="company knowledge" knowledgeArray={companyKnowledge} />
+          <AdditionalKnowledgeCard knowledgeType="industry knowledge" knowledgeArray={industryKnowledge} />
+          <AdditionalKnowledgeCard knowledgeType="personal knowledge" knowledgeArray={personalKnowledge} />
+        </div>
+      </div>
+      <div className={`${styles.footerSection}`}>
+        <div>
+          <label htmlFor="industry-select" className={styles.dropdownTitle}>Select Industry</label>
+          <select value={industryType} onChange={changeIndustryType} className={styles.dropdown}>
+            <option value="Payments">Payments</option>
+            <option value="Airlines">Airlines</option>
+          </select>
+        </div>
+        <button
+          type="button"
+          className={`${styles.answerButton}`}
+          onClick={openChatComponent}
+        >
+          {isUsedByManageContext === false ? 'Generate Answers' : 'Submit'}
+        </button>
+      </div>
+      {isPopupOpen && (
+      <PopupMessage message={popupMessage} />
+      )}
+      {isUploading && (
+      <div className={styles.uploadOverlay}>
+        <div className={styles.spinner} />
+        <div style={{ color: 'white', fontSize: '18px' }}>Please wait... This should only take a moment.</div>
+      </div>
+      )}
+    </div>
+  );
+}
+
+Knowledge.propTypes = {
+  isUsedByManageContext: PropTypes.bool,
+  openOrCloseManageKnowledgeWindow: PropTypes.func,
+};
+
+export default Knowledge;
