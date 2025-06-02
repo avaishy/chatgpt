@@ -1,149 +1,166 @@
+/* istanbul ignore file */
+import React, {
+  useEffect, useState, useMemo, useCallback, useRef,
+} from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import styles from '../../../styles/FileProcessing.scss';
+import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
+import LoadingDots from './LoadingDots';
+
+const ProcessingStatus = () => {
+  const userId = useSelector(getUserId);
+  const [allStatuses, setAllStatuses] = useState([]);
+  const [taskFilter, setTaskFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const useCase = 'Earnings Call Transcript';
+  const indexingWasProcessing = useRef(false);
+  const initiallyCall = useRef(false);
+
+  const formatTimeDuration = (duration) => {
+    if (!duration) return '—';
+    const [hours, minutes, rest] = duration.split(':');
+    const seconds = Math.floor(Number.parseFloat(rest));
+    return `${Number.parseInt(hours, 10)}h ${Number.parseInt(minutes, 10)}m ${seconds}s`;
+  };
+
+  const fetchStatuses = useCallback(async () => {
+    try {
+      const [fileRes, sessionRes] = await Promise.all([
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getFilesFeatureOpsStats', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            use_case: useCase,
+          }),
+        }),
+        fetch('https://lumosusersessionmgmt-dev.aexp.com/getChatsCreationStatus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            use_case: useCase,
+          }),
+        }),
+      ]);
+
+      if (!fileRes.ok || !sessionRes.ok) {
+        throw new Error('Failed to fetch one or both statuses');
+      }
+
+      const [fileStatuses, sessionStatuses] = await Promise.all([
+        fileRes.json(),
+        sessionRes.json(),
+      ]);
+
+      const formattedFiles = fileStatuses.map((item, idx) => ({
+        id: `file-${item.file_name}-${idx}`,
+        task: 'Indexing',
+        name: item.file_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      const formattedSessions = sessionStatuses.map((item, idx) => ({
+        id: `session-${item.file_name}-${idx}`,
+        task: 'Pre-summarized',
+        name: item.session_name,
+        status: item.status,
+        duration: item.duration,
+      }));
+
+      setAllStatuses([...formattedFiles, ...formattedSessions]);
+    } catch (error) {
+      toast.error('Error fetching statuses');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId && !initiallyCall.current) {
+      fetchStatuses();
+      initiallyCall.current = true;
+    }
+    const indexingStatuses = allStatuses.filter((item) => item.task === 'Indexing');
+    const anyProcessing = indexingStatuses.some((item) => item.status === 'Processing');
+    const allCompleted = indexingStatuses.length > 0 && indexingStatuses.every((item) => item.status === 'Completed');
+    if (indexingWasProcessing.current && allCompleted) {
+      fetchStatuses();
+    }
+    indexingWasProcessing.current = anyProcessing;
+  }, [userId, allStatuses, fetchStatuses]);
+
+  const filteredStatuses = useMemo(() => allStatuses.filter((item) => {
+    const matchesTask = taskFilter === 'All' || item.task === taskFilter;
+    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+    return matchesTask && matchesStatus;
+  }), [allStatuses, taskFilter, statusFilter]);
 
   return (
-    <div className={isUsedByManageContext === false ? `${styles.container}` : `${styles.currentSessionContainer}`}>
-      <div className={`${styles.header}`}>
-        <h2>{isUsedByManageContext === false ? 'New Session' : 'Edit Session'}</h2>
-        <button type="button" className={`${styles.closeButton}`} onClick={closeNewSession}>close</button>
-      </div>
-      <div className={`${styles.contentWrapper}`}>
-        {/* Left: Documents */}
-        <div className={`${styles.section}`}>
-          <h3 className={`${styles.SectionTitle}`}>Add documents</h3>
-          <div>
-            <input type="text" placeholder="Search document" className={`${styles.input}`} onChange={handleDocumentSearch} />
-          </div>
-          <div className={isUsedByManageContext === false ? `${styles.documentList}` : `${styles.currentSessionDocumentList}`}>
-            {isLoadingDocuments
-              ? (
-                <div className={styles.documentItem}>
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                </div>
-              )
-              : filteredDocuments.map((doc, index) => (
-             
-                <div key={doc.file_id} className={`${styles.documentItem}`}>
-                  {isUsedByManageContext === true ? (
-                    <input
-                      type="checkbox"
-                      id={`doc-${index}`}
-                      onChange={() => addSelectedDocuments(doc)}
-                      checked={
-                        selectedDocuments.some(
-                          (selectedDoc) => selectedDoc.file_id === doc.file_id
-                        )}
-                      disabled={
-                      isUsedByManageContext
-                      && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-                    }
-                    />
-                  )
-                    : {lastestFileUploaded ? (
-                      <input
-                        type="radio"
-                        name="documentSelection"
-                        id={`doc-${index}`}
-                        checked={doc.file_id === filteredDocuments[0]?.file_id}
-                        onChange={() => addSelectedDocuments(doc)}
-                      />
-                    ) : (
-                      <input
-                        type="radio"
-                        name="documentSelection"
-                        id={`doc-${index}`}
-                        onChange={() => addSelectedDocuments(doc)}
-                      />
-                    )}}
-                  <label
-                    htmlFor={`doc-${index}`}
-                    className={styles.singleFileContainer}
-                    title={doc.additional_info
-                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
-                      : null}
+    <div className={styles.section}>
+      {loading ? (
+        <LoadingDots text="Loading" />
+      ) : (
+        <table className={styles.fileProcessingTable}>
+          <thead>
+            <tr>
+              <th style={{ width: '20%' }}>
+                <div className={styles.toggleContainer}>
+                  <select
+                    value={taskFilter}
+                    onChange={(e) => setTaskFilter(e.target.value)}
+                    className={styles.dropdown}
                   >
-                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
-                  </label>
+                    <option value="All">All</option>
+                    <option value="Indexing">Indexing</option>
+                    <option value="Pre-summarized">Pre-summarized chats</option>
+                  </select>
                 </div>
-              ))}
-          </div>
-          <div className={isUsedByManageContext === false
-            ? `${styles.fileUploadContainer}`
-            : `${styles.currentSessionFileUploadContainer}`}
-          >
-            <button
-              type="button"
-              aria-label="Open File Upload"
-              onClick={() => toggleFileUploadComponent(true)}
-            >
-              <svg viewBox="0 0 24 24" fill="black" width="24px" height="24px">
-                <path d="M5 20h14v-2H5v2zm7-16l-5.5 5.5 1.41 1.41L11 8.83V17h2V8.83l3.09 3.09 1.41-1.41L12 4z" />
-              </svg>
-            </button>
-            {isToggleFileUpload === true
-              ? (
-                <div className={styles.overlay}>
-                  <div className={styles.popup}>
-                    <FileUpload
-                      handleFileUpload={handleFileUpload}
-                    />
-                  </div>
+              </th>
+              <th style={{ width: '20%' }}>Name</th>
+              <th style={{ width: '20%' }}>
+                <div className={styles.toggleContainer}>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className={styles.dropdown}
+                  >
+                    <option value="All">All</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
+                  </select>
                 </div>
-              ) : null}
-          </div>
-        </div>
-
-        {/* Right: Filters */}
-        <div className={`${styles.section}`}>
-          <div className={styles.additionalKnowledgeHeader}>
-            <h3 className={`${styles.SectionTitle}`}>Add additional knowledge</h3>
-            <Link to="/earnings-call-tanscripts/edit-knowledge" className={styles.overrideLink}>
-              <button type="button" className={`${styles.editKnowledgeButton}`}>
-                Edit Knowledge
-              </button>
-            </Link>
-
-          </div>
-          <AdditionalKnowledgeCard knowledgeType="company knowledge" knowledgeArray={companyKnowledge} />
-          <AdditionalKnowledgeCard knowledgeType="industry knowledge" knowledgeArray={industryKnowledge} />
-          <AdditionalKnowledgeCard knowledgeType="personal knowledge" knowledgeArray={personalKnowledge} />
-        </div>
-      </div>
-      <div className={`${styles.footerSection}`}>
-        <div>
-          <label htmlFor="industry-select" className={styles.dropdownTitle}>Select Industry</label>
-          <select value={industryType} onChange={changeIndustryType} className={styles.dropdown}>
-            <option value="Payments">Payments</option>
-            <option value="Airlines">Airlines</option>
-          </select>
-        </div>
-        <button
-          type="button"
-          className={`${styles.answerButton}`}
-          onClick={openChatComponent}
-        >
-          {isUsedByManageContext === false ? 'Generate Answers' : 'Submit'}
-        </button>
-      </div>
-      {isPopupOpen && (
-      <PopupMessage message={popupMessage} />
-      )}
-      {isUploading && (
-      <div className={styles.uploadOverlay}>
-        <div className={styles.spinner} />
-        <div style={{ color: 'white', fontSize: '18px' }}>Please wait... This should only take a moment.</div>
-      </div>
+              </th>
+              <th style={{ width: '20%' }}>Execution Time</th>
+              <th style={{ width: '20%' }}>User ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStatuses.map((item) => (
+              <tr key={item.id}>
+                <td style={{ width: '20%' }}>{item.task}</td>
+                <td style={{ width: '20%' }}>{item.name}</td>
+                <td style={{ width: '20%' }}>{item.status}</td>
+                <td style={{ width: '20%' }}>
+                  {item.duration ? formatTimeDuration(item.duration) : '—'}
+                </td>
+                <td style={{ width: '20%' }}>{userId}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
-}
-
-Knowledge.propTypes = {
-  isUsedByManageContext: PropTypes.bool,
-  openOrCloseManageKnowledgeWindow: PropTypes.func,
 };
 
-export default Knowledge;
+export default ProcessingStatus;
