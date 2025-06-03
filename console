@@ -1,103 +1,45 @@
-/* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import styles from '../../../styles/FileProcessing.scss';
-import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
+const getAllUserDocuments = async () => {
+  let useCaseTemp = null;
+  setIsLoadingDocuments(true);
 
-const dummyData = {
-  fileProcessingStatus: [
-    {
-      upload_time: '2025-05-30 10:00:01',
-      name: 'VISA 2024 Q3.pdf',
-      is_main_file: true,
-      file_indexing: 'Completed',
-      answer_generation: 'Processing',
-      execution_time: '3m 23s',
-      user_id: 'anupam',
-    },
-    {
-      upload_time: '2025-05-30 09:02:34',
-      name: 'Mastercard 2024 Q2.pdf',
-      is_main_file: false,
-      file_indexing: 'Completed',
-      answer_generation: 'NA',
-      execution_time: '5m 22s',
-      user_id: 'anupam',
-    },
-    {
-      upload_time: '2025-05-30 09:00:05',
-      name: 'VISA 2024 Q2.pdf',
-      is_main_file: true,
-      file_indexing: 'Completed',
-      answer_generation: 'Completed',
-      execution_time: '8m 13s',
-      user_id: 'anupam',
-    },
-  ],
-};
+  try {
+    if (useCase === 'earnings_call_transcript') {
+      useCaseTemp = 'Earnings Call Transcript';
+    }
 
-const ProcessingStatus = () => {
-  const userId = useSelector(getUserId);
-  const [rows, setRows] = useState([]);
+    const data = {
+      user_id: userId,
+      use_case: useCaseTemp,
+    };
 
-  useEffect(() => {
-    const formattedRows = dummyData.fileProcessingStatus.flatMap((item, index) => {
-      const base = {
-        name: item.name,
-        execution_time: item.execution_time,
-        user_id: item.user_id,
-      };
-
-      const result = [
-        {
-          id: `indexing-${index}`,
-          task: 'Indexing',
-          status: item.file_indexing,
-          ...base,
-        },
-      ];
-
-      if (item.answer_generation && item.answer_generation !== 'NA') {
-        result.push({
-          id: `pre-summary-${index}`,
-          task: 'Pre-summarized',
-          status: item.answer_generation,
-          ...base,
-        });
-      }
-
-      return result;
+    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getUserFiles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    setRows(formattedRows);
-  }, []);
+    const result = await res.json();
 
-  return (
-    <div className={styles.section}>
-      <table className={styles.fileProcessingTable}>
-        <thead>
-          <tr>
-            <th style={{ width: '20%' }}>Task</th>
-            <th style={{ width: '20%' }}>Name</th>
-            <th style={{ width: '20%' }}>Status</th>
-            <th style={{ width: '20%' }}>Execution Time</th>
-            <th style={{ width: '20%' }}>User ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((item) => (
-            <tr key={item.id}>
-              <td>{item.task}</td>
-              <td>{item.name}</td>
-              <td>{item.status}</td>
-              <td>{item.execution_time}</td>
-              <td>{item.user_id}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+    // Move recently uploaded file to the top
+    let reordered = result;
+    if (recentUploadedFileName) {
+      reordered = [
+        ...result.filter((f) => f.file_name === recentUploadedFileName),
+        ...result.filter((f) => f.file_name !== recentUploadedFileName),
+      ];
+    }
+
+    setAllUserDocuments(reordered);
+    dispatch(setAllUserFiles(reordered));
+    setFilteredDocuments(reordered);
+
+    if (isUploadedNewDocs && reordered.length > 0) {
+      setSelectedDocuments([reordered[0]]);
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error('Please try again');
+  } finally {
+    setIsLoadingDocuments(false);
+  }
 };
-
-export default ProcessingStatus;
