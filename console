@@ -1,4 +1,11 @@
-useEffect(() => {
+ useEffect(() => {
+    if (userId) {
+      getPreviousSessions(); 
+      dispatch(setRefressPreviousSession(false));
+    }
+  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
+ 
+  useEffect(() => {
   const fetchAndSetSession = async () => {
     if (!previousSessions || !selectedChat?.chat_id || !refreshCurrentSession) return;
 
@@ -17,4 +24,4 @@ useEffect(() => {
   };
 
   fetchAndSetSession();
-}, [previousSessions, selectedChat, refreshCurrentSession]);
+}, [previousSessions, refreshCurrentSession]);
