@@ -1,34 +1,26 @@
-// First: trigger previous session fetch on mount or refresh
+// Polling or re-fetch until session exists in previousSessions
 useEffect(() => {
-  if (userId && (shouldPreviousSessionRefresh || refreshCurrentSession)) {
-    getPreviousSessions(); // this sets Redux state
-    dispatch(setRefressPreviousSession(false));
-  }
-}, [userId, shouldPreviousSessionRefresh, refreshCurrentSession]);
-
-// Second: once previousSessions + selectedChat + refreshCurrentSession are all ready, proceed
-useEffect(() => {
-  const ready =
-    refreshCurrentSession &&
-    selectedChat?.chat_id &&
-    Array.isArray(previousSessions) &&
-    previousSessions.length > 0;
-
-  if (!ready) return;
-
-  const timeoutId = setTimeout(() => {
-    const matchedSession = previousSessions.find(session =>
-      session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
+  let attempts = 0;
+  const intervalId = setInterval(() => {
+    const sessionExists = previousSessions.some(session =>
+      session.chats?.some(chat => chat.chat_id === selectedChat?.chat_id)
     );
 
-    console.log('matchedSession', matchedSession);
-
-    if (matchedSession) {
-      dispatch(setCurrentSessionDetails(matchedSession));
-      dispatch(setCurrentChat(matchedSession.chats));
-      dispatch(setRefressCurrentSession(false));
+    if (sessionExists || attempts > 5) {
+      if (sessionExists) {
+        const matchedSession = previousSessions.find(session =>
+          session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
+        );
+        dispatch(setCurrentSessionDetails(matchedSession));
+        dispatch(setCurrentChat(matchedSession.chats));
+        dispatch(setRefressCurrentSession(false));
+      }
+      clearInterval(intervalId);
+    } else {
+      getPreviousSessions(); // try again
+      attempts++;
     }
-  }, 500); // Delay can be reduced if timing is right
+  }, 1000);
 
-  return () => clearTimeout(timeoutId);
-}, [previousSessions, selectedChat, refreshCurrentSession]);
+  return () => clearInterval(intervalId);
+}, [refreshCurrentSession, selectedChat?.chat_id]);
