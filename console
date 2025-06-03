@@ -43,3 +43,49 @@ const getAllUserDocuments = async () => {
     setIsLoadingDocuments(false);
   }
 };
+
+filteredDocuments.map((doc, index) => (
+             
+                <div key={doc.file_id} className={`${styles.documentItem}`}>
+                  {isUsedByManageContext === true ? (
+                    <input
+                      type="checkbox"
+                      id={`doc-${index}`}
+                      onChange={() => addSelectedDocuments(doc)}
+                      checked={
+                        selectedDocuments.some(
+                          (selectedDoc) => selectedDoc.file_id === doc.file_id
+                        )}
+                      disabled={
+                      isUsedByManageContext
+                      && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+                    }
+                    />
+                  )
+                    : isUploadedNewDocs ? (
+                      <input
+                        type="radio"
+                        name="documentSelection"
+                        id={`doc-${index}`}
+                        checked={doc.file_name === recentUploadedFileName}
+                        onChange={() => addSelectedDocuments(doc)}
+                      />
+                    ) : (
+                      <input
+                        type="radio"
+                        name="documentSelection"
+                        id={`doc-${index}`}
+                        onChange={() => addSelectedDocuments(doc)}
+                      />
+                    )}
+                  <label
+                    htmlFor={`doc-${index}`}
+                    className={styles.singleFileContainer}
+                    title={doc.additional_info
+                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
+                      : null}
+                  >
+                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
+                  </label>
+                </div>
+              ))}
