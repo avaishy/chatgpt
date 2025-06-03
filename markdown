@@ -5,7 +5,7 @@
       const fetchAndSetSession = async () => {
       
       console.log('previousSessions',previousSessions);
-      dispatch(setRefressPreviousSession(false));
+      
 
       if (!previousSessions || !selectedChat?.chat_id) return;
 
@@ -14,17 +14,34 @@
         session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
       );
      console.log('matchedSession', matchedSession);
-      const matchedChats = matchedSession.find(chat =>
-        chat.chat_id?.some(chat => chat.chat_id === selectedChat.chat_id)
-      );
-      if (matchedChats) {
-        dispatch(setCurrentSessionDetails(matchedChats));
-      }
+     console.log('refreshCurrentSession', refreshCurrentSession);
+      if (matchedSession && !refreshCurrentSession) {
+         console.log('matchedSession1', matchedSession);
+     console.log('refreshCurrentSession1', refreshCurrentSession);
+     console.log('shouldPreviousSessionRefresh', shouldPreviousSessionRefresh);
+        dispatch(setCurrentSessionDetails(matchedSession));
+        dispatch(setCurrentChat(matchedSession.chats));
+        dispatch(setRefressCurrentSession(true));
+     }
     };
-
-    fetchAndSetSession();
+ 
+      fetchAndSetSession();
+    
+      dispatch(setRefressPreviousSession(false));
     }
-  }, [getPreviousSessions]);
-
-  previousSessions (3) [{…}, {…}, {…}]0: {session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', chats: Array(6)}1: {session_id: 'd9d4c1dd-3d85-47d1-ab8d-11e6f148f5dc', session_name: 'Mastercard Inc Q4 2023 Earnings Call Transcript.pdf', crt_ts: '2025-06-03 05:16:43.330085', chats: Array(6)}2: {session_id: '9275eaef-a2e4-44c3-afa2-2a4f3c20b2b5', session_name: 'Mastercard Inc Q4 2023 Earnings Call Transcript.pdf', crt_ts: '2025-06-03 04:09:52.442746', chats: Array(6)}length: 3[[Prototype]]: Array(0)
-SessionsNav.jsx:207 matchedSession 
+  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
+  useEffect(() => {
+    fetchProcessingFilesAndChats();
+  }, [shouldProcessingSessionRefresh]);
+  currentSessionDetails {session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', status: 'Completed', job_stage: 'chats_creation', …}
+CurrrentSessions.jsx:80 getCurrentChatDetails [{…}]
+CurrrentSessions.jsx:81 selected chat details {chat_id: '4386cad0-bf2e-47c4-9234-c0a286940892', chat_name: 'Q2 : Identify risks discussed by management', crt_ts: '2025-06-03T05:55:17.544227', files_selected: Array(1), contexts_selected: Array(0)}
+SessionsNav.jsx:202 previousSessions (3) [{…}, {…}, {…}]
+SessionsNav.jsx:211 matchedSession {session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', status: 'Completed', job_stage: 'chats_creation', …}
+SessionsNav.jsx:212 refreshCurrentSession {type: 'module/research-assistant-root/SET_SHOULD_CURRENT_SESSION', payload: Map}
+CurrrentSessions.jsx:77 currentSessionDetails {session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', status: 'Completed', job_stage: 'chats_creation', …}
+CurrrentSessions.jsx:80 getCurrentChatDetails [{…}]
+CurrrentSessions.jsx:81 selected chat details {chat_id: '4386cad0-bf2e-47c4-9234-c0a286940892', chat_name: 'Q2 : Identify risks discussed by management', crt_ts: '2025-06-03T05:55:17.544227', files_selected: Array(1), contexts_selected: Array(0)}
+SessionsNav.jsx:202 previousSessions (3) [{…}, {…}, {…}]
+SessionsNav.jsx:211 matchedSession {session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', status: 'Completed', job_stage: 'chats_creation', …}
+SessionsNav.jsx:212 refreshCurrentSession {type: 'module/research-assistant-root/SET_SHOULD_CURRENT_SESSION', payload: Map}
