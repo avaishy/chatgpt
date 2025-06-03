@@ -1,27 +1,34 @@
- useEffect(() => {
-    if (userId) {
-      getPreviousSessions(); 
-      dispatch(setRefressPreviousSession(false));
-    }
-  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
- 
-  useEffect(() => {
-  const fetchAndSetSession = async () => {
-    if (!previousSessions || !selectedChat?.chat_id || !refreshCurrentSession) return;
+// First: trigger previous session fetch on mount or refresh
+useEffect(() => {
+  if (userId && (shouldPreviousSessionRefresh || refreshCurrentSession)) {
+    getPreviousSessions(); // this sets Redux state
+    dispatch(setRefressPreviousSession(false));
+  }
+}, [userId, shouldPreviousSessionRefresh, refreshCurrentSession]);
 
+// Second: once previousSessions + selectedChat + refreshCurrentSession are all ready, proceed
+useEffect(() => {
+  const ready =
+    refreshCurrentSession &&
+    selectedChat?.chat_id &&
+    Array.isArray(previousSessions) &&
+    previousSessions.length > 0;
+
+  if (!ready) return;
+
+  const timeoutId = setTimeout(() => {
     const matchedSession = previousSessions.find(session =>
       session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
     );
 
     console.log('matchedSession', matchedSession);
-    console.log('refreshCurrentSession', refreshCurrentSession);
 
     if (matchedSession) {
       dispatch(setCurrentSessionDetails(matchedSession));
       dispatch(setCurrentChat(matchedSession.chats));
       dispatch(setRefressCurrentSession(false));
     }
-  };
+  }, 500); // Delay can be reduced if timing is right
 
-  fetchAndSetSession();
-}, [previousSessions, refreshCurrentSession]);
+  return () => clearTimeout(timeoutId);
+}, [previousSessions, selectedChat, refreshCurrentSession]);
