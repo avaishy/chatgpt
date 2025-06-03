@@ -1,73 +1,20 @@
-0
-: 
-chats
-: 
-Array(6)
-0
-: 
-chat_id
-: 
-"9c7678d4-93b7-4a1e-95eb-01c9cef35465"
-chat_name
-: 
-"Summary : Summarise the whole call."
-contexts_selected
-: 
-[]
-crt_ts
-: 
-"2025-06-03T05:55:14.851683"
-files_selected
-: 
-(2) [{…}, {…}]
-[[Prototype]]
-: 
-Object
-1
-: 
-{chat_id: 'cbfb0672-e915-447f-8fd1-6bca0faf8388', chat_name: 'Q1 : Identify the key themes, topic and guidance discussed in the call', crt_ts: '2025-06-03T05:55:16.25163', files_selected: Array(2), contexts_selected: Array(0)}
-2
-: 
-{chat_id: '4386cad0-bf2e-47c4-9234-c0a286940892', chat_name: 'Q2 : Identify risks discussed by management', crt_ts: '2025-06-03T05:55:17.544227', files_selected: Array(1), contexts_selected: Array(0)}
-3
-: 
-{chat_id: '699b36e8-376e-4289-b118-3a0ed8961094', chat_name: 'Q3 : Identify their strategy and significant industry trends', crt_ts: '2025-06-03T05:55:18.83767', files_selected: Array(1), contexts_selected: Array(0)}
-4
-: 
-{chat_id: '6c7421d2-bb5a-4ee3-86e6-6f0e06bb7616', chat_name: 'Q4 : Identify cash flow management and priorities', crt_ts: '2025-06-03T05:55:20.123615', files_selected: Array(1), contexts_selected: Array(0)}
-5
-: 
-{chat_id: 'dba207c0-e314-4951-b1ee-4e61d9c9772f', chat_name: 'Q5 : Identify impact of economic condition to the business and the industry', crt_ts: '2025-06-03T05:55:21.539604', files_selected: Array(1), contexts_selected: Array(0)}
-length
-: 
-6
-[[Prototype]]
-: 
-Array(0)
-crt_ts
-: 
-"2025-06-03 05:50:13.821318"
-session_id
-: 
-"4a83aa00-c58f-45c5-b783-944ad605f782"
-session_name
-: 
-"Barclays.pdf"
-[[Prototype]]
-: 
-Object
-1
-: 
-{session_id: 'd9d4c1dd-3d85-47d1-ab8d-11e6f148f5dc', session_name: 'Mastercard Inc Q4 2023 Earnings Call Transcript.pdf', crt_ts: '2025-06-03 05:16:43.330085', chats: Array(6)}
-2
-: 
-{session_id: '9275eaef-a2e4-44c3-afa2-2a4f3c20b2b5', session_name: 'Mastercard Inc Q4 2023 Earnings Call Transcript.pdf', crt_ts: '2025-06-03 04:09:52.442746', chats: Array(6)}
- useEffect(() => {
-    if (userId) {
-      getPreviousSessions();
-      console.log('previousSessions',previousSessions);
+useEffect(() => {
+  const fetchAndSetSession = async () => {
+    if (!previousSessions || !selectedChat?.chat_id || !refreshCurrentSession) return;
 
-      dispatch(setRefressPreviousSession(false));
+    const matchedSession = previousSessions.find(session =>
+      session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
+    );
+
+    console.log('matchedSession', matchedSession);
+    console.log('refreshCurrentSession', refreshCurrentSession);
+
+    if (matchedSession) {
+      dispatch(setCurrentSessionDetails(matchedSession));
+      dispatch(setCurrentChat(matchedSession.chats));
+      dispatch(setRefressCurrentSession(false));
     }
-  }, [getPreviousSessions]);
-    dispatch(setCurrentSessionDetails(session));
+  };
+
+  fetchAndSetSession();
+}, [previousSessions, selectedChat, refreshCurrentSession]);
