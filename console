@@ -1,91 +1,12 @@
-const getAllUserDocuments = async () => {
-  let useCaseTemp = null;
-  setIsLoadingDocuments(true);
-
-  try {
-    if (useCase === 'earnings_call_transcript') {
-      useCaseTemp = 'Earnings Call Transcript';
-    }
-
-    const data = {
-      user_id: userId,
-      use_case: useCaseTemp,
-    };
-
-    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getUserFiles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const result = await res.json();
-
-    // Move recently uploaded file to the top
-    let reordered = result;
-    if (recentUploadedFileName) {
-      reordered = [
-        ...result.filter((f) => f.file_name === recentUploadedFileName),
-        ...result.filter((f) => f.file_name !== recentUploadedFileName),
-      ];
-    }
-
-    setAllUserDocuments(reordered);
-    dispatch(setAllUserFiles(reordered));
-    setFilteredDocuments(reordered);
-
-    if (isUploadedNewDocs && reordered.length > 0) {
-      setSelectedDocuments([reordered[0]]);
-    }
-  } catch (error) {
-    console.log(error);
-    toast.error('Please try again');
-  } finally {
-    setIsLoadingDocuments(false);
-  }
-};
-
-filteredDocuments.map((doc, index) => (
-             
-                <div key={doc.file_id} className={`${styles.documentItem}`}>
-                  {isUsedByManageContext === true ? (
-                    <input
-                      type="checkbox"
-                      id={`doc-${index}`}
-                      onChange={() => addSelectedDocuments(doc)}
-                      checked={
-                        selectedDocuments.some(
-                          (selectedDoc) => selectedDoc.file_id === doc.file_id
-                        )}
-                      disabled={
-                      isUsedByManageContext
-                      && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-                    }
-                    />
-                  )
-                    : isUploadedNewDocs ? (
-                      <input
-                        type="radio"
-                        name="documentSelection"
-                        id={`doc-${index}`}
-                        checked={doc.file_name === recentUploadedFileName}
-                        onChange={() => addSelectedDocuments(doc)}
-                      />
-                    ) : (
-                      <input
-                        type="radio"
-                        name="documentSelection"
-                        id={`doc-${index}`}
-                        onChange={() => addSelectedDocuments(doc)}
-                      />
-                    )}
-                  <label
-                    htmlFor={`doc-${index}`}
-                    className={styles.singleFileContainer}
-                    title={doc.additional_info
-                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
-                      : null}
-                  >
-                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
-                  </label>
-                </div>
-              ))}
+  // Single radio input mode
+      <input
+        type="radio"
+        name="documentSelection"
+        id={`doc-${index}`}
+        checked={
+          isUploadedNewDocs
+            ? doc.file_name === recentUploadedFileName
+            : selectedDocuments.some((selectedDoc) => selectedDoc.file_id === doc.file_id)
+        }
+        onChange={() => addSelectedDocuments(doc)}
+      />
