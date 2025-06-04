@@ -1,106 +1,200 @@
-export const getShouldRefreshCurrentSession = (state) => {
-  const res = getInsideReducerState(state, ['shouldRefreshCurrentSession']);
-  return res;
-};
-
-
-
-export const SET_SHOULD_CURRENT_SESSION = `module/${ROOT}/SET_SHOULD_CURRENT_SESSION`;
-
-  shouldRefreshCurrentSession: false,
-
- case SET_SHOULD_CURRENT_SESSION:
-      return state.set('shouldRefreshCurrentSession', action.payload); 
- 
-  SET_SHOULD_CURRENT_SESSION,
-export const setRefressCurrentSession = (data) => ({
-  type: SET_SHOULD_CURRENT_SESSION,
-  payload: data,
-});
-
-current sesion
+Current Session Details: 
+{session_id: '4a83aa00-c58f-45c5-b783-944ad605f782', session_name: 'Barclays.pdf', crt_ts: '2025-06-03 05:50:13.821318', status: 'Completed', job_stage: 'chats_creation', …}
+chats
+: 
+Array(6)
+0
+: 
+{chat_id: '9c7678d4-93b7-4a1e-95eb-01c9cef35465', chat_name: 'Summary : Summarise the whole call.', crt_ts: '2025-06-03T05:55:14.851683', files_selected: Array(1), contexts_selected: Array(0)}
+1
+: 
+{chat_id: 'cbfb0672-e915-447f-8fd1-6bca0faf8388', chat_name: 'Q1 : Identify the key themes, topic and guidance discussed in the call', crt_ts: '2025-06-03T05:55:16.25163', files_selected: Array(1), contexts_selected: Array(0)}
+2
+: 
+{chat_id: '4386cad0-bf2e-47c4-9234-c0a286940892', chat_name: 'Q2 : Identify risks discussed by management', crt_ts: '2025-06-03T05:55:17.544227', files_selected: Array(2), contexts_selected: Array(0)}
+3
+: 
+{chat_id: '699b36e8-376e-4289-b118-3a0ed8961094', chat_name: 'Q3 : Identify their strategy and significant industry trends', crt_ts: '2025-06-03T05:55:18.83767', files_selected: Array(1), contexts_selected: Array(0)}
+4
+: 
+{chat_id: '6c7421d2-bb5a-4ee3-86e6-6f0e06bb7616', chat_name: 'Q4 : Identify cash flow management and priorities', crt_ts: '2025-06-03T05:55:20.123615', files_selected: Array(1), contexts_selected: Array(0)}
+5
+: 
+{chat_id: 'dba207c0-e314-4951-b1ee-4e61d9c9772f', chat_name: 'Q5 : Identify impact of economic condition to the business and the industry', crt_ts: '2025-06-03T05:55:21.539604', files_selected: Array(1), contexts_selected: Array(0)}
+length
+: 
+6
+[[Prototype]]
+: 
+Array(0)
+crt_ts
+: 
+"2025-06-03 05:50:13.821318"
+job_stage
+: 
+"chats_creation"
+session_id
+: 
+"4a83aa00-c58f-45c5-b783-944ad605f782"
+session_name
+: 
+"Barclays.pdf"
+status
+: 
+"Completed"
+[[Prototype]]
+: 
+Object
+CurrrentSessions.jsx:79 refreshCurrentSession: false
+CurrrentSessions.jsx:80 selectedChat: 
+{chat_id: '9c7678d4-93b7-4a1e-95eb-01c9cef35465', chat_name: 'Summary : Summarise the whole call.', crt_ts: '2025-06-03T05:55:14.851683', files_selected: Array(1), contexts_selected: Array(0)}
+chat_id
+: 
+"9c7678d4-93b7-4a1e-95eb-01c9cef35465"
+chat_name
+: 
+"Summary : Summarise the whole call."
+contexts_selected
+: 
+[]
+crt_ts
+: 
+"2025-06-03T05:55:14.851683"
+files_selected
+: 
+[{…}]
+[[Prototype]]
+: 
+Object
+CurrrentSessions.jsx:40 chats inside selectchat undefined
+CurrrentSessions.jsx:42 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'chat_id')
+    at selectChat (CurrrentSessions.jsx:42:29)
+    at CurrrentSessions.jsx:81:7
+/* istanbul ignore file */
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import styles from '../../../styles/currentSessions.scss';
+import {
+  getCurrentSessionDetails,
   getCurrentChatDetails,
-  getShouldRefreshCurrentSession,
-
-   const refreshCurrentSession = useSelector(
-      (state) => getShouldRefreshCurrentSession(state)
-    );
-
-useeffect
-  }, [currentSessionDetails, refreshCurrentSession]);
-   
-
-SessionNav  component
   getSelectedChatDetails,
+  getUserSelectedDocumentForChat,
   getShouldRefreshCurrentSession,
+  getShouldRefreshPreviousSession,
+} from '../../../store/selectors/earningsCallTranscriptSelectors';
+import {
+  setUserSelectedDocumentsForChat,
+  setUserSelectedCompanyKnowledge,
+  setUserSelectedIndustryKnowledge,
+  setUserSelectedPersonalKnowledge,
+  setSelectedChat,
+  setChatMessages,
+} from '../../../store/actions/earningsCallTranscriptActions';
+import MiniProcessingMessage from './MiniProcessingMessage';
 
-  setRefressCurrentSession,
+function CurrentSessions() {
+  const [isLoadedChatId, setIsLoadedChatId] = useState('');
+  const dispatch = useDispatch();
+  const userSelectDocuments = useSelector((state) => getUserSelectedDocumentForChat(state));
+  const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
+  const allChats = useSelector((state) => getCurrentChatDetails(state));
   const selectedChat = useSelector((state) => getSelectedChatDetails(state));
-  const refreshCurrentSession = useSelector((state) => getShouldRefreshCurrentSession(state));
+  // const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
+  const refreshCurrentSession = useSelector(
+    (state) => getShouldRefreshCurrentSession(state)
+  );
+  const refreshPreviousSession = useSelector(
+    (state) => getShouldRefreshPreviousSession(state)
+  );
 
+  const selectChat = async (chats) => {
+    console.log('chats inside selectchat',chats);
+    let chatMessages = [];
+    setIsLoadedChatId(chats.chat_id);
+    try {
+      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/getUserChatHistory/${chats.chat_id}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        chatMessages = await res.json();
+        const knowledge = chats.contexts_selected;
+        const companyContext = [];
+        const personalContext = [];
+        const industryContext = [];
 
- useEffect(() => {
-    if (userId) {
-      getPreviousSessions(); 
-      dispatch(setRefressPreviousSession(false));
-    }
-  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
- 
-  useEffect(() => {
-  const fetchAndSetSession = async () => {
-    if (!previousSessions || !selectedChat?.chat_id || !refreshCurrentSession) return;
-
-    const matchedSession = previousSessions.find(session =>
-      session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
-    );
-
-    console.log('matchedSession', matchedSession);
-    console.log('refreshCurrentSession', refreshCurrentSession);
-
-    if (matchedSession) {
-      dispatch(setCurrentSessionDetails(matchedSession));
-      dispatch(setCurrentChat(matchedSession.chats));
-     
+        knowledge.forEach((element) => {
+          if (element.context_type === 'company knowledge') {
+            companyContext.push(element);
+          }
+          if (element.context_type === 'industry knowledge') {
+            industryContext.push(element);
+          }
+          if (element.context_type === 'personal knowledge') {
+            personalContext.push(element);
+          }
+        });
+        dispatch(setUserSelectedDocumentsForChat(chats.files_selected));
+        dispatch(setUserSelectedCompanyKnowledge(companyContext));
+        dispatch(setUserSelectedIndustryKnowledge(industryContext));
+        dispatch(setUserSelectedPersonalKnowledge(personalContext));
+        dispatch(setChatMessages(chatMessages));
+        dispatch(setSelectedChat(chats));
+        toast.success('Successfully Navigated');
+      }
+    } catch (error) { toast.error(`failed to fetch previous chats ${error}`); } finally {
+      setIsLoadedChatId('');
     }
   };
-  
-  fetchAndSetSession();
-  dispatch(setRefressCurrentSession(false));
-
-}, [refreshCurrentSession]);
   useEffect(() => {
-    fetchProcessingFilesAndChats();
-  }, [shouldProcessingSessionRefresh]);
+    if ('chats' in currentSessionDetails && currentSessionDetails.chats.length > 0) {
+      console.log('Current Session Details:', currentSessionDetails);
+      if(selectedChat !== undefined || refreshCurrentSession ){
+      console.log('refreshCurrentSession:', refreshCurrentSession);
+      console.log('selectedChat:', selectedChat);
+      selectChat(currentSessionDetails.selectedChat);
+      }else{
+      console.log('else call in current sesion:');
 
-Knowlegde componnet
-  setRefressCurrentSession,
+      selectChat(currentSessionDetails.chats[0]);
+      }
+    }
+  }, [currentSessionDetails, refreshCurrentSession ]);
 
-  getShouldRefreshCurrentSession,
+  return (
+    <div>
+      <div className={`${styles.currentSessionContainer}`}>
+        <p className={`${styles.header}`}>Current Session</p>
+        <div className={`${styles.buttonContainerWrapper}`}>
+          <div className={styles.sessionContainer}>
+            <button type="button" className={`${styles.currentSessionButton}`}>
+              <p className={`${styles.text}`}>{currentSessionDetails.session_name
+                || (userSelectDocuments?.[0]?.file_name?.split('/')?.pop() ?? 'Untitled Session')}
+              </p>
+            </button>
+          </div>
+          {allChats.length > 0 ? allChats.map((ele) => (
+            <div key={ele.chat_id} className={styles.buttonContainer}>
+              <h3>{selectedChat.chat_id === ele.chat_id}</h3>
+              <button
+                type="button"
+                className={`
+                ${styles.currentSessionButton}
+                ${selectedChat?.chat_id === ele.chat_id ? styles.activeButton : ''}
+                `}
+                onClick={() => selectChat(ele)}
+              >
+                <div className={styles.textWrapper}>
+                  <div className={styles.text}>{ele.chat_name}</div>
+                  <div className={styles.tooltip}>{ele.chat_name}</div>
+                </div>
+                { isLoadedChatId === ele.chat_id
+                  ? <MiniProcessingMessage /> : null}
+              </button>
+            </div>
+          )) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          dispatch(setRefressCurrentSession(true));
-            console.log(' knowledge 452 refreshCurrentSession', refreshCurrentSession);
-
-manageCOntext component 
-
-  setRefressCurrentSession,
-  getShouldRefreshCurrentSession, 
- const refreshCurrentSession = useSelector((state) => getShouldRefreshCurrentSession(state));
-
-Right now the problem is when user open the application getprevioussession methode call through which all the previous sessions comes when user click on previous sesion button navigateToPreviousSession called 
- const navigateToPreviousSession = async (session) => {
-    dispatch(setRefressProcessingSession(true));
-    dispatch(setCurrentProcessingButton(false));
-    dispatch(setToggleBanner(false));
-    dispatch(setToggleCurrentSession(true));
-    setIsSessionsId(session.session_id);
-    dispatch(setToggleProcessingStatus(false));
-    dispatch(setCurrentSessionDetails(session));
-    dispatch(setCurrentChat(session.chats));
-    dispatch(toggleNewSession(false));
-    dispatch(toggleChatComponent(true));
-    dispatch(toggleEditContextButton(false));
-  };
-and in current session we are update this information dispatch(setCurrentSessionDetails(session));
-    dispatch(setCurrentChat(session.chats));
-but here is the catch for example if user click on previous session then all information set to the current sesion inside that session user add new file then i re fresh it and againg call get previous session api updated information come but user still on current session he doesn't click on handleprevioussession session 
-so current sesion still have old data once again if user click on previous session then in current session all information is updated to solve this if user doesn;t cclick on previous session still i want to update information inside current session so i did these changes but still not able to get thodse files 
+export default CurrentSessions;
