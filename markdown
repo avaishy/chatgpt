@@ -364,3 +364,273 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
+/* istanbul ignore file */
+import React, { useEffect, useState, useCallback } from 'react';
+import { Navigation } from '@americanexpress/dls-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import NewSesssion from './NewSession';
+import styles from '../../../styles/sessionsNav.scss';
+import ChatComponentWrapper from '../chatScreen/ChatComponentWrapper';
+import CurrentSessions from '../utility/CurrrentSessions';
+import {
+  getShowNewSession,
+  getToggleChatComponent,
+  getUserId,
+  getToggleCurrentSession,
+  getToggleProcessingStatus,
+  getShouldRefreshPreviousSession,
+  getToggleProcessingBanner,
+  getUserSelectedDocumentForChat,
+  getToggleProcessingButton,
+  getSelectedChatDetails,
+  getShouldRefreshCurrentSession,
+} from '../../../store/selectors/earningsCallTranscriptSelectors';
+import {
+  toggleNewSession,
+  setCurrentSessionDetails,
+  setUserSelectedCompanyKnowledge,
+  setUserSelectedIndustryKnowledge,
+  setUserSelectedPersonalKnowledge,
+  toggleChatComponent,
+  setUserSelectedDocumentsForChat,
+  setCurrentChat,
+  toggleEditContextButton,
+  addUseCase,
+  setToggleCurrentSession,
+  setToggleProcessingStatus,
+  setRefressPreviousSession,
+  setToggleBanner,
+  setCurrentProcessingButton,
+  setChatMessages,
+  setAllBotSourcesArray,
+  setLastestUploadedDocs,
+  setRefressCurrentSession,
+  setSelectedChat,
+} from '../../../store/actions/earningsCallTranscriptActions';
+import ProcessingStatus from '../utility/ProcessingStatus';
+import MiniProcessingMessage from '../utility/MiniProcessingMessage';
+
+const SessionsNav = () => {
+  const dispatch = useDispatch();
+  const showNewSession = useSelector((state) => getShowNewSession(state));
+  const userId = useSelector((state) => getUserId(state));
+  const showChatComponent = useSelector((state) => getToggleChatComponent(state));
+  const [previousSessions, setPreviousSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [isSessionsId, setIsSessionsId] = useState(true);
+  const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
+  const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
+  const shouldPreviousSessionRefresh = useSelector(
+    (state) => getShouldRefreshPreviousSession(state)
+  );
+  const showBanner = useSelector((state) => getToggleProcessingBanner(state));
+  const userSelectDocuments = useSelector((state) => getUserSelectedDocumentForChat(state));
+  const showProcessingButton = useSelector((state) => getToggleProcessingButton(state));
+  const [currentProcessing, setCurrentProcessing] = useState(null);
+  let containerClass = '';
+  const selectedChat = useSelector((state) => getSelectedChatDetails(state));
+  const refreshCurrentSession = useSelector((state) => getShouldRefreshCurrentSession(state));
+
+  const handleNewSessionClick = () => {
+    dispatch(setUserSelectedCompanyKnowledge([]));
+    dispatch(setUserSelectedIndustryKnowledge([]));
+    dispatch(setUserSelectedPersonalKnowledge([]));
+    dispatch(setUserSelectedDocumentsForChat([]));
+    dispatch(toggleNewSession(true));
+    dispatch(toggleChatComponent(false));
+    dispatch(setToggleProcessingStatus(false));
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setLastestUploadedDocs(false));
+    setCurrentProcessing(null);
+  };
+  const handleFileProcessingClick = () => {
+    dispatch(toggleChatComponent(false));
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(toggleNewSession(false));
+    dispatch(setToggleProcessingStatus(true));
+  };
+  const handleProcessingPreviousSession = (session) => {
+    setCurrentProcessing(session.session_name);
+    dispatch(setCurrentProcessingButton(true));
+    dispatch(setUserSelectedCompanyKnowledge([]));
+    dispatch(setUserSelectedIndustryKnowledge([]));
+    dispatch(setUserSelectedPersonalKnowledge([]));
+    dispatch(setUserSelectedDocumentsForChat([]));
+    dispatch(setChatMessages([]));
+    dispatch(setAllBotSourcesArray([]));
+    dispatch(setCurrentSessionDetails({}));
+    dispatch(toggleEditContextButton(true));
+    dispatch(setToggleCurrentSession(false));
+    dispatch(setCurrentChat([]));
+    dispatch(toggleChatComponent(true));
+    dispatch(setToggleBanner(true));
+    dispatch(toggleNewSession(false));
+    dispatch(setToggleProcessingStatus(false));
+  };
+
+  const getPreviousSessions = useCallback(async () => {
+    setLoadingSessions(true);
+    dispatch(addUseCase('earnings_call_transcript'));
+    const sessionsArray = [];
+    let localUseCase = null;
+    try {
+      localUseCase = 'Earnings Call Transcript';
+      const data = {
+        user_id: userId,
+        project_type: 'LUMOS',
+        user_agent: 'Windows 10',
+        use_case: localUseCase,
+        no_of_chats: 10,
+      };
+      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getUserSessionChats', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        const result = await res.json();
+        result.forEach((ele) => {
+          if (ele.session_name != null) {
+            sessionsArray.push(ele);
+          } else {
+            sessionsArray.push('----');
+          }
+        });
+        setPreviousSessions(sessionsArray);
+        if (showCurrentSession && refreshCurrentSession) {
+          const matchedSession = result.find(
+            (session) => session.chats?.some(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            )
+          );
+
+          if (matchedSession) {
+            const matchedChat = matchedSession.chats.find(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            );
+            dispatch(setCurrentSessionDetails(matchedSession));
+            dispatch(setCurrentChat(matchedSession.chats));
+            if (matchedChat) {
+              dispatch(setSelectedChat(matchedChat));
+            }
+            dispatch(setRefressCurrentSession(false));
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Unable to load previous sessions');
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, [shouldPreviousSessionRefresh]);
+
+  const navigateToPreviousSession = async (session) => {
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setToggleBanner(false));
+    dispatch(setToggleCurrentSession(true));
+    setIsSessionsId(session.session_id);
+    dispatch(setToggleProcessingStatus(false));
+    dispatch(setCurrentSessionDetails(session));
+    dispatch(setCurrentChat(session.chats));
+    dispatch(toggleNewSession(false));
+    dispatch(toggleChatComponent(true));
+    dispatch(toggleEditContextButton(false));
+  };
+
+  if (showChatComponent === true && showBanner === false) {
+    containerClass = styles.previousSessionsContainerInsideChat;
+  } else if (showProcessingButton === true) {
+    containerClass = styles.previousCurrentContainer;
+  } else {
+    containerClass = styles.previousSessionsContainer;
+  }
+
+  useEffect(() => {
+    if (userId) {
+      getPreviousSessions();
+      dispatch(setRefressPreviousSession(false));
+    }
+  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
+
+  return (
+    <div>
+      <div className={`${styles.newSessionPage}`}>
+        <Navigation theme={{
+          maxWidth: '320px',
+          minWidth: '320px',
+          height: '100%',
+          backgroundColor: ' #364258',
+          border: '0px',
+        }}
+        >
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
+          </div>
+          <div />
+          {showProcessingButton && (
+            <div>
+              <p className={`${styles.currentText}`}>Current Session</p>
+              <div className={`${styles.currentProcessingContainer}`}>
+                <button
+                  type="button"
+                  className={`${styles.currentProcessingItem}`}
+                >
+                  <div className={styles.textWrapper}>
+                    <p className={styles.sessionNames}>
+                      {currentProcessing ?? userSelectDocuments?.[0]?.file_name}
+                    </p>
+                    <div className={styles.tooltip}>{currentProcessing}</div>
+                  </div> <MiniProcessingMessage />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showChatComponent && showCurrentSession && <CurrentSessions />}
+
+          <div className={containerClass}>
+            <p className={`${styles.text}`}>Previous Session</p>
+            {loadingSessions
+              ? (
+                <> <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                </>
+
+              )
+              : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => {
+                      if (session.status === 'Completed') {
+                        navigateToPreviousSession(session);
+                      } else {
+                        handleProcessingPreviousSession(session);
+                      }
+                    }}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                    {session.status !== 'Completed' && <MiniProcessingMessage />}
+                  </button>
+                </div>
+              ))}
+          </div>
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>Processing status</button>
+          </div>
+        </Navigation>
+        {showProcessStatus === true ? <ProcessingStatus /> : null}
+        {showNewSession === true ? <NewSesssion /> : null}
+        {showChatComponent === true ? <ChatComponentWrapper /> : null}
+      </div>
+    </div>
+  );
+};
+
+export default SessionsNav;
+
