@@ -68,4 +68,24 @@ const fileStatuses = await fetchFileStatuses();
       }
     }
   };
+
+  function addSelectedDocuments(document) {
+    if (isUsedByManageContext === false) {
+      setSelectedDocuments([document]);
+    } else {
+      const exists = selectedDocuments.some((doc) => doc.file_id === document.file_id);
+      if (!exists) {
+        setSelectedDocuments((prev) => [...prev, document]);
+      } else {
+        setSelectedDocuments((prev) => prev.filter((doc) => doc.file_id !== document.file_id));
+      }
+    }
+  }
+useEffect(() => {
+    getAllUserDocuments();
+    getUserAdditionalKnowledge();
+    if (isUsedByManageContext === true) {
+      setSelectedDocuments(userSelectedDocumentsFromReduxStore);
+    }
+  }, [renderComponent]);
 selectedDocuments.map is not a function why getting this error?
