@@ -28,3 +28,5 @@
         </div>
       </div>
       )}
+selectedDocuments.map is not a function
+
