@@ -1,20 +1,15 @@
-if (showCurrentSession && refreshCurrentSession && selectedChat?.chat_id) {
-  const matchedSession = result.find((session) =>
-    session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
-  );
+is_additional_info: 'true',
 
-  if (matchedSession) {
-    const matchedChat = matchedSession.chats.find(chat =>
-      chat.chat_id === selectedChat.chat_id
-    );
-
-    dispatch(setCurrentSessionDetails(matchedSession));
-    dispatch(setCurrentChat(matchedSession.chats));
-
-    if (matchedChat) {
-      dispatch(setSelectedChat(matchedChat)); // ✅ set correct selected chat
+  const startFileIndexing = async (fileId) => {
+    try {
+      const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/indexFile/${fileId}`, {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+      });
+      if (res.status === 200) {
+        console.log('Indexing completed...');
+      }
+    } catch (err) {
+      console.log('Error starting indexing');
     }
-
-    dispatch(setRefressCurrentSession(false)); // ✅ reset refresh flag
-  }
-}
+  };
