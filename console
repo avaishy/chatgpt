@@ -1,18 +1,20 @@
-    if (showCurrentSession && refreshCurrentSession) {
-          const matchedSession = result.find(
-            (session) => session.chats?.some(
-              (chat) => chat.chat_id === selectedChat.chat_id
-               dispatch(setSelectedChat(chat));
-              
-            )
-          );
+if (showCurrentSession && refreshCurrentSession && selectedChat?.chat_id) {
+  const matchedSession = result.find((session) =>
+    session.chats?.some(chat => chat.chat_id === selectedChat.chat_id)
+  );
 
-          if (matchedSession) {
-            console.log('matchedSession',matchedSession);
-            dispatch(setCurrentSessionDetails(matchedSession));
-            dispatch(setCurrentChat(matchedSession.chats));
-            dispatch(setSelectedChat())
-            dispatch(setSelectedChat())
-            dispatch(setRefressCurrentSession(false));
-          }
-        }
+  if (matchedSession) {
+    const matchedChat = matchedSession.chats.find(chat =>
+      chat.chat_id === selectedChat.chat_id
+    );
+
+    dispatch(setCurrentSessionDetails(matchedSession));
+    dispatch(setCurrentChat(matchedSession.chats));
+
+    if (matchedChat) {
+      dispatch(setSelectedChat(matchedChat)); // ✅ set correct selected chat
+    }
+
+    dispatch(setRefressCurrentSession(false)); // ✅ reset refresh flag
+  }
+}
