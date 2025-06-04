@@ -83,3 +83,33 @@ try {
       }
     }
   };
+const startFileIndexing = async (fileId) => {
+    try {
+      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/indexFile', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file_id: fileId,
+          is_additional_file: false,
+        }),
+      });
+      if (res.status === 200) {
+        console.log('Indexing completed...');
+      }
+    } catch (err) {
+      toast.error(' Indexing failed pleased try again later');
+    }
+  };
+onChange started
+ContentScript.js:6 onChange completed
+Knowledge.jsx:240 
+            
+            
+           POST https://lumosusersessionmgmt-dev.aexp.com/indexFile 500 (Internal Server Error)
+startFileIndexing @ Knowledge.jsx:240
+
+dispatchDiscreteEvent @ react-dom.development.js:5889
+Knowledge.jsx:395 indexingResults [undefined]
