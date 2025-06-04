@@ -1,13 +1,35 @@
- 14:27  error  Missing radix parameter  radix
-  14:59  error  Missing radix parameter  radix
-  15:10  error  Missing radix parameter  radix
-  15:44  error  Missing radix parameter  radix
-  54:9   error  'toast' is not defined   no-undef
-   const formatDuration = (durationStr) => {
-    if (!durationStr) return 'NA';
-    const [hours, minutes, seconds] = durationStr.split(':');
-    const formatted = `${(Number.parseInt(hours) > 0 ? `${Number.parseInt(hours)}h ` : '')
-      + (Number.parseInt(minutes) > 0 ? `${Number.parseInt(minutes)}m ` : '')
-    }${Math.floor(Number.parseFloat(seconds))}s`;
-    return formatted;
-  };
+<div className={containerClass}>
+            <p className={`${styles.text}`}>Previous Session</p>
+            {loadingSessions
+              ? (
+                <> <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                </>
+
+              )
+              : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => {
+                      if (session.status === 'Completed') {
+                        navigateToPreviousSession(session);
+                      } else {
+                        handleProcessingPreviousSession(session);
+                      }
+                    }}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                    {session.status !== 'Completed' && <MiniProcessingMessage />}
+                  </button>
+                </div>
+              ))}
+          </div>
