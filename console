@@ -1,166 +1,270 @@
-curl -X 'POST' \
-  'https://lumosusersessionmgmt-dev.aexp.com/getFilesStats' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "user_id": "username@ads.aexp.com",
-  "use_case": "Earnings Call Transcript"
-}'[
-  {
-    "file_name": "Visa-test-kamal-1.pdf",
-    "crt_ts": "2025-06-03 14:34:04.148208",
-    "is_main_file": true,
-    "indexing_status": "Failed",
-    "chats_creation_status": null,
-    "duration": "00:05:25.600996"
-  },
-  {
-    "file_name": "Visa-test-kamal-1.pdf",
-    "crt_ts": "2025-06-03 14:34:04.148208",
-    "is_main_file": true,
-    "indexing_status": "Failed",
-    "chats_creation_status": null,
-    "duration": "00:00:03.606192"
-  },
-  {
-    "file_name": "Visa-test-kamal-1.pdf",
-    "crt_ts": "2025-06-03 14:34:04.148208",
-    "is_main_file": true,
-    "indexing_status": "Failed",
-    "chats_creation_status": null,
-    "duration": "00:00:01.809333"
-  },
-  {
-    "file_name": "Visa-test-kamal.pdf",
-    "crt_ts": "2025-06-03 10:04:39.211008",
-    "is_main_file": true,
-    "indexing_status": "Completed",
-    "chats_creation_status": "Completed",
-    "duration": "00:10:28.929272"
-  },
-  {
-    "file_name": "Visa-test-kamal.pdf",
-    "crt_ts": "2025-06-03 10:04:39.211008",
-    "is_main_file": false,
-    "indexing_status": "Failed",
-    "chats_creation_status": null,
-    "duration": "00:05:14.630521"
-  },
-  {
-    "file_name": "Visa Q1 revenue.pdf",
-    "crt_ts": "2025-06-03 05:44:29.082251",
-    "is_main_file": false,
-    "indexing_status": "Completed",
-    "chats_creation_status": null,
-    "duration": "00:05:50.21395"
-  },
-  {
-    "file_name": "CORRECTED-TRANSCRIPT_-Visa-Inc.(V-US)-Q1-2023-Earnings-Call-26-January-2023-5_00-PM-ET.pdf",
-    "crt_ts": "2025-06-03 09:55:47.583269",
-    "is_main_file": false,
-    "indexing_status": "Completed",
-    "chats_creation_status": null,
-    "duration": "00:05:42.349705"
-  },
-  {
-    "file_name": "CORRECTED-TRANSCRIPT_-Visa-Inc.(V-US)-Q1-2023-Earnings-Call-26-January-2023-5_00-PM-ET.pdf",
-    "crt_ts": "2025-06-03 09:55:47.583269",
-    "is_main_file": false,
-    "indexing_status": "Failed",
-    "chats_creation_status": null,
-    "duration": "00:01:49.877366"
+/* istanbul ignore file */
+import React, { useEffect, useState, useCallback } from 'react';
+import { Navigation } from '@americanexpress/dls-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import NewSesssion from './NewSession';
+import styles from '../../../styles/sessionsNav.scss';
+import ChatComponentWrapper from '../chatScreen/ChatComponentWrapper';
+import CurrentSessions from '../utility/CurrrentSessions';
+import {
+  getShowNewSession,
+  getToggleChatComponent,
+  getUserId,
+  getToggleCurrentSession,
+  getToggleProcessingStatus,
+  getShouldRefreshPreviousSession,
+  getToggleProcessingBanner,
+  getUserSelectedDocumentForChat,
+  getToggleProcessingButton,
+  getSelectedChatDetails,
+  getShouldRefreshCurrentSession,
+} from '../../../store/selectors/earningsCallTranscriptSelectors';
+import {
+  toggleNewSession,
+  setCurrentSessionDetails,
+  setUserSelectedCompanyKnowledge,
+  setUserSelectedIndustryKnowledge,
+  setUserSelectedPersonalKnowledge,
+  toggleChatComponent,
+  setUserSelectedDocumentsForChat,
+  setCurrentChat,
+  toggleEditContextButton,
+  addUseCase,
+  setToggleCurrentSession,
+  setToggleProcessingStatus,
+  setRefressPreviousSession,
+  setToggleBanner,
+  setCurrentProcessingButton,
+  setChatMessages,
+  setAllBotSourcesArray,
+  setLastestUploadedDocs,
+  setRefressCurrentSession,
+  setSelectedChat,
+} from '../../../store/actions/earningsCallTranscriptActions';
+import ProcessingStatus from '../utility/ProcessingStatus';
+import MiniProcessingMessage from '../utility/MiniProcessingMessage';
+
+const SessionsNav = () => {
+  const dispatch = useDispatch();
+  const showNewSession = useSelector((state) => getShowNewSession(state));
+  const userId = useSelector((state) => getUserId(state));
+  const showChatComponent = useSelector((state) => getToggleChatComponent(state));
+  const [previousSessions, setPreviousSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [isSessionsId, setIsSessionsId] = useState(true);
+  const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
+  const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
+  const shouldPreviousSessionRefresh = useSelector(
+    (state) => getShouldRefreshPreviousSession(state)
+  );
+  const showBanner = useSelector((state) => getToggleProcessingBanner(state));
+  const userSelectDocuments = useSelector((state) => getUserSelectedDocumentForChat(state));
+  const showProcessingButton = useSelector((state) => getToggleProcessingButton(state));
+  const [currentProcessing, setCurrentProcessing] = useState(null);
+  let containerClass = '';
+  const selectedChat = useSelector((state) => getSelectedChatDetails(state));
+  const refreshCurrentSession = useSelector((state) => getShouldRefreshCurrentSession(state));
+
+  const handleNewSessionClick = () => {
+    dispatch(setUserSelectedCompanyKnowledge([]));
+    dispatch(setUserSelectedIndustryKnowledge([]));
+    dispatch(setUserSelectedPersonalKnowledge([]));
+    dispatch(setUserSelectedDocumentsForChat([]));
+    dispatch(toggleNewSession(true));
+    dispatch(toggleChatComponent(false));
+    dispatch(setToggleProcessingStatus(false));
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setLastestUploadedDocs(false));
+    setCurrentProcessing(null);
+  };
+  const handleFileProcessingClick = () => {
+    dispatch(toggleChatComponent(false));
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(toggleNewSession(false));
+    dispatch(setToggleProcessingStatus(true));
+  };
+  const handleProcessingPreviousSession = (session) => {
+    setCurrentProcessing(session.session_name);
+    dispatch(setCurrentProcessingButton(true));
+    dispatch(setUserSelectedCompanyKnowledge([]));
+    dispatch(setUserSelectedIndustryKnowledge([]));
+    dispatch(setUserSelectedPersonalKnowledge([]));
+    dispatch(setUserSelectedDocumentsForChat([]));
+    dispatch(setChatMessages([]));
+    dispatch(setAllBotSourcesArray([]));
+    dispatch(setCurrentSessionDetails({}));
+    dispatch(toggleEditContextButton(true));
+    dispatch(setToggleCurrentSession(false));
+    dispatch(setCurrentChat([]));
+    dispatch(toggleChatComponent(true));
+    dispatch(setToggleBanner(true));
+    dispatch(toggleNewSession(false));
+    dispatch(setToggleProcessingStatus(false));
+  };
+
+  const getPreviousSessions = useCallback(async () => {
+    setLoadingSessions(true);
+    dispatch(addUseCase('earnings_call_transcript'));
+    const sessionsArray = [];
+    let localUseCase = null;
+    try {
+      localUseCase = 'Earnings Call Transcript';
+      const data = {
+        user_id: userId,
+        project_type: 'LUMOS',
+        user_agent: 'Windows 10',
+        use_case: localUseCase,
+        no_of_chats: 10,
+      };
+      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/getUserSessionChats', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        const result = await res.json();
+        result.forEach((ele) => {
+          if (ele.session_name != null) {
+            sessionsArray.push(ele);
+          } else {
+            sessionsArray.push('----');
+          }
+        });
+        setPreviousSessions(sessionsArray);
+        if (showCurrentSession && refreshCurrentSession) {
+          const matchedSession = result.find(
+            (session) => session.chats?.some(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            )
+          );
+
+          if (matchedSession) {
+            const matchedChat = matchedSession.chats.find(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            );
+            dispatch(setCurrentSessionDetails(matchedSession));
+            dispatch(setCurrentChat(matchedSession.chats));
+            if (matchedChat) {
+              dispatch(setSelectedChat(matchedChat));
+            }
+            dispatch(setRefressCurrentSession(false));
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Unable to load previous sessions');
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, [shouldPreviousSessionRefresh]);
+
+  const navigateToPreviousSession = async (session) => {
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setToggleBanner(false));
+    dispatch(setToggleCurrentSession(true));
+    setIsSessionsId(session.session_id);
+    dispatch(setToggleProcessingStatus(false));
+    dispatch(setCurrentSessionDetails(session));
+    dispatch(setCurrentChat(session.chats));
+    dispatch(toggleNewSession(false));
+    dispatch(toggleChatComponent(true));
+    dispatch(toggleEditContextButton(false));
+  };
+
+  if (showChatComponent === true && showBanner === false) {
+    containerClass = styles.previousSessionsContainerInsideChat;
+  } else if (showProcessingButton === true) {
+    containerClass = styles.previousCurrentContainer;
+  } else {
+    containerClass = styles.previousSessionsContainer;
   }
-]/* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import styles from '../../../styles/FileProcessing.scss';
-import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
-
-const dummyData = {
-  fileProcessingStatus: [
-    {
-      upload_time: '2025-05-30 10:00:01',
-      name: 'VISA 2024 Q3.pdf',
-      is_main_file: true,
-      file_indexing: 'Completed',
-      answer_generation: 'Processing',
-      execution_time: '3m 23s',
-      user_id: 'anupam',
-    },
-    {
-      upload_time: '2025-05-30 09:02:34',
-      name: 'Mastercard 2024 Q2.pdf',
-      is_main_file: false,
-      file_indexing: 'Completed',
-      answer_generation: 'NA',
-      execution_time: '5m 22s',
-      user_id: 'anupam',
-    },
-    {
-      upload_time: '2025-05-30 09:00:05',
-      name: 'VISA 2024 Q2.pdf',
-      is_main_file: true,
-      file_indexing: 'Completed',
-      answer_generation: 'Completed',
-      execution_time: '8m 13s',
-      user_id: 'anupam',
-    },
-  ],
-};
-
-const ProcessingStatus = () => {
-  const userId = useSelector(getUserId);
-  const [rows, setRows] = useState([]);
 
   useEffect(() => {
-    const formattedRows = dummyData.fileProcessingStatus.flatMap((item, index) => {
-      const base = {
-        upload_time: item.upload_time,
-        is_main_file: item.is_main_file ? 'Yes' : 'No',
-        file_indexing: item.file_indexing,
-        answer_generation: item.answer_generation,
-        name: item.name,
-        execution_time: item.execution_time,
-        user_id: item.user_id,
-      };
-
-      return base;
-    });
-
-    setRows(formattedRows);
-  }, []);
+    if (userId) {
+      getPreviousSessions();
+      dispatch(setRefressPreviousSession(false));
+    }
+  }, [getPreviousSessions, shouldPreviousSessionRefresh]);
 
   return (
-    <div className={styles.section}>
-      <table className={styles.fileProcessingTable}>
-        <thead>
-          <tr>
-            <th style={{ width: '14%' }}>Uploaded Time</th>
-            <th style={{ width: '16%' }}>Name</th>
-            <th style={{ width: '14%' }}>Is Main File</th>
-            <th style={{ width: '14%' }}>File Indexing</th>
-            <th style={{ width: '14%' }}>Answer Generation</th>
-            <th style={{ width: '14%' }}>Execution Time</th>
-            <th style={{ width: '14%' }}>User ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((item) => (
-            <tr key={item.id}>
-              <td>{item.upload_time}</td>
-              <td>{item.name}</td>
-              <td>{item.is_main_file }</td>
-              <td>{item.file_indexing}</td>
-              <td>{item.answer_generation}</td>
-              <td>{item.execution_time}</td>
-              <td>{item.user_id}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div>
+      <div className={`${styles.newSessionPage}`}>
+        <Navigation theme={{
+          maxWidth: '320px',
+          minWidth: '320px',
+          height: '100%',
+          backgroundColor: ' #364258',
+          border: '0px',
+        }}
+        >
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleNewSessionClick}>New Session</button>
+          </div>
+          <div />
+          {showProcessingButton && (
+            <div>
+              <p className={`${styles.currentText}`}>Current Session</p>
+              <div className={`${styles.currentProcessingContainer}`}>
+                <button
+                  type="button"
+                  className={`${styles.currentProcessingItem}`}
+                >
+                  <div className={styles.textWrapper}>
+                    <p className={styles.sessionNames}>
+                      {currentProcessing ?? userSelectDocuments?.[0]?.file_name}
+                    </p>
+                    <div className={styles.tooltip}>{currentProcessing}</div>
+                  </div> <MiniProcessingMessage />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showChatComponent && showCurrentSession && <CurrentSessions />}
+
+          <div className={containerClass}>
+            <p className={`${styles.text}`}>Previous Session</p>
+            {loadingSessions
+              ? (
+                <> <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                  <div className={styles.skeletonSession} />
+                </>
+
+              )
+              : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => {
+                      if (session.status === 'Completed') {
+                        navigateToPreviousSession(session);
+                      } else {
+                        handleProcessingPreviousSession(session);
+                      }
+                    }}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                    {session.status !== 'Completed' && <MiniProcessingMessage />}
+                  </button>
+                </div>
+              ))}
+          </div>
+          <div className={`${styles.buttonContainer}`}>
+            <button type="button" size="md" className={`${styles.newSessionButton}`} onClick={handleFileProcessingClick}>Processing status</button>
+          </div>
+        </Navigation>
+        {showProcessStatus === true ? <ProcessingStatus /> : null}
+        {showNewSession === true ? <NewSesssion /> : null}
+        {showChatComponent === true ? <ChatComponentWrapper /> : null}
+      </div>
     </div>
   );
 };
 
-export default ProcessingStatus;
+export default SessionsNav;
 
