@@ -1,35 +1,16 @@
- const indexingResults = await Promise.allSettled(
-  notIndexedFiles.map((file) => startFileIndexing(file.file_id))
-);
 
-const failedFiles = indexingResults
-  .map((result, idx) => ({ result, file: notIndexedFiles[idx] }))
-  .filter(({ result }) => result.status === 'rejected');
-
-if (failedFiles.length > 0) {
-  const failedFileNames = failedFiles.map(({ file }) => file.file_name).join(', ');
-  toast.error(`Indexing failed for files: ${failedFileNames}`);
-  console.error('Indexing failed details:', failedFiles);
-}
-
-const startFileIndexing = async (fileId) => {
-  try {
-    const res = await fetch(`https://lumosusersessionmgmt-dev.aexp.com/indexFile`, {
-      method: 'POST',
-      headers: { 
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ file_id: fileId, is_additional_file: true }), // or false based on logic
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to index file ID ${fileId} with status ${res.status}`);
+  useEffect(() => {
+    setDocuments([...selectedDocuments || [],
+    ]);
+    setKnowledge([
+      ...seletedCompanyKnowldge,
+      ...seletedIndustryKnowldge,
+      ...seletedPersonalKnowldge,
+    ]);
+    if (!showBanner && 'chat_id' in selectedChat) {
+      setChatName(selectedChat.chat_name);
+    } else {
+      setChatName('...');
     }
-
-    console.log(`Indexing started for file ID ${fileId}`);
-  } catch (err) {
-    console.error(`Error indexing file ID ${fileId}:`, err);
-    throw err; // So it can be caught in allSettled or by caller
-  }
-};
+  }, [selectedChat, currentChatsArray, selectedDocuments]);
+TypeError: (selectedDocuments || []) is not iterable
