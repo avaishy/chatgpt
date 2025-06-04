@@ -89,8 +89,11 @@ const ChatComponent = () => {
         } else {
           dispatch(setTogglePopup(true, 'Unable to fetch llm response. Please try again later'));
         }
-      } catch (error) { dispatch(setTogglePopup(true, 'Something went wrong. Please try again later')); }
+      } catch (error) { 
+        dispatch(setTogglePopup(true, 'Something went wrong. Please try again later')); 
+      }finally{
       setIsTyping(false);
+      }
     }
   };
   const handleMessageFeedback = (fb, messageId) => {
@@ -315,11 +318,11 @@ const ChatComponent = () => {
                     </div>
                   </div>
                 ) : null}
-
             </div>
+             
           ))}
           <div ref={messageEndRef} />
-          {isTyping && <TypingIndicator />}
+         {isTyping === true ? <TypingIndicator /> : null}
         </div>
         {processingDocumentAlert.show === true ? <ProcessingAlert message={processingDocumentAlert.message} messageType="warning" /> : (
           <div className={`${styles.inputContainer}`}>
