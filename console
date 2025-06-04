@@ -1,246 +1,85 @@
-/* istanbul ignore file */
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-hot-toast';
-import styles from '../../../styles/manageContext.scss';
-import Knowledge from '../newSessionScreen/Knowledge';
-import {
-  setDocumentProcessingAlert,
-  setUserSelectedDocumentsForChat,
-  setLastestUploadedDocs,
-  setRefressPreviousSession,
-  setRefressCurrentSession,
-} from '../../../store/actions/earningsCallTranscriptActions';
-import {
-  getUserSelectedDocumentForChat,
-  getUserSelectedCompanyKnowledge,
-  getUserSelectedIndustryKnowledge,
-  getUserSelectedPersonalKnowledge,
-  getSelectedChatDetails,
-  getCurrentChatDetails,
-  getEditContextButton,
-  getCurrentSessionDetails,
-  getUserId,
-  getToggleProcessingBanner,
-} from '../../../store/selectors/earningsCallTranscriptSelectors';
+try {
+        const fileStatuses = await fetchFileStatuses();
+        const notIndexedFiles = selectedDocuments.filter((doc) => {
+          const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
+          return statusEntry && statusEntry.status !== 'Completed';
+        });
+        if (notIndexedFiles.length > 0) {
+          const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
+          dispatch(setTogglePopup(true, `Indexing of these files: ${filesName} started. Once indexing is complete it will automatically added to the Manage Context.`));
+          openOrCloseManageKnowledgeWindow(false);
+        }
 
-const ManageContext = () => {
-  const [documents, setDocuments] = useState([]);
-  const [knowledge, setKnowledge] = useState([]);
-  const [chatName, setChatName] = useState('...');
-  const selectedChat = useSelector((state) => getSelectedChatDetails(state));
-  const selectedDocuments = useSelector((state) => getUserSelectedDocumentForChat(state));
-  const seletedCompanyKnowldge = useSelector((state) => getUserSelectedCompanyKnowledge(state));
-  const seletedIndustryKnowldge = useSelector((state) => getUserSelectedIndustryKnowledge(state));
-  const seletedPersonalKnowldge = useSelector((state) => getUserSelectedPersonalKnowledge(state));
-  const [showManageKnowledgeWindow, setShowManageKnowledgeWindow] = useState(false);
-  const currentChatsArray = useSelector((state) => getCurrentChatDetails(state));
-  const currentSessionDetails = useSelector((state) => getCurrentSessionDetails(state));
-  const userId = useSelector((state) => getUserId(state));
-  const showBanner = useSelector((state) => getToggleProcessingBanner(state));
-  const isEditContextEnable = useSelector((state) => getEditContextButton(state));
-  const dispatch = useDispatch();
+        const indexingResults = await Promise.all(
+          notIndexedFiles.map((file) => startFileIndexing(file.file_id))
+        );
+        console.log('indexingResults',indexingResults);
 
-  const removeDocument = async (fileIdRemove) => {
-    try {
-      const updatedDocuments = selectedDocuments.filter(
-        (doc) => doc.file_id !== fileIdRemove
-      );
-      dispatch(setUserSelectedDocumentsForChat(updatedDocuments));
-      const seletedContexts = [...seletedCompanyKnowldge,
-        ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-      const seletedContextIds = seletedContexts.map((ctx) => ctx.context_id);
-      const updatedFileIds = updatedDocuments.map((doc) => doc.file_id);
-      const data = {
-        user_id: userId,
-        chat_id: selectedChat.chat_id,
-        files_selected: updatedFileIds,
-        contexts_selected: seletedContextIds,
-        industry_selected: 'Payments',
-      };
-      const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-      if (res.status === 200) {
-        dispatch(setRefressCurrentSession(true));
-        dispatch(setRefressPreviousSession(true));
-      } else {
-        toast.error('Something went wrong');
-      }
-    } catch (error) {
-      toast.error('Something went wrong while opening chat components');
-    }
-  };
+        const failedFiles = indexingResults
+          .map((result, idx) => ({ result, file: notIndexedFiles[idx] }))
+          .filter(({ result }) => result.status === 'rejected');
 
-  useEffect(() => {
-    setDocuments([...(selectedDocuments || [])]);
-    setKnowledge([
-      ...seletedCompanyKnowldge,
-      ...seletedIndustryKnowldge,
-      ...seletedPersonalKnowldge,
-    ]);
-    if (!showBanner && 'chat_id' in selectedChat) {
-      setChatName(selectedChat.chat_name);
-    } else {
-      setChatName('...');
-    }
-  }, [selectedChat, currentChatsArray, selectedDocuments]);
+        console.log('failedFiles',failedFiles);
 
-  const openOrCloseManageKnowledgeWindow = (toggle) => {
-    setShowManageKnowledgeWindow(toggle);
-    dispatch(setLastestUploadedDocs(false));
-    dispatch(setDocumentProcessingAlert({ show: false, message: '' }));
-  };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.headerContainer}>
-        <h4 className={styles.header}>Manage Context</h4>
-        <button
-          type="button"
-          onClick={() => openOrCloseManageKnowledgeWindow(true)}
-          className={styles.editKnowledgeButton}
-          disabled={isEditContextEnable}
-        >Edit Context
-        </button>
-        {showManageKnowledgeWindow && (
-          <div className={styles.overlay}>
-            <div className={styles.popup}>
-              <Knowledge
-                isUsedByManageContext={true}
-                openOrCloseManageKnowledgeWindow={
-                openOrCloseManageKnowledgeWindow
-              }
-              />
-            </div>
-          </div>
-        )}
-      </div>
+        if (failedFiles.length > 0) {
+          const failedFileNames = failedFiles.map(({ file }) => file.file_name).join(', ');
+          toast.error(`Indexing failed for files: ${failedFileNames}`);
+          console.error('Indexing failed details:', failedFiles);
+        }
 
-      {documents.length > 0 && (
-      <div className={styles.sectionDocument}>
-        <strong>Documents</strong>
-        <div className={styles.filesContainer}>
-          {Array.isArray(selectedDocuments) &&  selectedDocuments.map((doc) => {
-            const fileName = doc.additional_info.fileName || doc.file_name;
-            const truncatedName = fileName.length > 20 ? `${fileName.slice(0, 20)}...` : fileName;
+        const fileIds = selectedDocuments.map((d) => d.file_id);
+        const selectedContexts = [
+          ...seletedCompanyKnowldge,
+          ...seletedIndustryKnowldge,
+          ...seletedPersonalKnowldge,
+        ];
+        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
 
-            return (
-              <div key={doc.file_id} className={styles.documentWrapper}>
-                <button type="button" className={styles.button}>
-                  {truncatedName}
-                </button>
-                {doc.file_name !== currentSessionDetails.session_name && showBanner === false && (
-                <button
-                  type="button"
-                  className={styles.removeButton}
-                  title="Remove Document"
-                  aria-label={`Remove ${doc.file_name}`}
-                  onClick={() => removeDocument(doc.file_id)}
-                >
-                  x
-                </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      )}
+        const body = {
+          user_id: userId,
+          chat_id: selectedChat.chat_id,
+          files_selected: fileIds,
+          contexts_selected: contextIds,
+          industry_selected: industryType,
+        };
 
-      {knowledge.length > 0 && (
-        <div className={styles.section}>
-          <strong>Knowledge</strong>
-          <div className={styles.contextContainer}>
-            {knowledge.map((item) => (
-              <button type="button" key={item.context_id} className={styles.button}>{item.context_title}</button>
-            ))}
-          </div>
-        </div>
-      )}
+        const allSelectedDocs = [
+          ...userSelectedDocumentsFromReduxStore,
+          ...selectedDocuments.filter(
+            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+          ),
+        ];
 
-      <div className={styles.section}>
-        <strong>Session</strong>
-        <div>
-          <button type="button" className={styles.sessionButton}>{chatName}</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+        openOrCloseManageKnowledgeWindow(false);
+        const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/manageChatContext', {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-export default ManageContext;
+        if (res.ok) {
+          const result = await res.json();
+          if (result.status === 'Success') {
+            const updatedChatsArray = getUpdatedChatsArray({
+              previousChatsArray: currentChatsArray,
+              chatId: selectedChat.chat_id,
+              seletedContexts: selectedContexts,
+              selectedDocuments,
+            });
 
-  function addSelectedDocuments(document) {
-    if (isUsedByManageContext === false) {
-      setSelectedDocuments([document]);
-    } else {
-      const exists = selectedDocuments.some((doc) => doc.file_id === document.file_id);
-      if (!exists) {
-        setSelectedDocuments((prev) => [...prev, document]);
-      } else {
-        setSelectedDocuments((prev) => prev.filter((doc) => doc.file_id !== document.file_id));
+            dispatch(setRefressCurrentSession(true));
+            dispatch(setRefressPreviousSession(true));
+            dispatch(setToggleProcessingStatus(false));
+            dispatch(setCurrentChat(updatedChatsArray));
+            toast.success('Updated Successfully');
+          }
+        } else {
+          toast.error('Something went wrong: Invalid Inputs');
+        }
+      } catch (error) {
+        toast.error('Something went wrong', error);
       }
     }
-  }
-  function toggleFileUploadComponent(condition) {
-    dispatch(setToggleFileUpload(condition));
-  }
-  {isLoadingDocuments
-              ? (
-                <div className={styles.documentItem}>
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                  <div className={styles.skeletonText} />
-                </div>
-              )
-              : filteredDocuments.map((doc, index) => (
-
-                <div key={doc.file_id} className={`${styles.documentItem}`}>
-                  {isUsedByManageContext === true ? (
-                    <input
-                      type="checkbox"
-                      id={`doc-${index}`}
-                      onChange={() => addSelectedDocuments(doc)}
-                      checked={
-                        selectedDocuments.some(
-                          (selectedDoc) => selectedDoc.file_id === doc.file_id
-                        )
-                      }
-                      disabled={
-                        isUsedByManageContext
-                        && userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-                      }
-                    />
-                  )
-                    : (
-                      <input
-                        type="radio"
-                        name="documentSelection"
-                        id={`doc-${index}`}
-                        checked={
-                          isUploadedNewDocs
-                            ? doc.file_name === recentUploadedFileName
-                            : selectedDocuments.some(
-                              (selectedDoc) => selectedDoc.file_id === doc.file_id
-                            )
-                        }
-                        onChange={() => addSelectedDocuments(doc)}
-                      />
-                    )}
-                  <label
-                    htmlFor={`doc-${index}`}
-                    className={styles.singleFileContainer}
-                    title={doc.additional_info
-                      ? `${doc.additional_info.company_name}, ${doc.additional_info.date}`
-                      : null}
-                  >
-                    {doc.additional_info.fileName ? doc.additional_info.fileName : doc.file_name}
-                  </label>
-                </div>
-              ))}
-          </div>
-(selectedDocuments || []) is not iterable
-
-
+  };
