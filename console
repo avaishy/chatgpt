@@ -1,62 +1,64 @@
-const startFileIndexing = async (fileId) => {
-  try {
-    const res = await fetch('https://lumosusersessionmgmt-dev.aexp.com/indexFile', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file_id: fileId,
-        is_additional_file: false,
-      }),
-    });
-
-    if (res.status === 200) {
-      console.log('Indexing completed...');
-      return { status: 'fulfilled' };
-    } else {
-      console.error(`Indexing failed for fileId: ${fileId} with status ${res.status}`);
-      return { status: 'rejected', reason: `HTTP ${res.status}` };
-    }
-  } catch (err) {
-    console.error('Indexing error:', err);
-    toast.error('Indexing failed, please try again later');
-    return { status: 'rejected', reason: err.message || 'Unknown error' };
-  }
-};
-
-const indexingResults = await Promise.all(
-  notIndexedFiles.map((file) => startFileIndexing(file.file_id))
-);
-
-console.log('indexingResults', indexingResults);
-
-const failedFiles = indexingResults
-  .map((result, idx) => ({ result, file: notIndexedFiles[idx] }))
-  .filter(({ result }) => result.status === 'rejected');
-
-console.log('failedFiles', failedFiles);
-
-
-
-const indexingResults = await Promise.all(
-  notIndexedFiles.map((file) => startFileIndexing(file.file_id))
-);
-
-console.log('indexingResults', indexingResults);
-
-const failedFiles = indexingResults
-  .map((result, idx) => ({ result, file: notIndexedFiles[idx] }))
-  .filter(({ result }) => result.status === 'rejected');
-
-console.log('failedFiles', failedFiles);
-
-if (failedFiles.length > 0) {
-  const failedFileNames = failedFiles.map(({ file }) => file.file_name).join(', ');
-  toast.error(`Indexing failed for files: ${failedFileNames}`);
-  console.error('Indexing failed details:', failedFiles);
-
-  // ❌ Do not proceed to manageChatContext
-  return;
-}
+    {
+        "session_id": "aaa9ef81-a084-493c-9b4c-7ddd183eb406",
+        "session_name": "CORRECTED-TRANSCRIPT_-Visa-Inc-V-US-Deutsche-Bank-Technology-Conference-29-August-2024-12_30-PM-ET.pdf",
+        "crt_ts": "2025-06-04 03:40:36.061006",
+        "status": "Processing",
+        "job_stage": "chats_creation",
+        "chats": []
+    },
+    {
+        "session_id": "4a83aa00-c58f-45c5-b783-944ad605f782",
+        "session_name": "Barclays.pdf",
+        "crt_ts": "2025-06-03 05:50:13.821318",
+        "status": "Completed",
+        "job_stage": "chats_creation",
+        "chats": [
+            {
+                "chat_id": "9c7678d4-93b7-4a1e-95eb-01c9cef35465",
+                "chat_name": "Summary : Summarise the whole call.",
+                "crt_ts": "2025-06-03T05:55:14.851683",
+                "files_selected": [
+                    {
+                        "file_id": 540,
+                        "file_name": "Mastercard Inc Q4 2023 Earnings Call Transcript.pdf",
+                        "additional_info": {
+                            "date": "",
+                            "company_name": ""
+                        }
+                    },
+                    {
+                        "file_id": 543,
+                        "file_name": "Barclays.pdf",
+                        "additional_info": {
+                            "date": "",
+                            "company_name": ""
+                        }
+                    },
+                    {
+                        "file_id": 571,
+                        "file_name": "CORRECTED-TRANSCRIPT_-Visa-Inc-V-US-Deutsche-Bank-Technology-Conference-29-August-2024-12_30-PM-ET.pdf",
+                        "additional_info": {
+                            "date": "",
+                            "company_name": ""
+                        }
+                    }
+                ],
+                "contexts_selected": []
+            },
+ : previousSessions.map((session) => (
+                <div key={session.session_id} className={`${styles.navigationContainer}`}>
+                  <button
+                    key={session.session_id}
+                    type="button"
+                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
+                    onClick={() => navigateToPreviousSession(session)}
+                  >
+                    <div className={styles.textWrapper}>
+                      <p className={styles.sessionNames}>{session.session_name}</p>
+                      <div className={styles.tooltip}>{session.session_name}</div>
+                    </div>
+                    
+                  </button>
+                </div>
+              ))}
+          </div>
