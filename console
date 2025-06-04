@@ -37,3 +37,26 @@ const failedFiles = indexingResults
   .filter(({ result }) => result.status === 'rejected');
 
 console.log('failedFiles', failedFiles);
+
+
+
+const indexingResults = await Promise.all(
+  notIndexedFiles.map((file) => startFileIndexing(file.file_id))
+);
+
+console.log('indexingResults', indexingResults);
+
+const failedFiles = indexingResults
+  .map((result, idx) => ({ result, file: notIndexedFiles[idx] }))
+  .filter(({ result }) => result.status === 'rejected');
+
+console.log('failedFiles', failedFiles);
+
+if (failedFiles.length > 0) {
+  const failedFileNames = failedFiles.map(({ file }) => file.file_name).join(', ');
+  toast.error(`Indexing failed for files: ${failedFileNames}`);
+  console.error('Indexing failed details:', failedFiles);
+
+  // ❌ Do not proceed to manageChatContext
+  return;
+}
