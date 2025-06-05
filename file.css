@@ -1,93 +1,44 @@
-window.location.href i can get the url for i e1 in ui side https://cfrassistant-dev.aexp.com/ and for e2 https://cfrassistant-qa.aexp.com/ based on the for e1 we have this url https://lumosusersessionmgmt-dev.aexp.com/ forr backend api calls 
-for e2 we have this url https://lumosusersessionmgmt-qa.aexp.com/ forr backend api calls  so based on this putting it in config & pick that value 
-and we are calling the api like this   dispatch(setIsTyping(true));
-        const res = await fetch(
-          'https://lumosusersessionmgmt-dev.aexp.com/fetchLLMResponse',
-          {
-            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' },
-          }
-        ); in each component 
-and this is the main file im out application /* istanbul ignore file */
-import React from 'react';
-import { compose } from 'redux';
-import { connect } from 'react-redux';
-import { connectAsync } from 'iguazu';
-import oneAppModuleWrapper from '@americanexpress/one-app-module-wrapper';
-import { IntlProvider } from 'react-intl';
-import { loadLanguagePack } from '@americanexpress/one-app-ducks';
-import PropTypes from 'prop-types';
-import { ProgressCircle } from '@americanexpress/dls-react';
-import { Helmet } from 'react-helmet';
-import { Toaster } from 'react-hot-toast';
-import childRoutes from '../childRoutes';
-import Header from './header/Header';
-import reducer from '../store/reducers';
-import { AuthBlueSso } from './AuthBlue/AuthBlueSSO';
+// Extract original file IDs from Redux store
+const originalFileIds = userSelectedDocumentsFromReduxStore.map(doc => doc.file_id);
 
-const Lumos = ({ languageData, locale, children }) => {
-  if (Object.entries(languageData).length === 0) {
-    return <ProgressCircle />;
-  }
+// Extract all selected file IDs from current selections
+const selectedFileIds = selectedDocuments.map(doc => doc.file_id);
 
-  return (
-    <IntlProvider locale={locale} messages={languageData}>
-      <Helmet
-        htmlAttributes={{ lang: locale }}
-        link={[
-          {
-            rel: 'stylesheet',
-            href: 'https://www.aexp-static.com/cdaas/one/statics/@americanexpress/dls/6.21.5/package/dist/6.21.5/styles/dls.min.css',
-          },
-        ]}
-      />
-      <AuthBlueSso>
-        <Header />
-        {children}
-      </AuthBlueSso>
-      <Toaster />
-    </IntlProvider>
-  );
-};
-
-export const TestableLumos = Lumos;
-
-Lumos.propTypes = {
-  languageData: PropTypes.shape({}).isRequired, // no need to restate all the keys in the lang pack
-  locale: PropTypes.string.isRequired,
-  children: PropTypes.element.isRequired,
-};
-
-// Read about childRoutes:
-// https://github.com/americanexpress/one-app/blob/main/docs/api/modules/Routing.md#childroutes
-Lumos.childRoutes = childRoutes;
-
-// Read about appConfig:
-// https://github.com/americanexpress/one-app/blob/main/docs/api/modules/App-Configuration.md
-/* istanbul ignore next */
-if (!global.BROWSER) {
-  // eslint-disable-next-line global-require -- require needs to be inside browser check
-  Lumos.appConfig = require('../appConfig').default;
-}
-
-export const loadModuleData = ({ store: { dispatch } }) => dispatch(loadLanguagePack('lumos', { fallbackLocale: 'en-US' }));
-export const loadDataAsProps = ({ store: { dispatch } }) => dispatch(loadLanguagePack('research-assistant-root', { fallbackLocale: 'en-US' }));
-
-export const mapDispatchToProps = () => ({
-});
-
-export const mapStateToProps = () => ({
-
-});
-
-const hocChain = compose(
-  oneAppModuleWrapper('research-assistant-root'),
-  connect(mapStateToProps, mapDispatchToProps),
-  connectAsync({ loadDataAsProps })
+// Filter out original files to get new selections only
+const newFileSelections = selectedDocuments.filter(
+  doc => !originalFileIds.includes(doc.file_id)
 );
 
-Lumos.holocron = {
-  name: 'research-assistant-root',
-  reducer,
+// Create a combined array of all selected documents (original + new)
+const allSelectedDocs = [
+  ...userSelectedDocumentsFromReduxStore,
+  ...newFileSelections,
+];
+
+// Construct request body
+const selectedContexts = [
+  ...seletedCompanyKnowldge,
+  ...seletedIndustryKnowldge,
+  ...seletedPersonalKnowldge,
+];
+const contextIds = selectedContexts.map(ctx => ctx.context_id);
+
+const body = {
+  user_id: userId,
+  chat_id: selectedChat.chat_id,
+  original_file_ids: originalFileIds, // Existing files
+  files_selected: newFileSelections.map(doc => doc.file_id), // Only new files
+  contexts_selected: contextIds,
+  industry_selected: industryType,
 };
 
-export default hocChain(Lumos);
+// Update Redux store with the final merged list
+dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+openOrCloseManageKnowledgeWindow(false);
+
+// Make the API call
+const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+  method: 'POST',
+  body: JSON.stringify(body),
+  headers: { 'Content-Type': 'application/json' },
+});
