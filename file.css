@@ -1,11 +1,93 @@
-const getDynamicLogoutUrl = () => {
-  // This MUST be an unprotected URL under *.aexp.com
-  const destination = encodeURIComponent('https://cfrassistant-qa.aexp.com/logout-success');
-  return `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${destination}`;
+window.location.href i can get the url for i e1 in ui side https://cfrassistant-dev.aexp.com/ and for e2 https://cfrassistant-qa.aexp.com/ based on the for e1 we have this url https://lumosusersessionmgmt-dev.aexp.com/ forr backend api calls 
+for e2 we have this url https://lumosusersessionmgmt-qa.aexp.com/ forr backend api calls  so based on this putting it in config & pick that value 
+and we are calling the api like this   dispatch(setIsTyping(true));
+        const res = await fetch(
+          'https://lumosusersessionmgmt-dev.aexp.com/fetchLLMResponse',
+          {
+            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' },
+          }
+        ); in each component 
+and this is the main file im out application /* istanbul ignore file */
+import React from 'react';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { connectAsync } from 'iguazu';
+import oneAppModuleWrapper from '@americanexpress/one-app-module-wrapper';
+import { IntlProvider } from 'react-intl';
+import { loadLanguagePack } from '@americanexpress/one-app-ducks';
+import PropTypes from 'prop-types';
+import { ProgressCircle } from '@americanexpress/dls-react';
+import { Helmet } from 'react-helmet';
+import { Toaster } from 'react-hot-toast';
+import childRoutes from '../childRoutes';
+import Header from './header/Header';
+import reducer from '../store/reducers';
+import { AuthBlueSso } from './AuthBlue/AuthBlueSSO';
+
+const Lumos = ({ languageData, locale, children }) => {
+  if (Object.entries(languageData).length === 0) {
+    return <ProgressCircle />;
+  }
+
+  return (
+    <IntlProvider locale={locale} messages={languageData}>
+      <Helmet
+        htmlAttributes={{ lang: locale }}
+        link={[
+          {
+            rel: 'stylesheet',
+            href: 'https://www.aexp-static.com/cdaas/one/statics/@americanexpress/dls/6.21.5/package/dist/6.21.5/styles/dls.min.css',
+          },
+        ]}
+      />
+      <AuthBlueSso>
+        <Header />
+        {children}
+      </AuthBlueSso>
+      <Toaster />
+    </IntlProvider>
+  );
 };
 
-const handleLogout = () => {
-  // Optionally clear localStorage/session
-  localStorage.clear();
-  window.location.href = getDynamicLogoutUrl();
+export const TestableLumos = Lumos;
+
+Lumos.propTypes = {
+  languageData: PropTypes.shape({}).isRequired, // no need to restate all the keys in the lang pack
+  locale: PropTypes.string.isRequired,
+  children: PropTypes.element.isRequired,
 };
+
+// Read about childRoutes:
+// https://github.com/americanexpress/one-app/blob/main/docs/api/modules/Routing.md#childroutes
+Lumos.childRoutes = childRoutes;
+
+// Read about appConfig:
+// https://github.com/americanexpress/one-app/blob/main/docs/api/modules/App-Configuration.md
+/* istanbul ignore next */
+if (!global.BROWSER) {
+  // eslint-disable-next-line global-require -- require needs to be inside browser check
+  Lumos.appConfig = require('../appConfig').default;
+}
+
+export const loadModuleData = ({ store: { dispatch } }) => dispatch(loadLanguagePack('lumos', { fallbackLocale: 'en-US' }));
+export const loadDataAsProps = ({ store: { dispatch } }) => dispatch(loadLanguagePack('research-assistant-root', { fallbackLocale: 'en-US' }));
+
+export const mapDispatchToProps = () => ({
+});
+
+export const mapStateToProps = () => ({
+
+});
+
+const hocChain = compose(
+  oneAppModuleWrapper('research-assistant-root'),
+  connect(mapStateToProps, mapDispatchToProps),
+  connectAsync({ loadDataAsProps })
+);
+
+Lumos.holocron = {
+  name: 'research-assistant-root',
+  reducer,
+};
+
+export default hocChain(Lumos);
