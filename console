@@ -1,51 +1,87 @@
-const removeDocument = async (fileIdRemove) => {
-    try {
-      const updatedDocuments = selectedDocuments.filter(
-        (doc) => doc.file_id !== fileIdRemove
-      );
-      dispatch(setUserSelectedDocumentsForChat(updatedDocuments));
-      const seletedContexts = [...seletedCompanyKnowldge,
-        ...seletedIndustryKnowldge, ...seletedPersonalKnowldge];
-      const seletedContextIds = seletedContexts.map((ctx) => ctx.context_id);
-      const updatedFileIds = updatedDocuments.map((doc) => doc.file_id);
-      const data = {
-        user_id: userId,
-        chat_id: selectedChat.chat_id,
-        files_selected: updatedFileIds,
-        contexts_selected: seletedContextIds,
-        industry_selected: 'Payments',
-      };
-      const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-      if (res.status === 200) {
-        dispatch(setRefressCurrentSession(true));
-        dispatch(setRefressPreviousSession(true));
-      } else {
-        toast.error('Something went wrong');
-      }
-    } catch (error) {
-      toast.error('Something went wrong while opening chat components');
-    }
+/* istanbul ignore file */
+let API_BASE_URL = '';
+let LOGOUT_URL = '';
+let LOGIN_URL = '';
+let ENV = 'dev';
+
+const hostname = window?.location?.hostname;
+
+if (hostname.includes('cfrassistant-dev')) {
+  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
+  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
+  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
+  ENV = 'dev';
+} else if (hostname.includes('cfrassistant-qa')) {
+  API_BASE_URL = 'https://lumosusersessionmgmt-qa.aexp.com';
+  LOGOUT_URL = 'https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff';
+  LOGIN_URL = 'https://cfrassistant-qa.aexp.com';
+  ENV = 'qa';
+} else {
+  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
+  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
+  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
+  ENV = 'dev';
+}
+
+export const CONFIG = {
+  API_BASE_URL,
+  LOGOUT_URL,
+  LOGIN_URL,
+  ENV,
+};
+
+/* istanbul ignore file */
+import React, { useEffect } from 'react';
+import { IconAccessibility } from '@americanexpress/dls-react';
+import { Link } from '@americanexpress/one-app-router';
+import { useAuthBlueSso } from 'use-authblue-sso';
+import { useDispatch } from 'react-redux';
+import { setUserId } from '../../store/actions/earningsCallTranscriptActions';
+import { CONFIG } from '../../config';
+
+function Header() {
+  const { user } = useAuthBlueSso();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setUserId(user?.attributes?.adsId));
+  }, []);
+
+  const getDynamicLogoutUrl = () => {
+    const destination = encodeURIComponent(CONFIG.LOGIN_URL);
+    return `${CONFIG.LOGOUT_URL}?ssourl=${destination}`;
   };
 
-            return (
-              <div key={doc.file_id} className={styles.documentWrapper}>
-                <button type="button" className={styles.button}>
-                  {truncatedName}
-                </button>
-                {doc.file_name !== currentSessionDetails.session_name && showBanner === false && (
-                <button
-                  type="button"
-                  className={styles.removeButton}
-                  title="Remove Document"
-                  aria-label={`Remove ${doc.file_name}`}
-                  onClick={() => removeDocument(doc.file_id)}
-                >
-                  x
-                </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+  const handleLogout = () => {
+    window.location.href = getDynamicLogoutUrl();
+  };
+
+  return (
+    <header
+      id="dls-nav"
+      className="nav nav-large  nav-header dls-white"
+      role="banner"
+      style={{ backgroundColor: '#222937' }}
+    >
+      <span className="margin-1-l margin-1-r"><Link to="/" style={{ color: 'white', textDecoration: 'None' }}>CFR Research Assistant</Link></span>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <h3>{user?.attributes?.adsId}</h3>
+        <IconAccessibility title="Example icon" titleId="example-icon-id" className="margin-1-r" />
+        <button
+          type="button"
+          onClick={handleLogout}
+          style={{
+            background: 'transparent',
+            border: '1px solid white',
+            color: 'white',
+            padding: '4px 10px',
+            cursor: 'pointer',
+            marginRight: '10px',
+          }}
+        > Logout
+        </button>
       </div>
-      )}
+    </header>
+  );
+}
+export default Header;
