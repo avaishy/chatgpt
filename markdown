@@ -4,3 +4,17 @@ const getDynamicLogoutUrl = () => {
   const logoutUrl = `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
   return logoutUrl;
 };
+
+
+
+const getDynamicLogoutUrl = () => {
+  // This MUST be an unprotected URL under *.aexp.com
+  const destination = encodeURIComponent('https://cfrassistant-qa.aexp.com/logout-success');
+  return `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${destination}`;
+};
+
+const handleLogout = () => {
+  // Optionally clear localStorage/session
+  localStorage.clear();
+  window.location.href = getDynamicLogoutUrl();
+};
