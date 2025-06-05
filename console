@@ -31,4 +31,10 @@ const res = await fetch(`${CONFIG.API_BASE_URL}/fetchLLMResponse`, {
 export const CONFIG = {
   API_BASE_URL,
   ENV: hostname.includes('qa') ? 'qa' : 'dev',
-};
+}
+
+const getDynamicLogoutUrl = () => {
+    const target = encodeURIComponent(window.location.origin);
+    const authUrl = `https://ssoisvc-dev.aexp.com/ssoi/auth?channel=use-authblue-sso@2.1.0&target=${target}`;
+    return `https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
+  };
