@@ -21,3 +21,91 @@ for e1 this is working
     window.location.href = getDynamicLogoutUrl();
   };
 
+Signing On to AuthBlue
+For User SSO Tokens, AuthBlue uses a centralized login service to authenticate users onto AuthBlue. A user's session is global, and can be used to access any and all AuthBlue protected applications. The AuthBlue Login Service is only responsible for generating the user's credentials before sending the user on their way.
+
+General Flow
+By default, applications protected by AuthBlue take advantage of seamless logins, which enables a user to be authenticated and authorized without the need to enter their credentials. If the user cannot be logged in via seamless login, then AuthBlue falls back to displaying a traditional sign on form.
+
+Regardless of how the user has signed on, AuthBlue will generate an industry standard JWT token as the user's credentials.
+
+This JWT token will be sent to the browser as a HTTPS cookie named bluetoken and the browser will send this cookie to all intranet sites.
+
+The user's session will be initially defined for 60 minutes, and the expiry time will be encoded into JWT token. However, AuthBlue will automatically extend the user's session after some time (about 5 to 10 minutes) upon any new request to AuthBlue protected resources.
+
+Multi-factor Authentication (MFA)
+If the AuthBlue business logic determines that Multi-factor Authentication (MFA) needs to be enforced for a user, the Login Service will handle this flow as well.
+
+Deep Linking
+By default, AuthBlue allows deep linking within applications, which allows users to go directly to the resource they were trying to access.
+
+How does deep linking work?
+The AuthBlue reverse proxy inspects every request to a protected resource to validate the user's session. If it determines that a request has an invalid (or missing) token, it will redirect the request through the login flow, adding meta data to the request. This is done by adding a query string named target with the current URL to the login request. Once the login flow has been completed, the login service will redirect back to the target URL specified.
+
+Example: If the user is trying to load https://authblue.aexp.com and does not have a valid session, the user will be redirected to our login page. When redirected, AuthBlue will append https://authblue.aexp.com/ within the target query string parameter (the value is URL encoded).
+
+https://authbluesvc.aexp.com/ssoi/auth?
+  method=GET
+  &requestid=f85399a5-ba7f-4ed3-8001-d2e69cd37310
+  &target=https%3A%2F%2Fauthblue.aexp.com%2F
+
+
+Preventing deep linking with your application
+If the application has a business need to disable deep linking, they will need to supply a Target Override URL when deploying your application in the Self-Service Portal. When this is defined, any new request to the application, AuthBlue will redirect the user to the Target Override URL instead of the URL provided in the target query string parameter.
+
+This feature typically was needed in legacy applications, and likely will not be needed.
+
+User Metrics
+We are unable to supply user metrics to application owners. We recommend that application owners use an analytics platform, such as One Stream, to collect these metrics.
+
+Tags:Seamless loginKerberosLogin ServiceSigning Out of AuthBlue
+AuthBlue Session
+The AuthBlue session is a global session, and asking the user to sign-out will end their session for all intranet applications. We recommend that applications do not implement the Sign-Out/Log Off functionality in their applications.
+
+Should my application provide a sign-out link?
+Because AuthBlue is a global session, AuthBlue does not require applications to provide a sign-out link. In fact, we generally recommend not to include a sign-out link.
+
+However, application owners can add this link. Before you choose to provide a sign-out link in your application, please consider:
+
+When the user ends their SSO session, it will end their session for all AuthBlue protected applications.
+If a user is using multiple applications in the same browser, they might lose work in their other applications when the session is prematurely ended.
+It is difficult for end users to know if an application they are using is protected by AuthBlue or some other authentication mechanism.
+Your application should not try to manage a user's session, such as set a timer to redirect user to sign-out flow.
+Sign-Out Flow
+To provide a link to the user to sign-out, simply add a link to the sign-out page appropriate for your environment.
+
+Environment	Sign-Out URL
+E1	https://ssoisvc-dev.aexp.com/ssoi/logoff
+E2	https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff
+E3	https://authbluesvc.aexp.com/ssoi/logoff
+Recently Changed
+This flow has been updated as of September 2023
+
+User Experience
+When a user navigates to this page, they will be presented a page which instructs them that they can close the tab or window. It also will provide the user with the option to actually end their session.
+
+If they choose to end their session, they will be displayed a generic message provided by AuthBlue.
+
+Sign Out Screens
+Expand to view screenshot
+
+Expand to view screenshot
+
+Customize your sign-out page
+Applications can customize the user's sign-out experience by providing an alternate destination. When a Destination URL has been provided, AuthBlue will redirect to that page instead of displaying the generic message.
+
+Destination URL requirements
+The destination URL you provide must be a unprotected endpoint.
+The URL must be on an *.aexp.com sub-domain.
+Avoid using protected URLS
+When a user has been signed off, and they are redirected to the destination URL, if this URL requires authentication by AuthBlue, the user will be signed on again automatically.
+
+This happens due to seamless login, and will occur only in production.
+
+Configuring the Destination URL
+The AuthBlue Sign Off URL accepts the destination URL as query string parameter named ssourl.
+
+Environment	Sign-Out URL
+E1	https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=$url
+E2	https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=$url
+E3	https://authbluesvc.aexp.com/ssoi/logoff?ssourl=$url
