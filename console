@@ -1,49 +1,62 @@
-// src/config.js
+selectedDocuments 
+(3) [{…}, {…}, {…}]
+0
+: 
+{file_id: 5, file_name: 'Barclays-Emerging-15-May-2024.pdf', additional_info: {…}}
+1
+: 
+{file_id: 6, file_name: 'Mastercard Inc Q4 2023.pdf', additional_info: {…}, is_selected: false}
+2
+: 
+{file_id: 7, file_name: 'Visa-Inc-Goldman-Sachs-11-September-2024.pdf', additional_info: {…}, is_selected: false}
+length
+: 
+3
+[[Prototype]]
+: 
+Array(0)
+Knowledge.jsx:371 userSelectedDocumentsFromReduxStore 
+[{…}]
+0
+: 
+{file_id: 5, file_name: 'Barclays-Emerging-15-May-2024.pdf', additional_info: {…}}
+length
+: 
+1
+[[Prototype]]
+: 
+Array(0)
 
-let API_BASE_URL = '';
 
-const hostname = window?.location?.hostname;
+        console.log('selectedDocuments', selectedDocuments);userSelectedDocumentsFromReduxStore
+        console.log('userSelectedDocumentsFromReduxStore', userSelectedDocumentsFromReduxStore);
+        const fileIds = selectedDocuments.map((d) => d.file_id);
+        const selectedContexts = [
+          ...seletedCompanyKnowldge,
+          ...seletedIndustryKnowldge,
+          ...seletedPersonalKnowldge,
+        ];
+        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
 
-if (hostname.includes('cfrassistant-dev')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-} else if (hostname.includes('cfrassistant-qa')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-qa.aexp.com';
-} else {
-  console.warn('Unknown environment, defaulting to dev');
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-}
+        const body = {
+          user_id: userId,
+          chat_id: selectedChat.chat_id,
+          files_selected: fileIds,
+          contexts_selected: contextIds,
+          industry_selected: industryType,
+        };
 
-export const CONFIG = {
-  API_BASE_URL,
-};
+        const allSelectedDocs = [
+          ...userSelectedDocumentsFromReduxStore,
+          ...selectedDocuments.filter(
+            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+          ),
+        ];
 
-
-import { CONFIG } from '../config'; // Adjust path as needed
-
-dispatch(setIsTyping(true));
-const res = await fetch(`${CONFIG.API_BASE_URL}/fetchLLMResponse`, {
-  method: 'POST',
-  body: JSON.stringify(data),
-  headers: { 'Content-Type': 'application/json' },
-});
-
-
-export const CONFIG = {
-  API_BASE_URL,
-  ENV: hostname.includes('qa') ? 'qa' : 'dev',
-}
-
-const getDynamicLogoutUrl = () => {
-    const target = encodeURIComponent(window.location.origin);
-    const authUrl = `https://ssoisvc-dev.aexp.com/ssoi/auth?channel=use-authblue-sso@2.1.0&target=${target}`;
-    return `https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
-  };
-
- const getDynamicLogoutUrl = () => {
-    const destination = encodeURIComponent('https://cfrassistant-qa.aexp.com');
-    return `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${destination}`;
-  };
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = getDynamicLogoutUrl();
-  };
+        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+        openOrCloseManageKnowledgeWindow(false);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
