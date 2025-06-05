@@ -38,3 +38,12 @@ const getDynamicLogoutUrl = () => {
     const authUrl = `https://ssoisvc-dev.aexp.com/ssoi/auth?channel=use-authblue-sso@2.1.0&target=${target}`;
     return `https://ssoisvc-dev.aexp.com/ssoi/logoff?ssourl=${encodeURIComponent(authUrl)}`;
   };
+
+ const getDynamicLogoutUrl = () => {
+    const destination = encodeURIComponent('https://cfrassistant-qa.aexp.com');
+    return `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${destination}`;
+  };
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = getDynamicLogoutUrl();
+  };
