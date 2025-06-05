@@ -1,21 +1,11 @@
-.responseBlock {
-  margin-bottom: 1.5rem;
-}
+const getDynamicLogoutUrl = () => {
+  // This MUST be an unprotected URL under *.aexp.com
+  const destination = encodeURIComponent('https://cfrassistant-qa.aexp.com/logout-success');
+  return `https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff?ssourl=${destination}`;
+};
 
-.citationBox {
-  background-color: #fff5e6;
-  border-left: 4px solid #ffba57;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 4px;
-  font-size: 0.95rem;
-}
-
-.reasoningBox {
-  background-color: #fff5e6;
-  border-left: 4px solid #ffa94d;
-  padding: 12px;
-  margin-top: 8px;
-  border-radius: 4px;
-  font-size: 0.95rem;
-}
+const handleLogout = () => {
+  // Optionally clear localStorage/session
+  localStorage.clear();
+  window.location.href = getDynamicLogoutUrl();
+};
