@@ -60,3 +60,20 @@ Array(0)
           body: JSON.stringify(body),
           headers: { 'Content-Type': 'application/json' },
         });
+{
+  "user_id": "username@ads.aexp.com",
+  "chat_id": "9677cec9-f74e-47af-b09f-a8fa6bb3d26f",
+  "original_file_ids": [
+    1,
+    2
+  ],
+  "files_selected": [
+    1,
+    2
+  ],
+  "contexts_selected": [
+    1,
+    2
+  ],
+  "industry_selected": "Payments"
+}
