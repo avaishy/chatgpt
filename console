@@ -4,7 +4,14 @@ let LOGOUT_URL = '';
 let LOGIN_URL = '';
 let ENV = 'dev';
 
-const hostname = window?.location?.hostname;
+const getHostname = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.hostname;
+  }
+  return ''; // Fallback for server-side rendering
+};
+
+const hostname = getHostname();
 
 if (hostname.includes('cfrassistant-dev')) {
   API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
@@ -29,59 +36,3 @@ export const CONFIG = {
   LOGIN_URL,
   ENV,
 };
-
-/* istanbul ignore file */
-import React, { useEffect } from 'react';
-import { IconAccessibility } from '@americanexpress/dls-react';
-import { Link } from '@americanexpress/one-app-router';
-import { useAuthBlueSso } from 'use-authblue-sso';
-import { useDispatch } from 'react-redux';
-import { setUserId } from '../../store/actions/earningsCallTranscriptActions';
-import { CONFIG } from '../../config';
-
-function Header() {
-  const { user } = useAuthBlueSso();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(setUserId(user?.attributes?.adsId));
-  }, []);
-
-  const getDynamicLogoutUrl = () => {
-    const destination = encodeURIComponent(CONFIG.LOGIN_URL);
-    return `${CONFIG.LOGOUT_URL}?ssourl=${destination}`;
-  };
-
-  const handleLogout = () => {
-    window.location.href = getDynamicLogoutUrl();
-  };
-
-  return (
-    <header
-      id="dls-nav"
-      className="nav nav-large  nav-header dls-white"
-      role="banner"
-      style={{ backgroundColor: '#222937' }}
-    >
-      <span className="margin-1-l margin-1-r"><Link to="/" style={{ color: 'white', textDecoration: 'None' }}>CFR Research Assistant</Link></span>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <h3>{user?.attributes?.adsId}</h3>
-        <IconAccessibility title="Example icon" titleId="example-icon-id" className="margin-1-r" />
-        <button
-          type="button"
-          onClick={handleLogout}
-          style={{
-            background: 'transparent',
-            border: '1px solid white',
-            color: 'white',
-            padding: '4px 10px',
-            cursor: 'pointer',
-            marginRight: '10px',
-          }}
-        > Logout
-        </button>
-      </div>
-    </header>
-  );
-}
-export default Header;
