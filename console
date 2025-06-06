@@ -15,3 +15,19 @@ result = result
 
     return result.trim();
   };
+result = result
+  .replace(/\\n```\\n\\n/g, '\n\n---\n\n') // ✅ Replace \n```\n\n with \n\n---\n\n
+  .replace(/^```(?:markdown)?\s*/i, '')
+  .replace(/\s*```$/g, '')
+  .replace(/\\n/g, '\n')
+  .replace(/\\t/g, '\t')
+  .replace(/\\u2019/g, '’')
+  .replace(/\\u201c/g, '“')
+  .replace(/\\u201d/g, '”')
+  .replace(/\\u2014/g, '—')
+  .replace(/\\u2026/g, '…')
+  .replace(/\\u00a0/g, ' ')
+  .replace(/\\"/g, '"')
+  .replace(/\\\\/g, '\\');
+
+return result.trim();
