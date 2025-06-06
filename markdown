@@ -176,3 +176,34 @@ const ManageContext = () => {
 };
 
 export default ManageContext;
+POST
+/indexFile
+Index File
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "file_id": 1,
+  "is_additional_file": false
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "status": "Success"
+}
