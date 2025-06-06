@@ -1,38 +1,276 @@
-/* istanbul ignore file */
-let API_BASE_URL = '';
-let LOGOUT_URL = '';
-let LOGIN_URL = '';
-let ENV = 'dev';
+else {
+      try {
+        const fileStatuses = await fetchFileStatuses();
+        const notIndexedFiles = selectedDocuments.filter((doc) => {
+          const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
+          return statusEntry && statusEntry.status !== 'Completed';
+        });
+        if (notIndexedFiles.length > 0) {
+          const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
+          dispatch(setTogglePopup(true, `Indexing of these files: ${filesName} started. Once indexing is complete it will automatically added to the Manage Context.`));
+          openOrCloseManageKnowledgeWindow(false);
+        }
 
-const getHostname = () => {
-  if (typeof window !== 'undefined') {
-    return window.location.hostname;
-  }
-  return ''; // Fallback for server-side rendering
-};
+        // Extract original file IDs from Redux store
+        const originalFileIds = userSelectedDocumentsFromReduxStore.map((doc) => doc.file_id);
 
-const hostname = getHostname();
+        // Filter out original files to get new selections only
+        const newFileSelections = selectedDocuments.filter(
+          (doc) => !originalFileIds.includes(doc.file_id)
+        );
 
-if (hostname.includes('cfrassistant-dev')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
-  ENV = 'dev';
-} else if (hostname.includes('cfrassistant-qa')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-qa.aexp.com';
-  LOGOUT_URL = 'https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-qa.aexp.com';
-  ENV = 'qa';
-} else {
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
-  ENV = 'dev';
-}
+        const newFileSelectedIds = newFileSelections.map((doc) => doc.file_id);
+        const selectedContexts = [
+          ...seletedCompanyKnowldge,
+          ...seletedIndustryKnowldge,
+          ...seletedPersonalKnowldge,
+        ];
+        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
 
-export const CONFIG = {
-  API_BASE_URL,
-  LOGOUT_URL,
-  LOGIN_URL,
-  ENV,
-};
+        const body = {
+          user_id: userId,
+          chat_id: selectedChat.chat_id,
+          original_file_ids: originalFileIds,
+          files_selected: newFileSelectedIds,
+          contexts_selected: contextIds,
+          industry_selected: industryType,
+        };
+
+        const allSelectedDocs = [
+          ...userSelectedDocumentsFromReduxStore,
+          ...selectedDocuments.filter(
+            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
+          ),
+        ];
+
+        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+        openOrCloseManageKnowledgeWindow(false);
+        dispatch(setRefressCurrentSession(true));
+        dispatch(setRefressPreviousSession(true));
+        const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          if (result.status === 'Success') {
+            const updatedChatsArray = getUpdatedChatsArray({
+              previousChatsArray: currentChatsArray,
+              chatId: selectedChat.chat_id,
+              seletedContexts: selectedContexts,
+              selectedDocuments,
+            });
+
+            dispatch(setRefressCurrentSession(true));
+            dispatch(setRefressPreviousSession(true));
+            dispatch(setToggleProcessingStatus(false));
+            dispatch(setCurrentChat(updatedChatsArray));
+            toast.success('Updated Successfully');
+          }
+        } else {
+          toast.error('Something went wrong: Invalid Inputs');
+        }
+      } catch (error) {
+        toast.error('Something went wrong', error);
+      }
+    }
+  }; <div className={styles.textWrapper}>
+                  <div className={styles.text}>{ele.chat_name}</div>
+                  <div className={styles.tooltip}>{ele.chat_name}</div>
+                </div>
+                { isLoadedChatId === ele.chat_id || ele.status === 'Processing'
+                  ? <MiniProcessingMessage /> : null}
+              </button>
+            </div> {
+    "session_id": "376a36d0-d44f-4c80-9892-bff4b25b1f8c",
+    "session_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+    "crt_ts": "2025-06-04 23:39:58.96435",
+    "status": "Completed",
+    "job_stage": "chats_creation",
+    "chats": [
+      {
+        "chat_id": "70557a3a-804a-4cd0-b977-c4921beafa8f",
+        "chat_name": "Summary : Summarise the whole call.",
+        "crt_ts": "2025-06-04T23:46:29.490109",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 5,
+            "file_name": "Barclays-Emerging-15-May-2024.pdf",
+            "additional_info": {
+              "date": "2025-06-04",
+              "company_name": "Barclay"
+            }
+          },
+          {
+            "file_id": 6,
+            "file_name": "Mastercard Inc Q4 2023.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 21,
+            "file_name": "Morgan-Stanley.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      },
+      {
+        "chat_id": "06c17ed2-dcd8-4151-a200-e5d3f53e4135",
+        "chat_name": "Q1 : Identify the key themes, topic and guidance discussed in the call",
+        "crt_ts": "2025-06-04T23:46:30.814137",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 5,
+            "file_name": "Barclays-Emerging-15-May-2024.pdf",
+            "additional_info": {
+              "date": "2025-06-04",
+              "company_name": "Barclay"
+            }
+          },
+          {
+            "file_id": 6,
+            "file_name": "Mastercard Inc Q4 2023.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 21,
+            "file_name": "Morgan-Stanley.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      },
+      {
+        "chat_id": "897d9d45-272e-4b58-bc48-38114aa61247",
+        "chat_name": "Q2 : Identify risks discussed by management",
+        "crt_ts": "2025-06-04T23:46:32.185979",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 5,
+            "file_name": "Barclays-Emerging-15-May-2024.pdf",
+            "additional_info": {
+              "date": "2025-06-04",
+              "company_name": "Barclay"
+            }
+          },
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 21,
+            "file_name": "Morgan-Stanley.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      },
+      {
+        "chat_id": "b699c075-6ca2-485a-a58b-fcd14168c51e",
+        "chat_name": "Q3 : Identify their strategy and significant industry trends",
+        "crt_ts": "2025-06-04T23:46:33.633022",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      },
+      {
+        "chat_id": "469fe17a-d526-4d70-aab8-8edb4766a4ab",
+        "chat_name": "Q4 : Identify cash flow management and priorities",
+        "crt_ts": "2025-06-04T23:46:35.008248",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 5,
+            "file_name": "Barclays-Emerging-15-May-2024.pdf",
+            "additional_info": {
+              "date": "2025-06-04",
+              "company_name": "Barclay"
+            }
+          },
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      },
+      {
+        "chat_id": "b0c97d74-d564-4b4d-9045-496b6772e41a",
+        "chat_name": "Q5 : Identify impact of economic condition to the business and the industry",
+        "crt_ts": "2025-06-04T23:46:36.303996",
+        "status": "Completed",
+        "files_selected": [
+          {
+            "file_id": 6,
+            "file_name": "Mastercard Inc Q4 2023.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          },
+          {
+            "file_id": 7,
+            "file_name": "Visa-Inc-Goldman-Sachs-11-September-2024.pdf",
+            "additional_info": {
+              "date": "",
+              "company_name": ""
+            }
+          }
+        ],
+        "contexts_selected": []
+      }
+    ]
+  },
