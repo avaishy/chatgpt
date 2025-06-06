@@ -29,5 +29,5 @@ result = result
   .replace(/\\u00a0/g, ' ')
   .replace(/\\"/g, '"')
   .replace(/\\\\/g, '\\');
-
+.replace(/\n```[\r]?\n\n/g, '\n\n---\n\n')
 return result.trim();
