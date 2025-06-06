@@ -1,25 +1,25 @@
- Return values from promise executor functions cannot be read 
-// 🔁 Fire the request (DON'T await here)
-const manageContextPromise = fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        dispatch(setRefressCurrentSession(true));
-        dispatch(setRefressPreviousSession(true));
-
-        const res = await manageContextPromise;
-
-if (res.ok) {
-  const result = await res.json();
-  if (result.status === 'Success') {
-    // Continue success logic
-    toast.success('Updated Successfully');
-  } else {
-    toast.error('Something went wrong: Invalid Inputs');
-  }
-} else {
-  toast.error('Something went wrong while updating context');
+ return (
+    <div className={styles.container}>
+      <h3 className={styles.heading}>Sources</h3>
+      {sources.map((source, index) => (
+        <div key={source.llm_response_id} className={styles.source}>
+          <p className={styles.title}>
+            [{index + 1}] {source.source_title} {source.page}
+          </p>
+          <div className={styles.content}>
+            <ReactMarkdown>{cleanText(source.source_content)}</ReactMarkdown>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `Sources`. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30532:63)
+    at div
+    at div
+    at ChatComponentWrapper
+    at div
