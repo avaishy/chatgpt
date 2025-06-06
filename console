@@ -1,16 +1,16 @@
+ Return values from promise executor functions cannot be read 
 // 🔁 Fire the request (DON'T await here)
 const manageContextPromise = fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-  method: 'POST',
-  body: JSON.stringify(body),
-  headers: { 'Content-Type': 'application/json' },
-});
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-// 🔄 Immediately dispatch Redux actions
-dispatch(setRefressCurrentSession(true));
-dispatch(setRefressPreviousSession(true));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        dispatch(setRefressCurrentSession(true));
+        dispatch(setRefressPreviousSession(true));
 
-// ⏳ Now await the response
-const res = await manageContextPromise;
+        const res = await manageContextPromise;
 
 if (res.ok) {
   const result = await res.json();
