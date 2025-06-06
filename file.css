@@ -1,44 +1,14 @@
-// Extract original file IDs from Redux store
-const originalFileIds = userSelectedDocumentsFromReduxStore.map(doc => doc.file_id);
-
-// Extract all selected file IDs from current selections
-const selectedFileIds = selectedDocuments.map(doc => doc.file_id);
-
-// Filter out original files to get new selections only
-const newFileSelections = selectedDocuments.filter(
-  doc => !originalFileIds.includes(doc.file_id)
-);
-
-// Create a combined array of all selected documents (original + new)
-const allSelectedDocs = [
-  ...userSelectedDocumentsFromReduxStore,
-  ...newFileSelections,
-];
-
-// Construct request body
-const selectedContexts = [
-  ...seletedCompanyKnowldge,
-  ...seletedIndustryKnowldge,
-  ...seletedPersonalKnowldge,
-];
-const contextIds = selectedContexts.map(ctx => ctx.context_id);
-
-const body = {
-  user_id: userId,
-  chat_id: selectedChat.chat_id,
-  original_file_ids: originalFileIds, // Existing files
-  files_selected: newFileSelections.map(doc => doc.file_id), // Only new files
-  contexts_selected: contextIds,
-  industry_selected: industryType,
-};
-
-// Update Redux store with the final merged list
-dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
-openOrCloseManageKnowledgeWindow(false);
-
-// Make the API call
-const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-  method: 'POST',
-  body: JSON.stringify(body),
-  headers: { 'Content-Type': 'application/json' },
-});
+ const res = fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
+ dispatch(setRefressCurrentSession(true));
+dispatch(setRefressPreviousSession(true));
+                    after refreshing it i have to wait for response 
+                    then this code should run wait for response 
+      const res =await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
