@@ -1,25 +1,17 @@
- return (
-    <div className={styles.container}>
-      <h3 className={styles.heading}>Sources</h3>
-      {sources.map((source, index) => (
-        <div key={source.llm_response_id} className={styles.source}>
-          <p className={styles.title}>
-            [{index + 1}] {source.source_title} {source.page}
-          </p>
-          <div className={styles.content}>
-            <ReactMarkdown>{cleanText(source.source_content)}</ReactMarkdown>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-Warning: Each child in a list should have a unique "key" prop.
+\n```\n\n replace this with this \n\n---\n\n
+result = result
+      .replace(/^```(?:markdown)?\s*/i, '')
+      .replace(/\s*```$/g, '')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t')
+      .replace(/\\u2019/g, '’')
+      .replace(/\\u201c/g, '“')
+      .replace(/\\u201d/g, '”')
+      .replace(/\\u2014/g, '—')
+      .replace(/\\u2026/g, '…')
+      .replace(/\\u00a0/g, ' ')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
 
-Check the render method of `Sources`. See https://reactjs.org/link/warning-keys for more information.
-    at div
-    at Sources (http://localhost:3001/static/modules/research-assistant-root/1.0.0/research-assistant-root.browser.js:30532:63)
-    at div
-    at div
-    at ChatComponentWrapper
-    at div
+    return result.trim();
+  };
