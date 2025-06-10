@@ -1,66 +1,73 @@
- const createChatSession = async ({
-    selectedDocuments: docs,
-    userId: uid,
-    useCase: uCase,
-    seletedCompanyKnowldge: compKnow,
-    seletedIndustryKnowldge: indKnow,
-    seletedPersonalKnowldge: perKnow,
-    industryType: industry,
-  }) => {
-    const fileIds = docs.map((doc) => doc.file_id);
-    const selectedContexts = [
-      ...compKnow,
-      ...indKnow,
-      ...perKnow,
-    ];
-    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
-    const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+const createChatSession = async ({
+  selectedDocuments,
+  userId,
+  useCase,
+  seletedCompanyKnowldge,
+  seletedIndustryKnowldge,
+  seletedPersonalKnowldge,
+  industryType,
+}) => {
+  const fileIds = selectedDocuments.map(doc => doc.file_id);
+  const contextIds = [
+    ...seletedCompanyKnowldge,
+    ...seletedIndustryKnowldge,
+    ...seletedPersonalKnowldge,
+  ].map(ctx => ctx.context_id);
 
-    const body = {
-      user_id: uid,
-      user_agent: 'Windows 10',
-      project_type: 'LUMOS',
-      use_case: useCaseTemp,
-      files_selected: fileIds,
-      contexts_selected: contextIds,
-      industry_selected: industry,
-    };
+  const body = {
+    user_id: userId,
+    user_agent: 'Windows 10',
+    project_type: 'LUMOS',
+    use_case: useCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : useCase,
+    files_selected: fileIds,
+    contexts_selected: contextIds,
+    industry_selected: industryType,
+  };
 
-    try {
-      const res = await fetch(`${CONFIG.API_BASE_URL}/createChatSession`, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-      });
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/createChatSession`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-      if (res.ok) {
-        return res;
-      }
+    if (!res.ok) {
       dispatch(setCurrentProcessingButton(false));
       dispatch(setToggleBanner(false));
       dispatch(setRefressPreviousSession(true));
       dispatch(toggleChatComponent(false));
 
-      if (res.status === 422) {
-        toast.error('Unprocessable Entity: Invalid input provided');
-      } else if (res.status === 500) {
-        toast.error('Server Error: Something went wrong');
-      } else {
-        toast.error('Please try again later');
+      switch (res.status) {
+        case 422:
+          toast.error('Invalid input provided.');
+          break;
+        case 500:
+          toast.error('Server error. Please try again later.');
+          break;
+        default:
+          toast.error('Unexpected error. Please try again.');
       }
-    } catch (error) {
-      console.error('Network error while creating chat session');
-    }
-    return false;
-  };
-
-  const openChatComponent = async () => {
-    if (!selectedDocuments?.length) {
-      alert('Please select a file to proceed');
-      return;
+      return null;
     }
 
-    if (!isUsedByManageContext) {
+    return res;
+  } catch (error) {
+    console.error('Error creating chat session:', error);
+    toast.error('Network error. Please try again.');
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setToggleBanner(false));
+    return null;
+  }
+};
+
+const openChatComponent = async () => {
+  if (!selectedDocuments?.length) {
+    alert('Please select a file to proceed');
+    return;
+  }
+
+  if (!isUsedByManageContext) {
+    try {
       dispatch(setRefressPreviousSession(true));
       dispatch(toggleNewSession(false));
       dispatch(setChatMessages([]));
@@ -84,7 +91,7 @@
         industryType,
       });
 
-      if (res.ok) {
+      if (res) {
         const result = await res.json();
         dispatch(setToggleBanner(false));
         dispatch(setCurrentProcessingButton(false));
@@ -96,84 +103,90 @@
         dispatch(setToggleCurrentSession(true));
         dispatch(toggleEditContextButton(false));
       }
-    } else {
-      try {
-        const fileStatuses = await fetchFileStatuses();
-        const notIndexedFiles = selectedDocuments.filter((doc) => {
-          const statusEntry = fileStatuses.find((indexFile) => indexFile.file_id === doc.file_id);
-          return statusEntry && statusEntry.status !== 'Completed';
-        });
-        if (notIndexedFiles.length > 0) {
-          const filesName = notIndexedFiles.map((doc) => doc.file_name).join(', ');
-          dispatch(setTogglePopup(true, `Indexing of these files: ${filesName} started. It may take a few minutes to complete.`));
-        } else {
-          openOrCloseManageKnowledgeWindow(false);
-        }
-        // Extract original file IDs from Redux store
-        const originalFileIds = userSelectedDocumentsFromReduxStore.map((doc) => doc.file_id);
+    } catch (error) {
+      console.error('Failed to create session:', error);
+      toast.error('Failed to create session. Try again.');
+    }
+  } else {
+    try {
+      const fileStatuses = await fetchFileStatuses();
+      const notIndexedFiles = selectedDocuments.filter(doc => {
+        const statusEntry = fileStatuses.find(f => f.file_id === doc.file_id);
+        return statusEntry?.status !== 'Completed';
+      });
 
-        // Filter out original files to get new selections only
-        const newFileSelections = selectedDocuments.filter(
-          (doc) => !originalFileIds.includes(doc.file_id)
-        );
+      if (notIndexedFiles.length) {
+        const filesName = notIndexedFiles.map(doc => doc.file_name).join(', ');
+        dispatch(setTogglePopup(true, `Indexing of these files: ${filesName} started. It may take a few minutes to complete.`));
+        return;
+      }
 
-        const newFileSelectedIds = newFileSelections.map((doc) => doc.file_id);
-        const selectedContexts = [
-          ...seletedCompanyKnowldge,
-          ...seletedIndustryKnowldge,
-          ...seletedPersonalKnowldge,
-        ];
-        const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+      openOrCloseManageKnowledgeWindow(false);
 
-        const body = {
-          user_id: userId,
-          chat_id: selectedChat.chat_id,
-          original_file_ids: originalFileIds,
-          files_selected: newFileSelectedIds,
-          contexts_selected: contextIds,
-          industry_selected: industryType,
-        };
+      const originalFileIds = userSelectedDocumentsFromReduxStore.map(doc => doc.file_id);
+      const newFileSelections = selectedDocuments.filter(doc => !originalFileIds.includes(doc.file_id));
+      const newFileSelectedIds = newFileSelections.map(doc => doc.file_id);
 
-        const allSelectedDocs = [
-          ...userSelectedDocumentsFromReduxStore,
-          ...selectedDocuments.filter(
-            (doc) => !userSelectedDocumentsFromReduxStore.some((d) => d.file_id === doc.file_id)
-          ),
-        ];
+      const selectedContexts = [
+        ...seletedCompanyKnowldge,
+        ...seletedIndustryKnowldge,
+        ...seletedPersonalKnowldge,
+      ];
+      const contextIds = selectedContexts.map(ctx => ctx.context_id);
 
-        dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
-        openOrCloseManageKnowledgeWindow(false);
-        const manageContextPromise = fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
+      const body = {
+        user_id: userId,
+        chat_id: selectedChat.chat_id,
+        original_file_ids: originalFileIds,
+        files_selected: newFileSelectedIds,
+        contexts_selected: contextIds,
+        industry_selected: industryType,
+      };
 
-        setTimeout(() => {
+      const allSelectedDocs = [
+        ...userSelectedDocumentsFromReduxStore,
+        ...newFileSelections,
+      ];
+
+      dispatch(setUserSelectedDocumentsForChat(allSelectedDocs));
+      openOrCloseManageKnowledgeWindow(false);
+
+      const res = await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      setTimeout(() => {
+        dispatch(setRefressPreviousSession(true));
+        dispatch(setRefressCurrentSession(true));
+      }, 2000);
+
+      if (res.ok) {
+        const result = await res.json();
+        if (result.status === 'Success') {
+          const updatedChatsArray = getUpdatedChatsArray({
+            previousChatsArray: currentChatsArray,
+            chatId: selectedChat.chat_id,
+            seletedContexts: selectedContexts,
+            selectedDocuments,
+          });
+
           dispatch(setRefressPreviousSession(true));
           dispatch(setRefressCurrentSession(true));
-        }, 2000);
-        const res = await manageContextPromise;
-        if (res.ok) {
-          const result = await res.json();
-          if (result.status === 'Success') {
-            const updatedChatsArray = getUpdatedChatsArray({
-              previousChatsArray: currentChatsArray,
-              chatId: selectedChat.chat_id,
-              seletedContexts: selectedContexts,
-              selectedDocuments,
-            });
-            dispatch(setRefressPreviousSession(true));
-            dispatch(setRefressCurrentSession(true));
-            dispatch(setToggleProcessingStatus(false));
-            dispatch(setCurrentChat(updatedChatsArray));
-            toast.success('Updated Successfully');
-          }
+          dispatch(setToggleProcessingStatus(false));
+          dispatch(setCurrentChat(updatedChatsArray));
+          toast.success('Updated Successfully');
         } else {
-          console.error('Something went wrong: Invalid Inputs');
+          toast.error('Failed to update chat context.');
         }
-      } catch (error) {
-        console.error(`Something went wrong${error}`);
+      } else {
+        toast.error('Failed to update chat context.');
+        console.error('Invalid response from manageChatContext');
       }
+    } catch (error) {
+      console.error('Error updating chat context:', error);
+      toast.error('Network error while updating context.');
     }
-  };
+  }
+};
