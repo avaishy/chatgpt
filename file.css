@@ -1,5 +1,15 @@
-Risks Discussed by Management
+QA workflow is one type of follow up questions only. For follow up question, depending on routing results, it may go to three workflows:
+1.	QA workflow (under src.node. chat_default_qa.py)
+2.	RAG workflow (under src.node. chat_rag.py)
+3.	RAG_compare workflow (under src.node.chat_rag_compare.py)
 
-Management highlighted the potential risk of a significant reduction in interchange rates, which could impact renewal negotiations with issuers and the trajectory of incentives and net yields, ultimately affecting the overall ecosystem revenue. This uncertainty presents a challenge for the company as it may alter key financial indicators over time. [1]
-Visa's management identified the slow recovery of outbound travel in Asia as a challenge, which has impacted cross-border payment volumes. They anticipate Q4 cross-border volumes to be slightly below Q3 levels due to these travel circumstances. [2]
-A significant risk related to regulatory changes is the potential for a much greater reduction in interchange rates than what was initially proposed. This reduction could reverberate through renewal negotiations with issuers, impacting the overall ecosystem revenue, the trajectory of incentives, and net yields over the long term. These changes could affect key indicators that are focused on over time. [3][4]
+For predefined questions – require citation & reasoning
+For follow-up questions, depending on workflow:
+1.	QA workflow – string only, no citation & reasoning
+2.	RAG workflow – require citation & reasoning
+3.	RAG_compare workflow – string only, no citation & reasoning
+
+Hope this clarifies. Thanks for the effort in making the changes promptly.
+
+Regards,
+Yingzhu
