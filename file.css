@@ -1,14 +1,7 @@
- const res = fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
- dispatch(setRefressCurrentSession(true));
-dispatch(setRefressPreviousSession(true));
-                    after refreshing it i have to wait for response 
-                    then this code should run wait for response 
-      const res =await fetch(`${CONFIG.API_BASE_URL}/manageChatContext`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
+Based on the earnings call information, Mastercard and Kroger show different aspects of financial performance in their respective quarters.
+
+For Q4 2023, Mastercard experienced a 4% overall volume growth in the U.S. market, driven by a 5% increase in credit growth and a 3% increase in debit growth. This indicates healthy consumer spending and transaction volumes, positively reflecting Mastercard's financial performance and credit risk profile.
+
+In contrast, Kroger's financial performance in Q4 2025 presented a mixed picture. The company reported a normalized earnings per share (EPS) of $1.14, which exceeded the consensus estimate by 2.70%. However, Kroger's revenue for the quarter was $34,308 million, falling short of the consensus estimate by 1.31%. While Kroger showed effective cost management and maintained profitability with an adjusted FIFO operating profit of $1.2 billion, the revenue shortfall suggests challenges in sales growth. Additionally, Kroger faced a LIFO charge of $30 million, indicating potential increased inventory costs. Despite these challenges, Kroger's net total debt to adjusted EBITDA ratio was 1.79, lower than its target range of 2.3 to 2.5, indicating strong financial leverage and lower credit risk.
+
+In summary, Mastercard showed strong consumer spending and transaction growth, while Kroger demonstrated effective cost management and profitability despite facing challenges in revenue growth and increased inventory costs. Both companies have aspects that positively impact their credit risk profiles, but Mastercard's performance indicates better consumer demand, whereas Kroger's performance highlights effective debt management.
