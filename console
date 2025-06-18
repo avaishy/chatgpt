@@ -1,3 +1,12 @@
-Hi Dhruv, how are you 
-Actually we have E3 deployement i want to ask you that For e3 we have to follow same steps as e2 
-first we have to deploy module on hydra-prod-build provided enviroment and RAF num and assingment group and then in github action deploy the one for e3 and provide e1 sha image ?
+Hi Dhruv, hope you’re doing well.
+
+I had a quick question regarding the E3 deployment. Do we need to follow the same steps as we did for E2?
+
+Specifically:
+	•	First deploy the module on the hydra-prod-build environment using the provided RAF number and assignment group
+	•	Then, trigger the GitHub action for the E3 deployment
+	•	And finally, use the E1 SHA image for the deployment?
+
+Just wanted to confirm the process with you.
+
+Thanks!
