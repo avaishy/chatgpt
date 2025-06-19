@@ -1,5 +1,15 @@
-/chats/delete_user_session/{session_id}
-previousSessions.map((session) => session.status !== 'Failed' && (
+ const handleDeleteSession = async (session_id) => {
+  try{
+   const res = await fetch(`${CONFIG.API_BASE_URL}/chats/delete_user_session/${session_id}`, { method: 'DELETE'});
+   const result = await res.json();
+   if(result.status === 'Success'){
+    dispatch(setRefressPreviousSession(true));
+   }
+  }catch(error){
+    toast.error('failed to delete session');
+  }
+  }
+  : previousSessions.map((session) => session.status !== 'Failed' && (
                 <div key={session.session_id} className={`${styles.navigationContainer}`}>
 
                   <button
@@ -29,6 +39,20 @@ previousSessions.map((session) => session.status !== 'Failed' && (
                      </button>
                   </button>
                 </div>
- const handleDeleteSession = async (session_id) => {
-  
-  }
+              )
+              )}
+          </div> const navigateToPreviousSession = async (session) => {
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setToggleBanner(false));
+    dispatch(setToggleCurrentSession(true));
+    setIsSessionsId(session.session_id);
+    dispatch(setToggleProcessingStatus(false));
+    dispatch(setCurrentSessionDetails(session));
+    dispatch(setCurrentChat(session.chats));
+    dispatch(toggleNewSession(false));
+    dispatch(toggleChatComponent(true));
+    dispatch(toggleEditContextButton(false));
+    dispatch(setRefressPreviousSession(true));
+  };
+when i click on delete icon button do not want to trigger handleprevioussession button 
+because handlePreviousSession button ind=side deleteSession button
