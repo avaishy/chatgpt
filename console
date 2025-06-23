@@ -1,28 +1,31 @@
-/* istanbul ignore file */
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { toast } from 'react-hot-toast';
-import styles from '../../../styles/FileProcessing.scss';
-import { getUserId } from '../../../store/selectors/earningsCallTranscriptSelectors';
-import { CONFIG } from '../../../config';
+useEffect(() => {
+  const fetchWithTimeout = (url, options, timeout = 5000) => {
+    return new Promise((resolve, reject) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
 
-const ProcessingStatus = () => {
-  const userId = useSelector((state) => getUserId(state));
-  const [rows, setRows] = useState([]);
-
-  const formatDuration = (durationStr) => {
-    if (!durationStr) return 'NA';
-    const [hours, minutes, seconds] = durationStr.split(':');
-    const formatted = `${(Number.parseInt(hours, 10) > 0 ? `${Number.parseInt(hours, 10)}h ` : '')
-      + (Number.parseInt(minutes, 10) > 0 ? `${Number.parseInt(minutes, 10)}m ` : '')
-    }${Math.floor(Number.parseFloat(seconds))}s`;
-    return formatted;
+      fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })
+        .then((response) => {
+          clearTimeout(timer);
+          resolve(response);
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+    });
   };
 
-  useEffect(() => {
-    const fetchFileStats = async () => {
+  const fetchFileStats = async () => {
+    const maxRetries = 3;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
       try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/files/get_files_stats`, {
+        const response = await fetchWithTimeout(`${CONFIG.API_BASE_URL}/files/get_files_stats`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -32,7 +35,7 @@ const ProcessingStatus = () => {
             user_id: userId,
             use_case: 'Earnings Call Transcript',
           }),
-        });
+        }, 5000); // 5 second timeout
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,45 +55,22 @@ const ProcessingStatus = () => {
         }));
 
         setRows(formattedRows);
+        return; // success, exit the retry loop
+
       } catch (error) {
-        toast.error('Error fetching file stats:', error);
+        attempt += 1;
+        if (attempt === maxRetries) {
+          toast.error('Failed to fetch file stats after multiple attempts.');
+        } else {
+          // Wait 1 second before retrying
+          await new Promise((res) => setTimeout(res, 1000));
+        }
       }
-    };
+    }
+  };
 
+  if (userId) {
     fetchFileStats();
-  }, [userId]);
-
-  return (
-    <div className={styles.section}>
-      <table className={styles.fileProcessingTable}>
-        <thead>
-          <tr>
-            <th style={{ width: '14%' }}>Uploaded Time</th>
-            <th style={{ width: '16%' }}>Name</th>
-            <th style={{ width: '14%' }}>Is Main File</th>
-            <th style={{ width: '14%' }}>File Indexing</th>
-            <th style={{ width: '14%' }}>Answer Generation</th>
-            <th style={{ width: '14%' }}>Execution Time</th>
-            <th style={{ width: '14%' }}>User ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((item) => (
-            <tr key={item.id}>
-              <td>{item.upload_time}</td>
-              <td>{item.name}</td>
-              <td>{item.is_main_file}</td>
-              <td>{item.file_indexing}</td>
-              <td>{item.answer_generation}</td>
-              <td>{item.execution_time}</td>
-              <td>{item.user_id}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-export default ProcessingStatus;
+  }
+}, [userId]);
 
