@@ -153,3 +153,50 @@
         console.error('Failed to create session:', error);
         toast.error('Failed to create session. Try again.');
       }
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\Knowledge.jsx
+  102:7   warning  Unexpected alert                                                                                                  
+                                                                                                          no-alert
+  107:7   warning  Unexpected alert                                                                                                  
+                                                                                                          no-alert
+  176:7   warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  270:13  error    'uId' is defined but never used                                                                                   
+                                                                                                          no-unused-vars
+  271:14  error    'uCase' is defined but never used                                                                                 
+                                                                                                          no-unused-vars
+  272:16  error    'sessId' is defined but never used                                                                                
+                                                                                                          no-unused-vars
+  279:19  error    'sessionId' is not defined                                                                                        
+                                                                                                          no-undef
+  285:13  error    'result' is assigned a value but never used                                                                       
+                                                                                                          no-unused-vars
+  286:14  error    'response' is not defined                                                                                         
+                                                                                                          no-undef
+  351:7   warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  359:7   warning  Unexpected alert                                                                                                  
+                                                                                                          no-alert
+  401:41  error    Arrow function should not return assignment                                                                       
+                                                                                                          no-return-assign
+  401:51  error    Assignment to property of function parameter 'item'                                                               
+                                                                                                          no-param-reassign
+  416:15  warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  421:9   warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  525:11  warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  528:9   warning  Unexpected console statement                                                                                      
+                                                                                                          no-console
+  549:6   warning  React Hook useEffect has missing dependencies: 'getAllUserDocuments', 'getUserAdditionalKnowledge', 'isUsedByManageContext', and 'userSelectedDocumentsFromReduxStore'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\SessionsNav.jsx
+  160:6  warning  React Hook useCallback has missing dependencies: 'dispatch', 'refreshCurrentSession', 'selectedChat.chat_id', 'showCurrentSession', and 'userId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  201:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'userId'. Either include them or remove the dependency array                                                                            react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\utility\CurrrentSessions.jsx
+  82:6  warning  React Hook useEffect has missing dependencies: 'selectChat' and 'selectedChat.chat_id'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
+  16:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'user?.attributes?.adsId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
