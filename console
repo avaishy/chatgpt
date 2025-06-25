@@ -1,127 +1,139 @@
-const getUserSessionChats = async ({ userId, useCase, sessionId }) => {
-  const localUseCase = 'Earnings Call Transcript';
-  const data = {
-    user_id: userId,
-    project_type: 'LUMOS',
-    user_agent: 'Windows 10',
-    session_id: sessionId,
-    use_case: localUseCase,
-    no_of_chats: 10,
-  };
+import { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import {
+  setChatMessages,
+  setCurrentSessionDetails,
+  setCurrentProcessingButton,
+  toggleChatComponent,
+  setCurrentChat,
+  toggleEditContextButton,
+  setRefressPreviousSession,
+  setAllBotSourcesArray,
+  setToggleBanner,
+  setToggleCurrentSession,
+  setToggleProcessingStatus,
+  toggleNewSession,
+  setUserSelectedDocumentsForChat,
+} from 'your/actions'; // update with actual paths
 
-  try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
-    });
+// 1. ✅ Reusable polling function
+const startPollingSessionStatus = (sessionId, userId, dispatch) => {
+  const intervalId = setInterval(async () => {
+    try {
+      const data = await getUserSessionChats({ userId, sessionId });
 
-    if (res.ok) {
-      return res.json(); // return parsed JSON here directly
-    }
-  } catch (error) {
-    console.error('Error fetching session chats:', error);
-  }
-
-  return null;
-};
-
-const intervalId = setInterval(async () => {
-  try {
-    const data = await getUserSessionChats({
-      userId,
-      useCase,
-      sessionId,
-    });
-
-    const session = data?.find((item) => item.session_id === sessionId); // ✅ FIXED
-
-    if (session?.status === 'Completed') {
-      clearInterval(intervalId);
-      dispatch(setToggleBanner(false));
-      dispatch(setCurrentProcessingButton(false));
-      dispatch(setRefressPreviousSession(true));
-      dispatch(setToggleProcessingStatus(false));
-      dispatch(toggleChatComponent(true));
-      dispatch(setCurrentSessionDetails(session));
-      dispatch(setCurrentChat(session.chats));
-      dispatch(setToggleCurrentSession(true));
-      dispatch(toggleEditContextButton(false));
-    }
-  } catch (error) {
-    console.error('Failed to poll create session:', error);
-  }
-}, 60000); // ✅ add delay (60 sec)
-
-[
-    {
-        "session_id": "2a62a96d-09a9-4c55-afd1-779cba40b1b5",
-        "session_name": "Visa-Inc-US-Q4-2023.pdf",
-        "crt_ts": "2025-06-25 06:38:39.005207",
-        "status": "Processing",
-        "job_stage": "chats_creation",
-        "chats": []
-    }
-] if something went wrong or create session got failed i will recieved [] array so id response is [] empty then i have to set these 
-dispatch(setCurrentProcessingButton(false));
+      if (!data || data.length === 0) {
+        clearInterval(intervalId);
+        localStorage.removeItem('pollingSessionId');
+        localStorage.removeItem('pollingUserId');
+        dispatch(setCurrentProcessingButton(false));
         dispatch(setToggleBanner(false));
         dispatch(setRefressPreviousSession(true));
         dispatch(toggleChatComponent(false));
+        toast.error('Session creation failed. Please try again.');
+        return;
+      }
 
+      const session = data.find((item) => item.session_id === sessionId);
 
-const intervalId = setInterval(async () => {
-  try {
-    const data = await getUserSessionChats({
-      userId,
-      useCase,
-      sessionId,
-    });
+      if (session?.status === 'Completed') {
+        clearInterval(intervalId);
+        localStorage.removeItem('pollingSessionId');
+        localStorage.removeItem('pollingUserId');
+        dispatch(setToggleBanner(false));
+        dispatch(setCurrentProcessingButton(false));
+        dispatch(setRefressPreviousSession(true));
+        dispatch(setToggleProcessingStatus(false));
+        dispatch(toggleChatComponent(true));
+        dispatch(setCurrentSessionDetails(session));
+        dispatch(setCurrentChat(session.chats));
+        dispatch(setToggleCurrentSession(true));
+        dispatch(toggleEditContextButton(false));
+      }
 
-    if (!data || data.length === 0) {
-      // ❌ Session creation failed or timed out
+      if (session?.status === 'Failed') {
+        clearInterval(intervalId);
+        localStorage.removeItem('pollingSessionId');
+        localStorage.removeItem('pollingUserId');
+        dispatch(setCurrentProcessingButton(false));
+        dispatch(setToggleBanner(false));
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleChatComponent(false));
+        toast.error('Session creation failed.');
+      }
+    } catch (error) {
       clearInterval(intervalId);
+      localStorage.removeItem('pollingSessionId');
+      localStorage.removeItem('pollingUserId');
+      console.error('Polling error:', error);
       dispatch(setCurrentProcessingButton(false));
       dispatch(setToggleBanner(false));
       dispatch(setRefressPreviousSession(true));
       dispatch(toggleChatComponent(false));
-      toast.error('Session creation failed. Please try again.');
-      return;
+      toast.error('Something went wrong while polling.');
     }
+  }, 60000); // poll every 1 minute
+};
 
-    const session = data.find((item) => item.session_id === sessionId);
 
-    if (session?.status === 'Completed') {
-      // ✅ Session successfully created
-      clearInterval(intervalId);
-      dispatch(setToggleBanner(false));
-      dispatch(setCurrentProcessingButton(false));
-      dispatch(setRefressPreviousSession(true));
-      dispatch(setToggleProcessingStatus(false));
-      dispatch(toggleChatComponent(true));
-      dispatch(setCurrentSessionDetails(session));
-      dispatch(setCurrentChat(session.chats));
-      dispatch(setToggleCurrentSession(true));
-      dispatch(toggleEditContextButton(false));
-    }
+useEffect(() => {
+  const sessionId = localStorage.getItem('pollingSessionId');
+  const userId = localStorage.getItem('pollingUserId');
 
-    // Optional: if status is 'Failed', handle explicitly
-    if (session?.status === 'Failed') {
-      clearInterval(intervalId);
-      dispatch(setCurrentProcessingButton(false));
-      dispatch(setToggleBanner(false));
-      dispatch(setRefressPreviousSession(true));
-      dispatch(toggleChatComponent(false));
-      toast.error('Session creation failed.');
-    }
-
-  } catch (error) {
-    clearInterval(intervalId);
-    console.error('Polling error:', error);
-    dispatch(setCurrentProcessingButton(false));
-    dispatch(setToggleBanner(false));
-    dispatch(setRefressPreviousSession(true));
-    dispatch(toggleChatComponent(false));
-    toast.error('Something went wrong while polling.');
+  if (sessionId && userId) {
+    startPollingSessionStatus(sessionId, userId, dispatch);
   }
-}, 60000); // Poll every 1 min
+}, []);
+
+
+const openChatComponent = async () => {
+  if (!selectedDocuments?.length) {
+    alert('Please select a file to proceed');
+    return;
+  }
+
+  if (!isUsedByManageContext) {
+    try {
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleNewSession(false));
+      dispatch(setChatMessages([]));
+      dispatch(setAllBotSourcesArray([]));
+      dispatch(setCurrentSessionDetails({}));
+      dispatch(setCurrentChat([]));
+      dispatch(toggleEditContextButton(true));
+      dispatch(setToggleCurrentSession(false));
+      dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+      dispatch(toggleChatComponent(true));
+      dispatch(setToggleBanner(true));
+      dispatch(setCurrentProcessingButton(true));
+
+      const res = await createChatSession({
+        selectedDocuments,
+        userId,
+        useCase,
+        seletedCompanyKnowldge,
+        seletedIndustryKnowldge,
+        seletedPersonalKnowldge,
+        industryType,
+      });
+
+      if (res) {
+        const result = await res.json();
+        const sessionId = result.session_id;
+
+        // ✅ Save for reload
+        localStorage.setItem('pollingSessionId', sessionId);
+        localStorage.setItem('pollingUserId', userId);
+
+        // ✅ Start polling
+        startPollingSessionStatus(sessionId, userId, dispatch);
+      }
+    } catch (error) {
+      console.error('Failed to create session:', error);
+      toast.error('Failed to create session. Try again.');
+    }
+  }
+};
+
 
