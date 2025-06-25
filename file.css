@@ -1,27 +1,73 @@
- previousSessions.map((session) => (
-                {session.status !== 'Failed' && (
-                <div key={session.session_id} className={`${styles.navigationContainer}`}>
-                  
-                  <button
-                    key={session.session_id}
-                    type="button"
-                    className={`${styles.navigationItem} ${isSessionsId === session.session_id ? styles.activeButton : ''}`}
-                    onClick={() => {
-                      if (!isTyping) {
-                        if (session.status === 'Completed') {
-                          navigateToPreviousSession(session);
-                        } else {
-                          handleProcessingPreviousSession(session);
-                        }
-                      }
-                    }}
-                  >
-                    <div className={styles.textWrapper}>
-                      <p className={styles.sessionNames}>{session.session_name}</p>
-                      <div className={styles.tooltip}>{session.session_name}</div>
-                    </div>
-                    {session.status === 'Processing' && <MiniProcessingMessage />}
-                  </button>  
-                </div>
-              )}
-              ))}
+localStorage.setItem('pollingSessionId', sessionId);
+localStorage.setItem('pollingUserId', userId);
+
+useEffect(() => {
+  const sessionId = localStorage.getItem('pollingSessionId');
+  const userId = localStorage.getItem('pollingUserId');
+
+  if (sessionId && userId) {
+    const resumePolling = async () => {
+      const intervalId = setInterval(async () => {
+        try {
+          const data = await getUserSessionChats({
+            userId,
+            useCase,
+            sessionId,
+          });
+
+          if (!data || data.length === 0) {
+            clearInterval(intervalId);
+            localStorage.removeItem('pollingSessionId');
+            localStorage.removeItem('pollingUserId');
+            dispatch(setCurrentProcessingButton(false));
+            dispatch(setToggleBanner(false));
+            dispatch(setRefressPreviousSession(true));
+            dispatch(toggleChatComponent(false));
+            toast.error('Session creation failed. Please try again.');
+            return;
+          }
+
+          const session = data.find((item) => item.session_id === sessionId);
+
+          if (session?.status === 'Completed') {
+            clearInterval(intervalId);
+            localStorage.removeItem('pollingSessionId');
+            localStorage.removeItem('pollingUserId');
+            dispatch(setToggleBanner(false));
+            dispatch(setCurrentProcessingButton(false));
+            dispatch(setRefressPreviousSession(true));
+            dispatch(setToggleProcessingStatus(false));
+            dispatch(toggleChatComponent(true));
+            dispatch(setCurrentSessionDetails(session));
+            dispatch(setCurrentChat(session.chats));
+            dispatch(setToggleCurrentSession(true));
+            dispatch(toggleEditContextButton(false));
+          }
+
+          if (session?.status === 'Failed') {
+            clearInterval(intervalId);
+            localStorage.removeItem('pollingSessionId');
+            localStorage.removeItem('pollingUserId');
+            dispatch(setCurrentProcessingButton(false));
+            dispatch(setToggleBanner(false));
+            dispatch(setRefressPreviousSession(true));
+            dispatch(toggleChatComponent(false));
+            toast.error('Session creation failed.');
+          }
+        } catch (error) {
+          clearInterval(intervalId);
+          localStorage.removeItem('pollingSessionId');
+          localStorage.removeItem('pollingUserId');
+          console.error('Polling error:', error);
+          dispatch(setCurrentProcessingButton(false));
+          dispatch(setToggleBanner(false));
+          dispatch(setRefressPreviousSession(true));
+          dispatch(toggleChatComponent(false));
+          toast.error('Something went wrong while polling.');
+        }
+      }, 60000); // 1-minute interval
+    };
+
+    resumePolling();
+  }
+}, []);
