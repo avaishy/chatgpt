@@ -71,3 +71,182 @@ useEffect(() => {
     resumePolling();
   }
 }, []);
+
+ const getUserSessionChats = async ({
+    userId: uid,
+    sessionId: sessId,
+  }) => {
+    const localUseCase = 'Earnings Call Transcript';
+    const data = {
+      user_id: uid,
+      project_type: 'LUMOS',
+      user_agent: 'Windows 10',
+      session_id: sessId,
+      use_case: localUseCase,
+      no_of_chats: 10,
+    };
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (res.ok) {
+        console.log('6');
+        return res.json();
+      }
+    } catch (error) {
+      console.log('7');
+
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setToggleBanner(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleChatComponent(false));
+      console.error('Error fetching session chats:', error);
+    }
+
+    return null;
+  };
+
+  const createChatSession = async ({
+    selectedDocuments: docs,
+    userId: uid,
+    useCase: uCase,
+    seletedCompanyKnowldge: compKnow,
+    seletedIndustryKnowldge: indKnow,
+    seletedPersonalKnowldge: perKnow,
+    industryType: industry,
+  }) => {
+    const fileIds = docs.map((doc) => doc.file_id);
+    const selectedContexts = [
+      ...compKnow,
+      ...indKnow,
+      ...perKnow,
+    ];
+    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+    const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+
+    const body = {
+      user_id: uid,
+      user_agent: 'Windows 10',
+      project_type: 'LUMOS',
+      use_case: useCaseTemp,
+      files_selected: fileIds,
+      contexts_selected: contextIds,
+      industry_selected: industry,
+    };
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/chats/create_chat_session`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        dispatch(setCurrentProcessingButton(false));
+        dispatch(setToggleBanner(false));
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleChatComponent(false));
+
+        switch (res.status) {
+          case 422:
+            toast.error('Invalid input provided.');
+            break;
+          case 500:
+            toast.error('Server error. Please try again later.');
+            break;
+          default:
+            toast.error('Unexpected error. Please try again.');
+        }
+        return null;
+      }
+
+      return res;
+    } catch (error) {
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setToggleBanner(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleChatComponent(false));
+      console.error('Error creating chat session:', error);
+      toast.error('Something went wrong. Please try again.');
+      return null;
+    }
+  };
+
+  const openChatComponent = async () => {
+    if (!selectedDocuments?.length) {
+      alert('Please select a file to proceed');
+      return;
+    }
+
+    if (!isUsedByManageContext) {
+      try {
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleNewSession(false));
+        dispatch(setChatMessages([]));
+        dispatch(setAllBotSourcesArray([]));
+        dispatch(setCurrentSessionDetails({}));
+        dispatch(setCurrentChat([]));
+        dispatch(toggleEditContextButton(true));
+        dispatch(setToggleCurrentSession(false));
+        dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+        dispatch(toggleChatComponent(true));
+        dispatch(setToggleBanner(true));
+        dispatch(setCurrentProcessingButton(true));
+
+        const res = await createChatSession({
+          selectedDocuments,
+          userId,
+          useCase,
+          seletedCompanyKnowldge,
+          seletedIndustryKnowldge,
+          seletedPersonalKnowldge,
+          industryType,
+        });
+
+        if (res) {
+          const result = await res.json();
+          const sessionId = result.session_id;
+
+          const intervalId = setInterval(async () => {
+            try {
+              const data = await getUserSessionChats({
+                userId,
+                sessionId,
+              });
+              const session = data?.find((item) => item.session_id === sessionId); // ✅ FIXED
+              if (data.length === 0) {
+                clearInterval(intervalId);
+                dispatch(setCurrentProcessingButton(false));
+                dispatch(setToggleBanner(false));
+                dispatch(setRefressPreviousSession(true));
+                dispatch(toggleChatComponent(false));
+                toast.error('Session creation failed. Please try again.');
+                return;
+              }
+              if (session?.status === 'Completed') {
+                clearInterval(intervalId);
+                dispatch(setToggleBanner(false));
+                dispatch(setCurrentProcessingButton(false));
+                dispatch(setRefressPreviousSession(true));
+                dispatch(setToggleProcessingStatus(false));
+                dispatch(toggleChatComponent(true));
+                dispatch(setCurrentSessionDetails(session));
+                dispatch(setCurrentChat(session.chats));
+                dispatch(setToggleCurrentSession(true));
+                dispatch(toggleEditContextButton(false));
+                dispatch(toggleNewSession(false));
+              }
+            } catch (error) {
+              console.error('Failed to poll create session:', error);
+            }
+          }, 10000);
+        }
+      } catch (error) {
+        console.error('Failed to create session:', error);
+        toast.error('Failed to create session. Try again.');
+      }
+    } 
