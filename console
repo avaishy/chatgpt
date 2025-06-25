@@ -52,3 +52,19 @@ const intervalId = setInterval(async () => {
     console.error('Failed to poll create session:', error);
   }
 }, 60000); // ✅ add delay (60 sec)
+
+[
+    {
+        "session_id": "2a62a96d-09a9-4c55-afd1-779cba40b1b5",
+        "session_name": "Visa-Inc-US-Q4-2023.pdf",
+        "crt_ts": "2025-06-25 06:38:39.005207",
+        "status": "Processing",
+        "job_stage": "chats_creation",
+        "chats": []
+    }
+] if something went wrong or create session got failed i will recieved [] array so id response is [] empty then i have to set these 
+dispatch(setCurrentProcessingButton(false));
+        dispatch(setToggleBanner(false));
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleChatComponent(false));
+
