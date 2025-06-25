@@ -1,49 +1,13 @@
- try {
-        dispatch(setRefressPreviousSession(true));
-        dispatch(toggleNewSession(false));
-        dispatch(setChatMessages([]));
-        dispatch(setAllBotSourcesArray([]));
-        dispatch(setCurrentSessionDetails({}));
-        dispatch(setCurrentChat([]));
-        dispatch(toggleEditContextButton(true));
-        dispatch(setToggleCurrentSession(false));
-        dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
-        dispatch(toggleChatComponent(true));
-        dispatch(setToggleBanner(true));
-        dispatch(setCurrentProcessingButton(true));
-
-        const res = await createChatSession({
-          selectedDocuments,
-          userId,
-          useCase,
-          seletedCompanyKnowldge,
-          seletedIndustryKnowldge,
-          seletedPersonalKnowldge,
-          industryType,
-        });
-
-        if (res) {
-          const result = await res.json();
-          const sessionId = result.session_id;
-
-          // ✅ Start polling
-          startPollingSessionStatus(sessionId, userId);
-        }
-      } catch (error) {
-        console.error('Failed to create session:', error);
-        toast.error('Failed to create session. Try again.');
-      }
-
  const getUserSessionChats = async ({
-    userId: uid,
-    sessionId: sessId,
+    userId: pollingUserId,
+    sessionId: pollingSessionId,
   }) => {
     const localUseCase = 'Earnings Call Transcript';
     const data = {
-      user_id: uid,
+      user_id: pollingUserId,
       project_type: 'LUMOS',
       user_agent: 'Windows 10',
-      session_id: sessId,
+      session_id: pollingSessionId,
       use_case: localUseCase,
       no_of_chats: 10,
     };
@@ -117,3 +81,113 @@
       }
     }, 60000);
   };
+
+  const createChatSession = async ({
+    selectedDocuments: docs,
+    userId: uid,
+    useCase: uCase,
+    seletedCompanyKnowldge: compKnow,
+    seletedIndustryKnowldge: indKnow,
+    seletedPersonalKnowldge: perKnow,
+    industryType: industry,
+  }) => {
+    const fileIds = docs.map((doc) => doc.file_id);
+    const selectedContexts = [
+      ...compKnow,
+      ...indKnow,
+      ...perKnow,
+    ];
+    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
+    const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+
+    const body = {
+      user_id: uid,
+      user_agent: 'Windows 10',
+      project_type: 'LUMOS',
+      use_case: useCaseTemp,
+      files_selected: fileIds,
+      contexts_selected: contextIds,
+      industry_selected: industry,
+    };
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/chats/create_chat_session`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        dispatch(setCurrentProcessingButton(false));
+        dispatch(setToggleBanner(false));
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleChatComponent(false));
+
+        switch (res.status) {
+          case 422:
+            toast.error('Invalid input provided.');
+            break;
+          case 500:
+            toast.error('Server error. Please try again later.');
+            break;
+          default:
+            toast.error('Unexpected error. Please try again.');
+        }
+        return null;
+      }
+
+      return res;
+    } catch (error) {
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setToggleBanner(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleChatComponent(false));
+      console.error('Error creating chat session:', error);
+      toast.error('Something went wrong. Please try again.');
+      return null;
+    }
+  };
+
+  const openChatComponent = async () => {
+    if (!selectedDocuments?.length) {
+      alert('Please select a file to proceed');
+      return;
+    }
+
+    if (!isUsedByManageContext) {
+      try {
+        dispatch(setRefressPreviousSession(true));
+        dispatch(toggleNewSession(false));
+        dispatch(setChatMessages([]));
+        dispatch(setAllBotSourcesArray([]));
+        dispatch(setCurrentSessionDetails({}));
+        dispatch(setCurrentChat([]));
+        dispatch(toggleEditContextButton(true));
+        dispatch(setToggleCurrentSession(false));
+        dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
+        dispatch(toggleChatComponent(true));
+        dispatch(setToggleBanner(true));
+        dispatch(setCurrentProcessingButton(true));
+
+        const res = await createChatSession({
+          selectedDocuments,
+          userId,
+          useCase,
+          seletedCompanyKnowldge,
+          seletedIndustryKnowldge,
+          seletedPersonalKnowldge,
+          industryType,
+        });
+
+        if (res) {
+          const result = await res.json();
+          const sessionId = result.session_id;
+
+          // ✅ Start polling
+          startPollingSessionStatus(sessionId, userId);
+        }
+      } catch (error) {
+        console.error('Failed to create session:', error);
+        toast.error('Failed to create session. Try again.');
+      }
+    }
