@@ -68,3 +68,60 @@ dispatch(setCurrentProcessingButton(false));
         dispatch(setRefressPreviousSession(true));
         dispatch(toggleChatComponent(false));
 
+
+const intervalId = setInterval(async () => {
+  try {
+    const data = await getUserSessionChats({
+      userId,
+      useCase,
+      sessionId,
+    });
+
+    if (!data || data.length === 0) {
+      // ❌ Session creation failed or timed out
+      clearInterval(intervalId);
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setToggleBanner(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleChatComponent(false));
+      toast.error('Session creation failed. Please try again.');
+      return;
+    }
+
+    const session = data.find((item) => item.session_id === sessionId);
+
+    if (session?.status === 'Completed') {
+      // ✅ Session successfully created
+      clearInterval(intervalId);
+      dispatch(setToggleBanner(false));
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(setToggleProcessingStatus(false));
+      dispatch(toggleChatComponent(true));
+      dispatch(setCurrentSessionDetails(session));
+      dispatch(setCurrentChat(session.chats));
+      dispatch(setToggleCurrentSession(true));
+      dispatch(toggleEditContextButton(false));
+    }
+
+    // Optional: if status is 'Failed', handle explicitly
+    if (session?.status === 'Failed') {
+      clearInterval(intervalId);
+      dispatch(setCurrentProcessingButton(false));
+      dispatch(setToggleBanner(false));
+      dispatch(setRefressPreviousSession(true));
+      dispatch(toggleChatComponent(false));
+      toast.error('Session creation failed.');
+    }
+
+  } catch (error) {
+    clearInterval(intervalId);
+    console.error('Polling error:', error);
+    dispatch(setCurrentProcessingButton(false));
+    dispatch(setToggleBanner(false));
+    dispatch(setRefressPreviousSession(true));
+    dispatch(toggleChatComponent(false));
+    toast.error('Something went wrong while polling.');
+  }
+}, 60000); // Poll every 1 min
+
