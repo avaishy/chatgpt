@@ -1,96 +1,24 @@
- const res = await createChatSession({
-          selectedDocuments,
-          userId,
-          useCase,
-          seletedCompanyKnowldge,
-          seletedIndustryKnowldge,
-          seletedPersonalKnowldge,
-          industryType,
-        });
-
-        if (res) {
-          const result = await res.json();
-          dispatch(setToggleBanner(false));
-          dispatch(setCurrentProcessingButton(false));
-          dispatch(setRefressPreviousSession(true));
-          dispatch(setToggleProcessingStatus(false));
-          dispatch(toggleChatComponent(true));
-          dispatch(setCurrentSessionDetails(result));
-          dispatch(setCurrentChat(result.chats));
-          dispatch(setToggleCurrentSession(true));
-          dispatch(toggleEditContextButton(false));
-        }
-      } catch (error) {
-        console.error('Failed to create session:', error);
-        toast.error('Failed to create session. Try again.');
-      }
-
-create_chat_session
-{
-    "session_id": "",
-    "session_name": "",
-    "status": "Processing"
-}
-5:22
-there is no new API
-Call - get_user_session_chats
-with payload:
-{
-  "user_id": "username",
-  "project_type": "LUMOS",
-  "user_agent": "Windows 10",
-  "use_case": "Earnings Call Transcript",
-  "session_id": "e473937b-46b0-4cd3-b06b-ef6da2f260ec",
-  "no_of_chats": 3
-}
-response will be
-[
-  {
-    "session_id": "e473937b-46b0-4cd3-b06b-ef6da2f260ec",
-    "session_name": "Visa Q1 revenue.pdf",
-    "crt_ts": "2025-06-24 03:47:00.15652",
-    "status": "Processing",
-    "job_stage": "chats_creation",
-    "chats": []
-  }
-]
-
-so before what happen is we are wait for create session chat api and setting all the state but now this create session gives immediately response in that resonse i have session id sessionaname and status as processing this is one this call onle now i have to to call that getusersession chat with the payload
- "user_id": "username",
-  "project_type": "LUMOS",
-  "user_agent": "Windows 10",
-  "use_case": "Earnings Call Transcript",
-  "session_id": "e473937b-46b0-4cd3-b06b-ef6da2f260ec",
-  "no_of_chats": 3  this will give the response for that session id [
-  {
-    "session_id": "e473937b-46b0-4cd3-b06b-ef6da2f260ec",
-    "session_name": "Visa Q1 revenue.pdf",
-    "crt_ts": "2025-06-24 03:47:00.15652",
-    "status": "Processing",
-    "job_stage": "chats_creation",
-    "chats": []
-  }
-] but newly session may take 5-8 minute to create so i have to call in every minute getusersession chats for that perticular session id if status is completed then 
-set all state  dispatch(setToggleBanner(false));
-          dispatch(setCurrentProcessingButton(false));
-          dispatch(setRefressPreviousSession(true));
-          dispatch(setToggleProcessingStatus(false));
-          dispatch(toggleChatComponent(true));
-          dispatch(setCurrentSessionDetails(result));
-          dispatch(setCurrentChat(result.chats));
-          dispatch(setToggleCurrentSession(true));
-          dispatch(toggleEditContextButton(false)); 
-
-
-const getUserSessionChats = async ({
-     user_id: userId,
-     project_type: 'LUMOS',
-     user_agent: 'Windows 10',
-     use_case: useCase,
-     session_id: sessionId,
-     no_of_chats: 3,
-
-  })
+ const getUserSessionChats = async ({
+    userId: uId,
+    useCase: uCase,
+    sessionId: sessId,
+  }) => {
+    const localUseCase = 'Earnings Call Transcript';
+    const data = {
+      user_id: userId,
+      project_type: 'LUMOS',
+      user_agent: 'Windows 10',
+      session_id: sessionId,
+      use_case: localUseCase,
+      no_of_chats: 10,
+    };
+    const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+    if (res.ok) {
+      const result = await res.json();
+      return result;
+    }
+    return null;
+  };
 
   const createChatSession = async ({
     selectedDocuments: docs,
@@ -196,12 +124,9 @@ const getUserSessionChats = async ({
           const intervalId = setInterval(async () => {
             try {
               const chatRes = await getUserSessionChats({
-                user_id: userId,
-                project_type: 'LUMOS',
-                user_agent: 'Windows 10',
-                use_case: useCase,
-                session_id: sessionId,
-                no_of_chats: 3,
+                userId,
+                useCase,
+                sessionId,
               });
 
               const data = await chatRes.json();
@@ -228,8 +153,3 @@ const getUserSessionChats = async ({
         console.error('Failed to create session:', error);
         toast.error('Failed to create session. Try again.');
       }
-  error    'getUserSessionChats' is not defined                                                                              
-                                                                                                          no-undef
-  382:41  error    Arrow function should not return assignment                                                                       
-                                                                                                          no-return-assign
-  382:51  error    Assignment to property of function parameter 'item' 
