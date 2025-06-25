@@ -1,202 +1,54 @@
- const getUserSessionChats = async ({
-    userId: uId,
-    useCase: uCase,
-    sessionId: sessId,
-  }) => {
-    const localUseCase = 'Earnings Call Transcript';
-    const data = {
-      user_id: userId,
-      project_type: 'LUMOS',
-      user_agent: 'Windows 10',
-      session_id: sessionId,
-      use_case: localUseCase,
-      no_of_chats: 10,
-    };
-    const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+const getUserSessionChats = async ({ userId, useCase, sessionId }) => {
+  const localUseCase = 'Earnings Call Transcript';
+  const data = {
+    user_id: userId,
+    project_type: 'LUMOS',
+    user_agent: 'Windows 10',
+    session_id: sessionId,
+    use_case: localUseCase,
+    no_of_chats: 10,
+  };
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
     if (res.ok) {
-      const result = await res.json();
-      return result;
+      return res.json(); // return parsed JSON here directly
     }
-    return null;
-  };
+  } catch (error) {
+    console.error('Error fetching session chats:', error);
+  }
 
-  const createChatSession = async ({
-    selectedDocuments: docs,
-    userId: uid,
-    useCase: uCase,
-    seletedCompanyKnowldge: compKnow,
-    seletedIndustryKnowldge: indKnow,
-    seletedPersonalKnowldge: perKnow,
-    industryType: industry,
-  }) => {
-    const fileIds = docs.map((doc) => doc.file_id);
-    const selectedContexts = [
-      ...compKnow,
-      ...indKnow,
-      ...perKnow,
-    ];
-    const contextIds = selectedContexts.map((ctx) => ctx.context_id);
-    const useCaseTemp = uCase === 'earnings_call_transcript' ? 'Earnings Call Transcript' : uCase;
+  return null;
+};
 
-    const body = {
-      user_id: uid,
-      user_agent: 'Windows 10',
-      project_type: 'LUMOS',
-      use_case: useCaseTemp,
-      files_selected: fileIds,
-      contexts_selected: contextIds,
-      industry_selected: industry,
-    };
+const intervalId = setInterval(async () => {
+  try {
+    const data = await getUserSessionChats({
+      userId,
+      useCase,
+      sessionId,
+    });
 
-    try {
-      const res = await fetch(`${CONFIG.API_BASE_URL}/chats/create_chat_session`, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-      });
+    const session = data?.find((item) => item.session_id === sessionId); // ✅ FIXED
 
-      if (!res.ok) {
-        dispatch(setCurrentProcessingButton(false));
-        dispatch(setToggleBanner(false));
-        dispatch(setRefressPreviousSession(true));
-        dispatch(toggleChatComponent(false));
-
-        switch (res.status) {
-          case 422:
-            toast.error('Invalid input provided.');
-            break;
-          case 500:
-            toast.error('Server error. Please try again later.');
-            break;
-          default:
-            toast.error('Unexpected error. Please try again.');
-        }
-        return null;
-      }
-
-      return res;
-    } catch (error) {
-      dispatch(setCurrentProcessingButton(false));
+    if (session?.status === 'Completed') {
+      clearInterval(intervalId);
       dispatch(setToggleBanner(false));
+      dispatch(setCurrentProcessingButton(false));
       dispatch(setRefressPreviousSession(true));
-      dispatch(toggleChatComponent(false));
-      console.error('Error creating chat session:', error);
-      toast.error('Something went wrong. Please try again.');
-      return null;
+      dispatch(setToggleProcessingStatus(false));
+      dispatch(toggleChatComponent(true));
+      dispatch(setCurrentSessionDetails(session));
+      dispatch(setCurrentChat(session.chats));
+      dispatch(setToggleCurrentSession(true));
+      dispatch(toggleEditContextButton(false));
     }
-  };
-
-  const openChatComponent = async () => {
-    if (!selectedDocuments?.length) {
-      alert('Please select a file to proceed');
-      return;
-    }
-
-    if (!isUsedByManageContext) {
-      try {
-        dispatch(setRefressPreviousSession(true));
-        dispatch(toggleNewSession(false));
-        dispatch(setChatMessages([]));
-        dispatch(setAllBotSourcesArray([]));
-        dispatch(setCurrentSessionDetails({}));
-        dispatch(setCurrentChat([]));
-        dispatch(toggleEditContextButton(true));
-        dispatch(setToggleCurrentSession(false));
-        dispatch(setUserSelectedDocumentsForChat(selectedDocuments));
-        dispatch(toggleChatComponent(true));
-        dispatch(setToggleBanner(true));
-        dispatch(setCurrentProcessingButton(true));
-
-        const res = await createChatSession({
-          selectedDocuments,
-          userId,
-          useCase,
-          seletedCompanyKnowldge,
-          seletedIndustryKnowldge,
-          seletedPersonalKnowldge,
-          industryType,
-        });
-
-        if (res) {
-          const result = await res.json();
-          const sessionId = result.session_id;
-
-          const intervalId = setInterval(async () => {
-            try {
-              const chatRes = await getUserSessionChats({
-                userId,
-                useCase,
-                sessionId,
-              });
-
-              const data = await chatRes.json();
-              const session = data.find((item) => item.session_id = sessionId);
-
-              if (session?.status === 'Completed') {
-                clearInterval(intervalId);
-                dispatch(setToggleBanner(false));
-                dispatch(setCurrentProcessingButton(false));
-                dispatch(setRefressPreviousSession(true));
-                dispatch(setToggleProcessingStatus(false));
-                dispatch(toggleChatComponent(true));
-                dispatch(setCurrentSessionDetails(session));
-                dispatch(setCurrentChat(session.chats));
-                dispatch(setToggleCurrentSession(true));
-                dispatch(toggleEditContextButton(false));
-              }
-            } catch (error) {
-              console.error('Failed to poll create session:', error);
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Failed to create session:', error);
-        toast.error('Failed to create session. Try again.');
-      }
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\Knowledge.jsx
-  102:7   warning  Unexpected alert                                                                                                  
-                                                                                                          no-alert
-  107:7   warning  Unexpected alert                                                                                                  
-                                                                                                          no-alert
-  176:7   warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  270:13  error    'uId' is defined but never used                                                                                   
-                                                                                                          no-unused-vars
-  271:14  error    'uCase' is defined but never used                                                                                 
-                                                                                                          no-unused-vars
-  272:16  error    'sessId' is defined but never used                                                                                
-                                                                                                          no-unused-vars
-  279:19  error    'sessionId' is not defined                                                                                        
-                                                                                                          no-undef
-  285:13  error    'result' is assigned a value but never used                                                                       
-                                                                                                          no-unused-vars
-  286:14  error    'response' is not defined                                                                                         
-                                                                                                          no-undef
-  351:7   warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  359:7   warning  Unexpected alert                                                                                                  
-                                                                                                          no-alert
-  401:41  error    Arrow function should not return assignment                                                                       
-                                                                                                          no-return-assign
-  401:51  error    Assignment to property of function parameter 'item'                                                               
-                                                                                                          no-param-reassign
-  416:15  warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  421:9   warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  525:11  warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  528:9   warning  Unexpected console statement                                                                                      
-                                                                                                          no-console
-  549:6   warning  React Hook useEffect has missing dependencies: 'getAllUserDocuments', 'getUserAdditionalKnowledge', 'isUsedByManageContext', and 'userSelectedDocumentsFromReduxStore'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\newSessionScreen\SessionsNav.jsx
-  160:6  warning  React Hook useCallback has missing dependencies: 'dispatch', 'refreshCurrentSession', 'selectedChat.chat_id', 'showCurrentSession', and 'userId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-  201:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'userId'. Either include them or remove the dependency array                                                                            react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\earningsCallTranscripts\utility\CurrrentSessions.jsx
-  82:6  warning  React Hook useEffect has missing dependencies: 'selectChat' and 'selectedChat.chat_id'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-
-C:\Users\avaishy\research-assistant-root\src\components\header\Header.jsx
-  16:6  warning  React Hook useEffect has missing dependencies: 'dispatch' and 'user?.attributes?.adsId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-
+  } catch (error) {
+    console.error('Failed to poll create session:', error);
+  }
+}, 60000); // ✅ add delay (60 sec)
