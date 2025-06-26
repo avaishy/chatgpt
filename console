@@ -3,7 +3,11 @@ import { useEffect, useRef } from 'react';
 const hasFetchedOnce = useRef(false);
 
 useEffect(() => {
-  if (hasFetchedOnce.current) return;
+    // if (userId) {
+    //   getPreviousSessions();
+    //   dispatch(setRefressPreviousSession(false));
+    // }
+     if (hasFetchedOnce.current) return;
 
   const interval = setInterval(() => {
     if (userId && typeof userId === 'string') {
@@ -17,4 +21,4 @@ useEffect(() => {
   }, 500); // retry every 500ms
 
   return () => clearInterval(interval);
-}, [userId]);
+  }, [getPreviousSessions, shouldPreviousSessionRefresh, userId]);
