@@ -26,7 +26,14 @@ export const CONFIG = {
   LOGIN_URL,
   ENV,
 };
-
+ const res = await fetch(
+          `${CONFIG.API_BASE_URL}/chats/fetch_llm_response`,
+          {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
 fetch('https://example.com/api/endpoint', {
   method: 'GET', // or 'POST'
   credentials: 'include', // this sends cookies
