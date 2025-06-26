@@ -1,7 +1,27 @@
 import { useEffect, useRef } from 'react';
 
-const hasFetchedOnce = useRef(false);
-
+const SessionsNav = () => {
+  const dispatch = useDispatch();
+  const hasFetchedOnce = useRef(false);
+  const showNewSession = useSelector((state) => getShowNewSession(state));
+  const userId = useSelector((state) => getUserId(state));
+  const showChatComponent = useSelector((state) => getToggleChatComponent(state));
+  const [previousSessions, setPreviousSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [isSessionsId, setIsSessionsId] = useState(true);
+  const showCurrentSession = useSelector((state) => getToggleCurrentSession(state));
+  const showProcessStatus = useSelector((state) => getToggleProcessingStatus(state));
+  const shouldPreviousSessionRefresh = useSelector(
+    (state) => getShouldRefreshPreviousSession(state)
+  );
+  const showBanner = useSelector((state) => getToggleProcessingBanner(state));
+  const userSelectDocuments = useSelector((state) => getUserSelectedDocumentForChat(state));
+  const showProcessingButton = useSelector((state) => getToggleProcessingButton(state));
+  const [currentProcessing, setCurrentProcessing] = useState(null);
+  let containerClass = '';
+  const selectedChat = useSelector((state) => getSelectedChatDetails(state));
+  const refreshCurrentSession = useSelector((state) => getShouldRefreshCurrentSession(state));
+  const isTyping = useSelector((state) => getIsTyping(state));
 useEffect(() => {
     // if (userId) {
     //   getPreviousSessions();
