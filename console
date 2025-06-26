@@ -1,13 +1,14 @@
+'userId' is already declared in the upper scope on line 60 column 9  
  const getUserSessionChats = async ({
-    userId: pollingUserId,
-    sessionId: pollingSessionId,
+    userId,
+    sessionId,
   }) => {
     const localUseCase = 'Earnings Call Transcript';
     const data = {
-      user_id: pollingUserId,
+      user_id: userId,
       project_type: 'LUMOS',
       user_agent: 'Windows 10',
-      session_id: pollingSessionId,
+      session_id: sessionId,
       use_case: localUseCase,
       no_of_chats: 10,
     };
@@ -36,7 +37,10 @@
   const startPollingSessionStatus = (pollingSessionId, pollingUserId) => {
     const intervalId = setInterval(async () => {
       try {
-        const data = await getUserSessionChats({ pollingSessionId, pollingUserId });
+        const data = await getUserSessionChats({
+          sessionId: pollingSessionId,
+          userId: pollingUserId,
+        });
 
         if (!data || data.length === 0) {
           clearInterval(intervalId);
@@ -184,10 +188,10 @@
           const sessionId = result.session_id;
 
           // ✅ Start polling
+          dispatch(setRefressPreviousSession(true));
           startPollingSessionStatus(sessionId, userId);
         }
       } catch (error) {
         console.error('Failed to create session:', error);
         toast.error('Failed to create session. Try again.');
       }
-    }
