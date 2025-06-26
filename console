@@ -35,6 +35,12 @@
   };
 
   const startPollingSessionStatus = (pollingSessionId, pollingUserId) => {
+ // 🚫 Prevent page refresh
+  const handleBeforeUnload = (e) => {
+    e.preventDefault();
+    e.returnValue = 'Session creation is in progress. Are you sure you want to leave?';
+  };
+  window.addEventListener('beforeunload', handleBeforeUnload);
     const intervalId = setInterval(async () => {
       try {
         const data = await getUserSessionChats({
