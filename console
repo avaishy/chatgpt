@@ -26,3 +26,9 @@ export const CONFIG = {
   LOGIN_URL,
   ENV,
 };
+
+fetch('https://example.com/api/endpoint', {
+  method: 'GET', // or 'POST'
+  credentials: 'include', // this sends cookies
+});
+
