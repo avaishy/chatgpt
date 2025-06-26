@@ -82,3 +82,133 @@ Lumos.holocron = {
 };
 
 export default hocChain(Lumos);
+user_id: null, project_type: "LUMOS", user_agent: "Windows 10", use_case: "Earnings Call Transcript",…}
+no_of_chats
+: 
+10
+project_type
+: 
+"LUMOS"
+use_case
+: 
+"Earnings Call Transcript"
+user_agent
+: 
+"Windows 10"
+user_id
+: 
+null
+/* istanbul ignore file */
+import React, { useEffect } from 'react';
+import { IconAccessibility } from '@americanexpress/dls-react';
+import { Link } from '@americanexpress/one-app-router';
+import { useAuthBlueSso } from 'use-authblue-sso';
+import { useDispatch } from 'react-redux';
+import { setUserId } from '../../store/actions/earningsCallTranscriptActions';
+import { CONFIG } from '../../config';
+
+function Header() {
+  const { user } = useAuthBlueSso();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setUserId(user?.attributes?.adsId));
+  }, []);
+
+  const getDynamicLogoutUrl = () => {
+    const destination = encodeURIComponent(CONFIG.LOGIN_URL);
+    return `${CONFIG.LOGOUT_URL}?ssourl=${destination}`;
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = getDynamicLogoutUrl();
+    }
+  };
+
+  return (
+    <header
+      id="dls-nav"
+      className="nav nav-large  nav-header dls-white"
+      role="banner"
+      style={{ backgroundColor: '#222937' }}
+    >
+      <span className="margin-1-l margin-1-r"><Link to="/" style={{ color: 'white', textDecoration: 'None' }}>CFR Research Assistant</Link></span>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <h3>{user?.attributes?.adsId}</h3>
+        <IconAccessibility title="Example icon" titleId="example-icon-id" className="margin-1-r" />
+        <button
+          type="button"
+          onClick={handleLogout}
+          style={{
+            background: 'transparent',
+            border: '1px solid white',
+            color: 'white',
+            padding: '4px 10px',
+            cursor: 'pointer',
+            marginRight: '10px',
+          }}
+        > Logout
+        </button>
+      </div>
+    </header>
+  );
+}
+export default Header;
+useEffect(() => {
+    if (userId) {
+      getPreviousSessions();
+      dispatch(setRefressPreviousSession(false));
+    }
+  }, [getPreviousSessions, shouldPreviousSessionRefresh, userId]);
+const getPreviousSessions = useCallback(async () => {
+    setLoadingSessions(true);
+    dispatch(addUseCase('earnings_call_transcript'));
+    const sessionsArray = [];
+    let localUseCase = null;
+    try {
+      localUseCase = 'Earnings Call Transcript';
+      const data = {
+        user_id: userId,
+        project_type: 'LUMOS',
+        user_agent: 'Windows 10',
+        use_case: localUseCase,
+        no_of_chats: 10,
+      };
+      const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        const result = await res.json();
+        result.forEach((ele) => {
+          if (ele.session_name != null) {
+            sessionsArray.push(ele);
+          } else {
+            sessionsArray.push('----');
+          }
+        });
+        setPreviousSessions(sessionsArray);
+        if (showCurrentSession && refreshCurrentSession) {
+          const matchedSession = result.find(
+            (session) => session.chats?.some(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            )
+          );
+
+          if (matchedSession) {
+            const matchedChat = matchedSession.chats.find(
+              (chat) => chat.chat_id === selectedChat.chat_id
+            );
+            dispatch(setCurrentSessionDetails(matchedSession));
+            dispatch(setCurrentChat(matchedSession.chats));
+            if (matchedChat) {
+              dispatch(setSelectedChat(matchedChat));
+            }
+            dispatch(setRefressCurrentSession(false));
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Unable to load previous sessions');
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, [shouldPreviousSessionRefresh]);
