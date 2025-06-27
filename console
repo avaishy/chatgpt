@@ -1,41 +1,29 @@
-if (hostname.includes('cfrassistant-dev')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
-  ENV = 'dev';
-} else if (hostname.includes('cfrassistant-qa')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt-qa.aexp.com';
-  LOGOUT_URL = 'https://authbluesvcqa-vip.phx.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-qa.aexp.com';
-  ENV = 'qa';
-} else if (hostname.includes('cfrassistant')) {
-  API_BASE_URL = 'https://lumosusersessionmgmt.aexp.com';
-  LOGOUT_URL = 'https://authbluesvc.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant.aexp.com';
-  ENV = 'prod';
-} else {
-  API_BASE_URL = 'https://lumosusersessionmgmt-dev.aexp.com';
-  LOGOUT_URL = 'https://ssoisvc-dev.aexp.com/ssoi/logoff';
-  LOGIN_URL = 'https://cfrassistant-dev.aexp.com';
-  ENV = 'dev';
+try {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+  });
+
+  if (!res.ok) {
+    // This will throw and send the status code to catch block
+    const error = new Error('HTTP Error');
+    error.status = res.status;
+    throw error;
+  }
+
+  const result = await res.json();
+  // your success logic here
+
+} catch (error) {
+  console.log(error);
+  if (error.status === 402) {
+    setUiDisable(true);
+    window.alert('Unauthorized User - Please raise IIQ request for PRC-AXP-EH-E3-AppUser-paas-lumos-project');
+  } else {
+    toast.error('Unable to load previous sessions');
+  }
 }
-
-export const CONFIG = {
-  API_BASE_URL,
-  LOGOUT_URL,
-  LOGIN_URL,
-  ENV,
-};
- const res = await fetch(
-          `${CONFIG.API_BASE_URL}/chats/fetch_llm_response`,
-          {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-fetch('https://example.com/api/endpoint', {
-  method: 'GET', // or 'POST'
-  credentials: 'include', // this sends cookies
-});
-
