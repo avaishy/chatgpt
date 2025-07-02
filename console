@@ -1,3 +1,10 @@
-Hi Dhruv Good morning 
-   Accually i have one query regarding dot connector 
-so we have one critical risk dependency so i upgrade it but in dotconnector still show last updated 1 day ago and date was 30/06/2025 is there any way to see the lastest updated dependency risks 
+Hi Dhruv,
+Good morning!
+
+I hope you’re doing well. I had a quick question regarding DotConnector.
+
+We recently updated a critical risk dependency to a newer version as part of remediation. However, in DotConnector, the “Last Updated” timestamp still reflects the previous date (30/06/2025), and the risk status hasn’t changed accordingly.
+
+Could you please confirm if there’s a delay in reflecting updated dependency risks on the platform? Also, is there a way to manually trigger a refresh or check if the latest changes have been picked up?
+
+Appreciate your help on this!
