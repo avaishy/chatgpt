@@ -1,29 +1,3 @@
-try {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/chats/get_user_session_chats`, {
-    method: 'POST',
-    credentials: 'include',
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-  });
-
-  if (!res.ok) {
-    // This will throw and send the status code to catch block
-    const error = new Error('HTTP Error');
-    error.status = res.status;
-    throw error;
-  }
-
-  const result = await res.json();
-  // your success logic here
-
-} catch (error) {
-  console.log(error);
-  if (error.status === 402) {
-    setUiDisable(true);
-    window.alert('Unauthorized User - Please raise IIQ request for PRC-AXP-EH-E3-AppUser-paas-lumos-project');
-  } else {
-    toast.error('Unable to load previous sessions');
-  }
-}
+Hi Dhruv Good morning 
+   Accually i have one query regarding dot connector 
+so we have one critical risk dependency so i upgrade it but in dotconnector still show last updated 1 day ago and date was 30/06/2025 is there any way to see the lastest updated dependency risks 
