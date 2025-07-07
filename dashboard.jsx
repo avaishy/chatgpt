@@ -105,3 +105,67 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+import React from "react";
+import { Box, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+const data = [
+  { versionId: "19181", version: "1.1", market: "United States" },
+];
+
+export default function ModelTable() {
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* Search bar aligned to the right */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <TextField
+          placeholder="Search"
+          size="small"
+          sx={{
+            width: "250px",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+            },
+          }}
+          InputProps={{
+            sx: { borderRadius: "20px" },
+          }}
+        />
+      </Box>
+
+      {/* Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableRow>
+              <TableCell><b>Version ID</b></TableCell>
+              <TableCell><b>Version</b></TableCell>
+              <TableCell><b>Market</b></TableCell>
+              <TableCell><b>Action</b></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell>{row.versionId}</TableCell>
+                <TableCell>{row.version}</TableCell>
+                <TableCell>{row.market}</TableCell>
+                <TableCell>
+                  <IconButton size="small" sx={{ color: "#1976d2" }}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton size="small" sx={{ color: "red" }}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+}
