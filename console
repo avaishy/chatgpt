@@ -1,5 +1,6 @@
-I have been test end to end flow the LUMOS UI in E1, E2 and E3 enviroment. 
 
-I have sending blueauth token in every api call for authorization. 
+I have tested the end-to-end flow of the LUMOS UI in the E1, E2, and E3 environments.
 
-I have added popup alert message is user is not a valid user or dont have access for LUMOS. 
+I am sending the BlueAuth token in every API call for authorization.
+
+I have also added a popup alert message to notify the user if they are not a valid user or do not have access to LUMOS.
