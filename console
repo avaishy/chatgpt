@@ -1,1 +1,5 @@
-In the new flow, the create new session API gives an immediate response. So now I am calling the get_user_session_chat API every 90 seconds to check the session status. If the status is Completed, I set the current chat and refresh all the relevant state.
+I have been test end to end flow the LUMOS UI in E1, E2 and E3 enviroment. 
+
+I have sending blueauth token in every api call for authorization. 
+
+I have added popup alert message is user is not a valid user or dont have access for LUMOS. 
