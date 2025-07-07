@@ -1,10 +1,1 @@
-Hi Dhruv,
-Good morning!
-
-I hope you’re doing well. I had a quick question regarding DotConnector.
-
-We recently updated a critical risk dependency to a newer version as part of remediation. However, in DotConnector, the “Last Updated” timestamp still reflects the previous date (30/06/2025), and the risk status hasn’t changed accordingly.
-
-Could you please confirm if there’s a delay in reflecting updated dependency risks on the platform? Also, is there a way to manually trigger a refresh or check if the latest changes have been picked up?
-
-Appreciate your help on this!
+When User click on Multiple api all api are going in queue. So Before create new sesssion API takes 5 to 10 minutes to give response so all the othe api goes into the queue.Now in new flow it give immediate response so i am calling get_user_session_chat api in every 90 seconds and check for the status is status is completed then set the current chat and refresh all the state. 
