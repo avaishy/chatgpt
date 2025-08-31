@@ -1,26 +1,34 @@
-F792821: 25.4 - MRMG Model Validation Acceleration - ML - S CoE - DT0425 | MANOJ 
+F792821: 25.4 - MRMG Model Validation Acceleration - ML - S CoE - DT0425 | MANOJ
 
-US6041864: MRMG UI-Integrating validation report and QC with session management(Harshit/Anupam) 
-Harshit : Majorly in this spint i have worked on tollgating Enhancement ,worked on validation report first page integration ,second page dynamic question selection .
-Cuurrently in discussion to sent payload in which format with nelvin james and amber.
+⸻
 
-Anupam : In this sprint i worked on Validation Report page and UI enhancement and minor bug fixing 
+US6041864: MRMG UI - Integrating Validation Report and QC with Session Management (Harshit / Anupam)
 
+Harshit:
+	•	Worked on Tollgating Enhancement.
+	•	Implemented the first-page integration of the Validation Report.
+	•	Developed dynamic question selection functionality for the second page of the Validation Report.
+	•	Currently in discussion with Nelvin James and Amber regarding the appropriate format for sending the payload.
 
+Anupam:
+	•	Worked on the Validation Report page development.
+	•	Implemented UI enhancements for improved usability.
+	•	Resolved minor bugs related to the Validation Report and UI components.
 
-US6041828: Lumos feedback enhancements (Sai/Anupam) 
+⸻
 
-Anupam : Screen and Task Details for the Sprint:
+US6041828: Lumos Feedback Enhancements (Sai / Anupam)
 
-Screen:
+Anupam:
 
-PilotFeedback
-PilotUsage
-Followup answer Feedback
-Predefine Answer feedback
+Screens Developed:
+	•	Pilot Feedback
+	•	Pilot Usage
+	•	Follow-up Answer Feedback
+	•	Predefined Answer Feedback
+
 Tasks Completed:
-
-
-Enhanced and build PilotFeedback, PilotUsage ,Followup answer Feedback, Predefine Answer feedback screen tested and deployed on E1
-Integerated these pages with session management
-Integrated API calls for downloading pilot feedback and pilot usage dynamically in a format of excel sheet.
+	•	Enhanced and built the above-mentioned feedback and usage screens.
+	•	Performed testing and successfully deployed the features on E1.
+	•	Integrated these screens with session management for seamless functionality.
+	•	Connected API calls to enable dynamic downloading of Pilot Feedback and Pilot Usage reports in Excel format.
