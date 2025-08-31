@@ -1,1 +1,26 @@
-Majorly, in this sprint, I have worked on Toll Gating Enhancements, worked on Validation Report First page integration, second page dynamic questions selection. Currently in discussion to send payload in which format with Nelvin, James and Amber
+F792821: 25.4 - MRMG Model Validation Acceleration - ML - S CoE - DT0425 | MANOJ 
+
+US6041864: MRMG UI-Integrating validation report and QC with session management(Harshit/Anupam) 
+Harshit : Majorly in this spint i have worked on tollgating Enhancement ,worked on validation report first page integration ,second page dynamic question selection .
+Cuurrently in discussion to sent payload in which format with nelvin james and amber.
+
+Anupam : In this sprint i worked on Validation Report page and UI enhancement and minor bug fixing 
+
+
+
+US6041828: Lumos feedback enhancements (Sai/Anupam) 
+
+Anupam : Screen and Task Details for the Sprint:
+
+Screen:
+
+PilotFeedback
+PilotUsage
+Followup answer Feedback
+Predefine Answer feedback
+Tasks Completed:
+
+
+Enhanced and build PilotFeedback, PilotUsage ,Followup answer Feedback, Predefine Answer feedback screen tested and deployed on E1
+Integerated these pages with session management
+Integrated API calls for downloading pilot feedback and pilot usage dynamically in a format of excel sheet.
