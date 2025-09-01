@@ -1,7 +1,21 @@
+LUMOS Feedback Enhancement – How to Provide Feedback
+	•	At the bottom of each pre-summarized answer or follow-up, you will find a Feedback button.
+	•	When you click the button, a Feedback page will open.
+	•	Provide your feedback in the text area and click Submit to record your response.
 
-LUMOS FEEDBACK ENHANCEMENT
-How to gave feedback 
-in the bottom of the pre-summarized answer or follow up you are able to see the feedback button. On click of the button the feedback page opens provide your feed back and click on submit button to submit your feedback. 
-For Pilot Feed and pilot usage to see that feature you have to be member of 
-CFR_TEST_ADMIN_GROUP this group  if you are the admin then you can see Pilot Feedback and Pilot Usage
-Please select the date in which you want to see feedback select the user id click on submit button For Pilot Usage  just have to select userid and click on submit 
+⸻
+
+Pilot Feedback and Pilot Usage Access
+	•	To access Pilot Feedback and Pilot Usage, you must be a member of the CFR_TEST_ADMIN_GROUP.
+	•	If you are an admin and part of this group, you will be able to see both features.
+
+⸻
+
+Steps to View Feedback / Usage Reports
+	1.	For Pilot Feedback
+	•	Select the desired date.
+	•	Select the User ID.
+	•	Click Submit to view the feedback.
+	2.	For Pilot Usage
+	•	Select the User ID.
+	•	Click Submit to view the usage details.
