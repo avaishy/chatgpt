@@ -1,21 +1,4 @@
-LUMOS Feedback Enhancement – How to Provide Feedback
-	•	At the bottom of each pre-summarized answer or follow-up, you will find a Feedback button.
-	•	When you click the button, a Feedback page will open.
-	•	Provide your feedback in the text area and click Submit to record your response.
+I’ve prepared a short document that you can refer to while testing the LUMOS Feedback Enhancement. It explains how to give feedback and how to view Pilot Feedback and Pilot Usage.
 
-⸻
-
-Pilot Feedback and Pilot Usage Access
-	•	To access Pilot Feedback and Pilot Usage, you must be a member of the CFR_TEST_ADMIN_GROUP.
-	•	If you are an admin and part of this group, you will be able to see both features.
-
-⸻
-
-Steps to View Feedback / Usage Reports
-	1.	For Pilot Feedback
-	•	Select the desired date.
-	•	Select the User ID.
-	•	Click Submit to view the feedback.
-	2.	For Pilot Usage
-	•	Select the User ID.
-	•	Click Submit to view the usage details.
+Please note: to access the admin features, you need to be a member of the CFR_TEST_ADMIN_GROUP.
+@Sai — could you please add Nick’s team to this group so they can also test the admin functionality?
